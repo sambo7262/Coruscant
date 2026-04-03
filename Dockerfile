@@ -39,9 +39,11 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 # Copy workspace manifests for production install
+# All workspace manifests must be present or npm ci errors on missing workspace paths
 COPY package.json package-lock.json ./
 COPY packages/backend/package.json packages/backend/
 COPY packages/shared/package.json packages/shared/
+COPY packages/frontend/package.json packages/frontend/
 
 # Install production dependencies only (no devDependencies)
 RUN npm ci --omit=dev
