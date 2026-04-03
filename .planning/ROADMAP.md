@@ -13,7 +13,7 @@ Coruscant is built in eight phases that follow the natural dependency order of a
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Infrastructure Foundation** - Docker Compose on Synology NAS with proven data persistence and CI/CD pipeline (completed 2026-04-03)
-- [ ] **Phase 2: Core UI Shell** - Tron/Grid living UI with animated components and SSE live-data loop proven end-to-end with mock data
+- [ ] **Phase 2: Core UI Shell** - Star Wars X-Wing cockpit instrument panel UI with SSE live-data loop proven end-to-end with mock data
 - [ ] **Phase 3: Settings + First Service Adapters** - Settings page, then Radarr/Sonarr/Lidarr/Bazarr status cards and SABnzbd activity card
 - [ ] **Phase 4: Rich Service Integrations** - Pi-hole, Plex (Now Playing banner), and Synology NAS CPU/RAM/storage/disk/fans
 - [ ] **Phase 5: Network Monitoring** - UniFi device cards, client counts, WAN throughput, cookie session management
@@ -39,23 +39,28 @@ Plans:
 - [x] 01-02-PLAN.md — Docker containerisation (multi-stage Dockerfile, compose.yaml, .env.example) and GitHub Actions CI/CD pipeline
 
 ### Phase 2: Core UI Shell
-**Goal**: The full data pipeline (poll → SQLite → SSE → browser) is proven end-to-end with mock data, and the Tron/Grid aesthetic is in place
+**Goal**: The full data pipeline (poll -> SSE -> browser) is proven end-to-end with mock data, and the Star Wars X-Wing cockpit instrument panel aesthetic is in place on the primary 800x480 Raspberry Pi touchscreen viewport
 **Depends on**: Phase 1
 **Requirements**: DASH-01, DASH-02, DASH-03, DASH-04, DASH-05, DASH-06, DASH-07, DASH-08
 **Success Criteria** (what must be TRUE):
-  1. User opens the dashboard on a phone and sees an animated grid background with traveling light pulses — the interface feels alive at rest
-  2. Service card borders animate with light traces and health state components pulse/breathe using the Tron color system (Blue/Red/Amber)
-  3. User taps a service card and navigates to a detail view; browser back returns to the dashboard
-  4. The Now Playing banner component renders (with mock data) and scrolls smoothly at 60fps on a physical mobile device
-  5. Dashboard layout is usable on both phone and desktop browser without horizontal scrolling
-**Plans:** 2/5 plans executed
+  1. User opens the dashboard on an 800x480 viewport and sees a dark instrument wall panel background with amber seam lines and decorative wiring traces
+  2. Service cards render as chamfered instrument panels with service-specific bodies (gauges, dot matrix, signal bars) and LED status indicators pulse/breathe per health state
+  3. User taps a service card and navigates to a detail view with dot-leader readout format; back navigation returns to dashboard
+  4. The Now Playing banner component renders (with mock data) in utilitarian cockpit style
+  5. Dashboard layout shows ~4 cards per row at 800px width; works on both kiosk display and phone
+**Plans:** 10 plans (5 original + 5 gap closure for aesthetic rework)
 
 Plans:
 - [x] 02-01-PLAN.md — Shared types (DashboardSnapshot), SSE endpoint with mock data generator, frontend test infrastructure
 - [x] 02-02-PLAN.md — Frontend deps, CSS design system, React Router setup, animated grid background, AppHeader
 - [x] 02-03-PLAN.md — Service cards with border traces and health glow, CardGrid with tier sections, SSE hook wiring
 - [x] 02-04-PLAN.md — Now Playing banner with expand/collapse drawer, enhanced ServiceDetailPage
-- [ ] 02-05-PLAN.md — Visual verification checkpoint on mobile viewport
+- [x] 02-05-PLAN.md — Visual verification checkpoint on mobile viewport
+- [ ] 02-06-PLAN.md — [GAP CLOSURE] CSS design system rework (cockpit palette) + decorative SVG wiring overlay
+- [ ] 02-07-PLAN.md — [GAP CLOSURE] StatusDot LED restyle + AppHeader cockpit chrome + back navigation
+- [ ] 02-08-PLAN.md — [GAP CLOSURE] Static instrument wall background + service-specific instrument cards + CardGrid 800x480 optimization
+- [ ] 02-09-PLAN.md — [GAP CLOSURE] NowPlayingBanner + StreamRow + ServiceDetailPage dot-leaders + StaleIndicator restyle
+- [ ] 02-10-PLAN.md — [GAP CLOSURE] Visual verification checkpoint on 800x480 viewport
 **UI hint**: yes
 
 ### Phase 3: Settings + First Service Adapters
@@ -135,12 +140,12 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Infrastructure Foundation | 2/2 | Complete   | 2026-04-03 |
-| 2. Core UI Shell | 2/5 | In Progress|  |
+| 2. Core UI Shell | 5/10 | In Progress (aesthetic rework) |  |
 | 3. Settings + First Service Adapters | 0/? | Not started | - |
 | 4. Rich Service Integrations | 0/? | Not started | - |
 | 5. Network Monitoring | 0/? | Not started | - |
