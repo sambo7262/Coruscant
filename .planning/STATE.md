@@ -1,3 +1,19 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: executing
+stopped_at: "Completed 01-01-PLAN.md: monorepo scaffold, Fastify+SQLite backend, React+Vite frontend, 3 passing tests"
+last_updated: "2026-04-03T05:15:11.179Z"
+last_activity: 2026-04-03
+progress:
+  total_phases: 9
+  completed_phases: 0
+  total_plans: 2
+  completed_plans: 1
+  percent: 0
+---
+
 # Project State
 
 ## Project Reference
@@ -5,20 +21,21 @@
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** A single glance from a phone tells you whether your home infrastructure is healthy or needs attention.
-**Current focus:** Phase 1 — Infrastructure Foundation
+**Current focus:** Phase 01 — infrastructure-foundation
 
 ## Current Position
 
-Phase: 1 of 8 (Infrastructure Foundation)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-04-02 — Roadmap created; project initialized
+Phase: 01 (infrastructure-foundation) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-04-03
 
 Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
 **Velocity:**
+
 - Total plans completed: 0
 - Average duration: —
 - Total execution time: 0 hours
@@ -30,10 +47,12 @@ Progress: [░░░░░░░░░░] 0%
 | — | — | — | — |
 
 **Recent Trend:**
+
 - Last 5 plans: —
 - Trend: —
 
 *Updated after each plan completion*
+| Phase 01 P01 | 6 | 2 tasks | 18 files |
 
 ## Accumulated Context
 
@@ -47,6 +66,9 @@ Recent decisions affecting current work:
 - Init: SSE chosen over WebSocket — unidirectional, proxies cleanly through Synology DSM Nginx
 - Init: Settings page (Phase 3) must exist before ANY service integration is wired to live credentials
 - Init: Phase 8 (Smart Home) is research-gated and isolated — failure does not affect prior phases
+- [Phase 01]: DB_PATH read lazily in createDb() default param — prevents ESM test isolation failures where env vars are set after import hoisting
+- [Phase 01]: backend/tsconfig.json sets types:['node'] explicitly — TypeScript 6 changed default to empty types array, breaking Node.js globals
+- [Phase 01]: Frontend tsconfig uses moduleResolution:bundler (not NodeNext) and does not extend root tsconfig — Vite 8 requires bundler resolution
 
 ### Roadmap Evolution
 
@@ -65,6 +87,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-02
-Stopped at: Roadmap and STATE.md created; REQUIREMENTS.md traceability confirmed
+Last session: 2026-04-03T05:15:11.175Z
+Stopped at: Completed 01-01-PLAN.md: monorepo scaffold, Fastify+SQLite backend, React+Vite frontend, 3 passing tests
 Resume file: None

@@ -7,9 +7,9 @@
 
 ### Infrastructure & Deployment
 
-- [ ] **INFRA-01**: App runs as a Docker Compose project deployable via Synology NAS Container Manager
+- [x] **INFRA-01**: App runs as a Docker Compose project deployable via Synology NAS Container Manager
 - [ ] **INFRA-02**: Docker images are built from a GitHub repo and pushed to the user's self-hosted registry; compose file references versioned image tags
-- [ ] **INFRA-03**: App is accessible in any browser via local IP and port
+- [x] **INFRA-03**: App is accessible in any browser via local IP and port
 - [ ] **INFRA-04**: No app-level tunnel configuration required; Tailscale provides external access transparently
 
 ### Dashboard UI
@@ -118,9 +118,9 @@ These are isolated in their own phase due to complexity, OAuth requirements, and
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| INFRA-01 | Phase 1 | Pending |
+| INFRA-01 | Phase 1 | Complete |
 | INFRA-02 | Phase 1 | Pending |
-| INFRA-03 | Phase 1 | Pending |
+| INFRA-03 | Phase 1 | Complete |
 | INFRA-04 | Phase 1 | Pending |
 | DASH-01 | Phase 2 | Pending |
 | DASH-02 | Phase 2 | Pending |

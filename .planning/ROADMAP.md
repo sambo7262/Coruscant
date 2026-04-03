@@ -35,7 +35,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Scaffold npm workspaces monorepo with Fastify + SQLite backend, React + Vite frontend, shared types, and unit tests
+- [x] 01-01-PLAN.md — Scaffold npm workspaces monorepo with Fastify + SQLite backend, React + Vite frontend, shared types, and unit tests
 - [ ] 01-02-PLAN.md — Docker containerisation (multi-stage Dockerfile, compose.yaml, .env.example) and GitHub Actions CI/CD pipeline
 
 ### Phase 2: Core UI Shell
