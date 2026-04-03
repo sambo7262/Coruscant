@@ -23,7 +23,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<DashboardPage snapshot={snapshot} />} />
           <Route path="/services/:serviceId" element={<ServiceDetailPage snapshot={snapshot} />} />
-          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/settings" element={<SettingsPage snapshot={snapshot} />} />
           <Route path="/logs" element={<LogsPage />} />
         </Routes>
       </main>
