@@ -107,6 +107,12 @@ body::after {
   100% { transform: translateX(-50%); }
 }
 
+/* Arr download bar pulse — amber shimmer while actively downloading */
+@keyframes arrDownloadPulse {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1.0; }
+}
+
 /* Reduced motion preference — D-44 / DASH-08 accessibility */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

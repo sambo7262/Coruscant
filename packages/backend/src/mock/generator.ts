@@ -31,14 +31,29 @@ export function generateMockSnapshot(): DashboardSnapshot {
   }
 
   const services: ServiceStatus[] = [
-    // status tier — dot matrix for arr services
+    // status tier — arr services (simplified card: status LED + download indicator)
     {
       id: 'radarr',
       name: 'Radarr',
       tier: 'status',
       status: 'online',
       lastPollAt: nowIso,
-      metrics: { queueCount: 5, monitoredCount: 12 },
+      metrics: {
+        // card face fields
+        downloading: true,
+        activeDownloads: 1,
+        downloadQuality: '1080p',
+        downloadProgress: 45,
+        // detail page fields
+        queue: 3,
+        monitored: 1240,
+        librarySize: '4.2 TB',
+        missing: 12,
+        attentionItems: [
+          { type: 'manual_import', name: 'Movie.Title.2024.mkv' },
+          { type: 'manual_import', name: 'Another.Movie.mkv' },
+        ],
+      },
     },
     {
       id: 'sonarr',
@@ -46,7 +61,17 @@ export function generateMockSnapshot(): DashboardSnapshot {
       tier: 'status',
       status: 'online',
       lastPollAt: nowIso,
-      metrics: { queueCount: 8, monitoredCount: 20 },
+      metrics: {
+        downloading: false,
+        activeDownloads: 0,
+        downloadQuality: '',
+        downloadProgress: 0,
+        queue: 8,
+        monitored: 342,
+        librarySize: '6.1 TB',
+        missing: 5,
+        attentionItems: [],
+      },
     },
     {
       id: 'lidarr',
@@ -54,7 +79,17 @@ export function generateMockSnapshot(): DashboardSnapshot {
       tier: 'status',
       status: 'warning',
       lastPollAt: nowIso,
-      metrics: { queueCount: 2, monitoredCount: 6 },
+      metrics: {
+        downloading: false,
+        activeDownloads: 0,
+        downloadQuality: '',
+        downloadProgress: 0,
+        queue: 2,
+        monitored: 180,
+        librarySize: '320 GB',
+        missing: 8,
+        attentionItems: [],
+      },
     },
     {
       id: 'bazarr',
@@ -62,7 +97,18 @@ export function generateMockSnapshot(): DashboardSnapshot {
       tier: 'status',
       status: 'offline',
       lastPollAt: nowIso,
-      metrics: { queueCount: 0, monitoredCount: 4 },
+      metrics: {
+        downloading: false,
+        activeDownloads: 0,
+        downloadQuality: '',
+        downloadProgress: 0,
+        activeSubtitleGrabs: 0,
+        queue: 0,
+        monitored: 4,
+        librarySize: '—',
+        missing: 0,
+        attentionItems: [],
+      },
     },
     // activity tier
     {
