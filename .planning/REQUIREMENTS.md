@@ -138,6 +138,9 @@ These are isolated in their own phase due to complexity, OAuth requirements, and
 | SVCACT-01 | Phase 3 | Pending |
 | SVCACT-02 | Phase 3 | Pending |
 | SVCACT-03 | Phase 3 | Pending |
+| CFG-01 | Phase 3 | Pending |
+| CFG-03 | Phase 3 | Pending |
+| CFG-04 | Phase 3 | Pending |
 | SVCRICH-01 | Phase 4 | Pending |
 | SVCRICH-02 | Phase 4 | Pending |
 | SVCRICH-03 | Phase 4 | Pending |
@@ -153,25 +156,22 @@ These are isolated in their own phase due to complexity, OAuth requirements, and
 | NOTIF-04 | Phase 6 | Pending |
 | NOTIF-05 | Phase 6 | Pending |
 | NOTIF-06 | Phase 6 | Pending |
+| CFG-02 | Phase 6 | Pending |
 | LOG-01 | Phase 7 | Pending |
 | LOG-02 | Phase 7 | Pending |
 | LOG-03 | Phase 7 | Pending |
 | LOG-04 | Phase 7 | Pending |
-| CFG-01 | Phase 3 | Pending |
-| CFG-02 | Phase 6 | Pending |
-| CFG-03 | Phase 3 | Pending |
-| CFG-04 | Phase 3 | Pending |
 | SMRTH-01 | Phase 8 | Pending |
 | SMRTH-02 | Phase 8 | Pending |
 | SMRTH-03 | Phase 8 | Pending |
 | SMRTH-04 | Phase 8 | Pending |
 
 **Coverage:**
-- v1 requirements: 40 total
+- v1 requirements: 43 total
 - Smart Home phase: 4 total
-- Mapped to phases: 44
+- Mapped to phases: 47
 - Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-04-02*
-*Last updated: 2026-04-02 after initial definition*
+*Last updated: 2026-04-02 after roadmap creation (corrected coverage count: 43 v1, not 40)*
