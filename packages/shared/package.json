@@ -1,0 +1,16 @@
+{
+  "name": "@coruscant/shared",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./dist/types.js",
+  "types": "./dist/types.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/types.js",
+      "types": "./dist/types.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --build"
+  }
+}
