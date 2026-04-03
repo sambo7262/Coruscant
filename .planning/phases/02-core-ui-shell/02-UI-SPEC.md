@@ -38,13 +38,14 @@ Declared values (multiples of 4 only):
 | xs | 4px | Icon-to-label gap, status dot inline padding |
 | sm | 8px | Card internal padding (icon row), section label vertical margin |
 | md | 16px | Card padding, header strip padding, default element spacing |
+| card-inner | 12px | Service card internal padding (between sm and md — 12 = 3×4, justified by card height constraint of 88px) |
 | lg | 24px | Grid gap between cards, section spacing |
 | xl | 32px | Header total height target, page horizontal padding on mobile |
 | 2xl | 48px | Major layout breaks (e.g. space between card grid and top of Now Playing banner at rest) |
 | 3xl | 64px | Page-level bottom padding to clear fixed Now Playing banner |
 
 Exceptions:
-- **Touch targets:** Icon buttons in header (Settings ⚙, Logs ≡) use minimum 44×44px hit area regardless of visual size (iOS HIG minimum). Implement via `padding: 10px` around a 24px icon.
+- **Touch targets:** Icon buttons in header (Settings ⚙, Logs ≡) implement the iOS HIG 44px minimum via `width: 44px; height: 44px; display: flex; align-items: center; justify-content: center` around a 24px icon. No non-multiple-of-4 padding value is used.
 - **Now Playing banner collapsed height:** 48px (fits one line of text with comfortable touch target for tap-to-expand).
 - **Now Playing banner expanded height:** `min(60vh, 320px)` — caps at 320px on tall phones; never covers more than 60% of viewport.
 - **Status dot size:** 8px diameter (not on the spacing scale — purely visual).
@@ -58,9 +59,11 @@ All text uses the monospace font stack declared in Design System above. No serif
 | Role | Size | Weight | Line Height | Usage |
 |------|------|--------|-------------|-------|
 | Display | 20px | 700 (Bold) | 1.2 | "CORUSCANT" app title in header |
-| Heading | 16px | 600 (SemiBold) | 1.2 | Section labels (STATUS, ACTIVITY, RICH DATA, SMART HOME), service detail page title, Now Playing expanded stream titles |
+| Heading | 16px | 700 (Bold) | 1.2 | Section labels (STATUS, ACTIVITY, RICH DATA, SMART HOME), service detail page title, Now Playing expanded stream titles |
 | Body | 14px | 400 (Regular) | 1.5 | Card service name, NAS stats strip values, banner ticker text, detail view metric labels and values |
 | Label | 12px | 400 (Regular) | 1.4 | Stale-data indicator badge, stream quality string, transcode/direct-play label, settings stub placeholder text |
+
+**Weights in use: 2 — 400 (Regular) for Body and Label roles; 700 (Bold) for Display and Heading roles.**
 
 **Letter-spacing:** Apply `letter-spacing: 0.08em` to Display and Heading roles only — reinforces terminal aesthetic without making body text hard to read.
 
@@ -228,7 +231,7 @@ Components required in Phase 2, in build order:
 
 - Min width: 160px (grid `minmax(160px, 1fr)`)
 - Height: 88px (matches header height — feels intentional)
-- Internal padding: 12px (between sm 8px and md 16px — exception documented here)
+- Internal padding: 12px (`card-inner` token — see Spacing Scale)
 - Card border radius: 6px
 - Border: 1px solid `rgba(0, 200, 255, 0.15)` at rest; trace animation brightens this via `::before` overlay
 
@@ -292,9 +295,9 @@ Components required in Phase 2, in build order:
 | Concern | Requirement |
 |---------|-------------|
 | Color contrast | Tron Blue `#00c8ff` on `#0a0a0f` background: contrast ratio ≈ 8.4:1 — passes WCAG AA (4.5:1) and AAA (7:1). Amber `#ffaa00` on `#0a0a0f`: ≈ 6.7:1 — passes AA. Red `#ff4444` on `#0a0a0f`: ≈ 4.6:1 — passes AA. |
-| Touch targets | All interactive elements ≥ 44×44px (iOS HIG). Header icon buttons padded to 44px. Service cards at 160px min-width × 88px height exceed this. |
+| Touch targets | All interactive elements ≥ 44×44px (iOS HIG). Header icon buttons use `width: 44px; height: 44px; display: flex; align-items: center; justify-content: center` to achieve the minimum without non-multiple-of-4 padding. Service cards at 160px min-width × 88px height exceed this. |
 | Animation preference | Wrap all `@keyframes` and Framer Motion animations in `@media (prefers-reduced-motion: reduce)` fallback: set `animation-duration: 0.001ms !important` for CSS; pass `transition={{ duration: prefers ? 0 : 0.3 }}` for Framer Motion via a hook. |
-| Screen reader | Service cards include `aria-label="{name}, status: {status}"`. Status dot is `aria-hidden="true"` (color-only indicator). Now Playing banner has `aria-live="polite"` for stream count updates. |
+| Screen reader | Service cards include `aria-label="{name}, status: {status}"`. Status dot is `aria-hidden="true"` (color-only indicator). Now Playing banner has `aria-live="polite"` for stream count updates. Header Settings icon button has `aria-label="Open Settings"`. Header Logs icon button has `aria-label="Open Logs"`. |
 | Focus management | After navigating from card to detail, focus moves to the `<h1>` of the detail page. On back, focus returns to the card that was tapped (store card ID in `sessionStorage` alongside scroll position). |
 
 ---
