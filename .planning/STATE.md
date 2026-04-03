@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-core-ui-shell 02-04-PLAN.md
-last_updated: "2026-04-03T15:14:39.935Z"
+stopped_at: Completed 02-core-ui-shell 02-07-PLAN.md
+last_updated: "2026-04-03T15:59:37.949Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 9
   completed_phases: 1
-  total_plans: 7
-  completed_plans: 6
+  total_plans: 12
+  completed_plans: 7
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 ## Current Position
 
 Phase: 02 (core-ui-shell) — EXECUTING
-Plan: 5 of 5
+Plan: 2 of 10
 Status: Ready to execute
 Last activity: 2026-04-03
 
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02-core-ui-shell P01 | 18min | 3 tasks | 9 files |
 | Phase 02-core-ui-shell P03 | 2m12s | 2 tasks | 8 files |
 | Phase 02-core-ui-shell P04 | 5 | 2 tasks | 4 files |
+| Phase 02-core-ui-shell P07 | 8m | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,8 @@ Recent decisions affecting current work:
 - [Phase 02-core-ui-shell]: Per-card animation stagger uses globalIndex across CardGrid sections for sequential border trace and entrance delays
 - [Phase 02-core-ui-shell]: SSE hook called at App.tsx root level so snapshot is shared across all routes without multiple EventSource connections
 - [Phase 02-core-ui-shell]: ServiceDetailPage accepts snapshot as prop rather than calling useDashboardSSE internally — avoids duplicate connections
+- [Phase 02-core-ui-shell]: showBack detection lives in App.tsx via useLocation — avoids double-header problem on Settings/Logs pages
+- [Phase 02-core-ui-shell]: AppHeader icon nav buttons hidden when showBack=true — redundant on sub-pages
 
 ### Roadmap Evolution
 
@@ -103,6 +106,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T15:14:39.931Z
-Stopped at: Completed 02-core-ui-shell 02-04-PLAN.md
+Last session: 2026-04-03T15:59:37.945Z
+Stopped at: Completed 02-core-ui-shell 02-07-PLAN.md
 Resume file: None
