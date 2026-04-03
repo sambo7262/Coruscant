@@ -144,6 +144,19 @@ None — no external service configuration required at this layer. Service crede
 - crypto.ts `encrypt`/`decrypt` are ready for Plan 03-02 to use when persisting service configs to DB
 - All 41 backend tests pass; foundation is solid for remaining Phase 3 plans
 
+## Self-Check: PASSED
+
+- FOUND: packages/backend/src/crypto.ts
+- FOUND: packages/backend/src/adapters/arr.ts
+- FOUND: packages/backend/src/adapters/bazarr.ts
+- FOUND: packages/backend/src/adapters/sabnzbd.ts
+- FOUND: packages/backend/src/poll-manager.ts
+- FOUND: packages/backend/src/__tests__/crypto.test.ts
+- FOUND: packages/backend/src/__tests__/arr-adapter.test.ts
+- FOUND: packages/backend/src/__tests__/sabnzbd-adapter.test.ts
+- FOUND: commit c7c67c3
+- FOUND: commit b22d228
+
 ---
 *Phase: 03-settings-first-service-adapters*
 *Completed: 2026-04-03*
