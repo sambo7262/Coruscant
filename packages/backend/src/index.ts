@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { existsSync, mkdirSync } from 'node:fs'
 import { initDb, getDb } from './db.js'
 import { healthRoutes } from './routes/health.js'
+import { sseRoutes } from './routes/sse.js'
 import { healthProbe } from './schema.js'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
@@ -22,6 +23,7 @@ const fastify = Fastify({ logger: true })
 
 // Register API routes
 await fastify.register(healthRoutes)
+await fastify.register(sseRoutes)
 
 // Serve compiled Vite bundle in production (D-23)
 const frontendDist = join(__dirname, '../../frontend/dist')
