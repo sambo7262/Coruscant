@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 Phase: 02 (core-ui-shell) — EXECUTING
 Plan: 8 of 10
 Status: Ready to execute
-Last activity: 2026-04-03
+Last activity: 2026-04-03 - Completed quick task 260403-eh1: arr+SABnzbd status color semantics
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -114,6 +114,12 @@ Recent decisions affecting current work:
 ### Pending Todos
 
 None yet.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260403-eh1 | arr+SABnzbd status color semantics: green=up, red=down, yellow=error, purple=downloading | 2026-04-03 | b4a0398 | [260403-eh1-arr-sabnzbd-status-color-semantics-green](./quick/260403-eh1-arr-sabnzbd-status-color-semantics-green/) |
 
 ### Blockers/Concerns
 
