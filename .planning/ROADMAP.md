@@ -32,7 +32,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Data written to SQLite survives `docker compose down && docker compose up` (bind mount verified)
   3. A new image built from the GitHub repo appears in the self-hosted registry with the correct version tag
   4. The app is reachable from outside the LAN via Tailscale without any app-level tunnel configuration
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Scaffold npm workspaces monorepo with Fastify + SQLite backend, React + Vite frontend, shared types, and unit tests
+- [ ] 01-02-PLAN.md — Docker containerisation (multi-stage Dockerfile, compose.yaml, .env.example) and GitHub Actions CI/CD pipeline
 
 ### Phase 2: Core UI Shell
 **Goal**: The full data pipeline (poll → SQLite → SSE → browser) is proven end-to-end with mock data, and the Tron/Grid aesthetic is in place
@@ -128,7 +132,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Infrastructure Foundation | 0/? | Not started | - |
+| 1. Infrastructure Foundation | 0/2 | Planning complete | - |
 | 2. Core UI Shell | 0/? | Not started | - |
 | 3. Settings + First Service Adapters | 0/? | Not started | - |
 | 4. Rich Service Integrations | 0/? | Not started | - |
