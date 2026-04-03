@@ -3,7 +3,7 @@ services:
     image: ${DOCKER_HUB_REPO}:${IMAGE_TAG:-latest}
     restart: unless-stopped
     ports:
-      - "${PORT:-3000}:3000"
+      - "${PORT:-1688}:3000"
     volumes:
       - ${DATA_PATH:-/volume1/docker/coruscant}:/app/data
     user: "${PUID:-1000}:${PGID:-1000}"
