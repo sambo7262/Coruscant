@@ -91,11 +91,15 @@ function ArrInstrument({ service, metrics }: { service: ServiceStatus; metrics: 
     : service.status === 'offline' ? 'OFFLINE'
     : 'STALE'
 
-  // LED colour per status
+  // LED colour per status — purple when online AND actively downloading
   const ledColor =
-    service.status === 'online' ? 'var(--cockpit-green)'
-    : service.status === 'warning' ? 'var(--cockpit-amber)'
-    : '#ff3b3b'
+    service.status === 'online' && downloading
+      ? 'var(--cockpit-purple)'
+      : service.status === 'online'
+      ? 'var(--cockpit-green)'
+      : service.status === 'warning'
+      ? 'var(--cockpit-amber)'
+      : '#ff3b3b'
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -137,12 +141,12 @@ function ArrInstrument({ service, metrics }: { service: ServiceStatus; metrics: 
           </span>
         </div>
       ) : downloading && activeDownloads > 0 ? (
-        /* Active download: pulsing amber bar + label */
+        /* Active download: pulsing purple bar + label */
         <div>
           <div
             style={{
               height: '4px',
-              background: 'rgba(232,160,32,0.15)',
+              background: 'rgba(139,92,246,0.15)',
               borderRadius: '2px',
               overflow: 'hidden',
               marginBottom: '4px',
@@ -152,15 +156,15 @@ function ArrInstrument({ service, metrics }: { service: ServiceStatus; metrics: 
               style={{
                 height: '100%',
                 width: `${Math.min(Math.max(downloadProgress, 5), 100)}%`,
-                background: 'var(--cockpit-amber)',
+                background: 'var(--cockpit-purple)',
                 borderRadius: '2px',
-                animation: 'arrDownloadPulse 1.4s ease-in-out infinite',
+                animation: 'arrDownloadPulsePurple 1.4s ease-in-out infinite',
               }}
             />
           </div>
           <span
             className="text-label"
-            style={{ color: 'var(--cockpit-amber)', fontSize: '9px', textTransform: 'uppercase' }}
+            style={{ color: 'var(--cockpit-purple)', fontSize: '9px', textTransform: 'uppercase' }}
           >
             {`DOWNLOADING  ${downloadQuality} x${activeDownloads}`}
           </span>
@@ -219,6 +223,9 @@ function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   const queueCount = typeof metrics.queueCount === 'number' ? metrics.queueCount : 0
   const progressPercent = typeof metrics.progressPercent === 'number' ? metrics.progressPercent : 0
 
+  // Purple when queue is active; amber when idle
+  const isDownloading = queueCount > 0 || progressPercent > 0
+
   return (
     <div>
       <div
@@ -230,7 +237,7 @@ function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
       >
         <span
           className="text-label"
-          style={{ color: 'var(--cockpit-amber)', fontSize: '9px' }}
+          style={{ color: isDownloading ? 'var(--cockpit-purple)' : 'var(--cockpit-amber)', fontSize: '9px' }}
         >
           {speedMBs.toFixed(1)} MB/s
         </span>
@@ -244,7 +251,7 @@ function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
       <div
         style={{
           height: '6px',
-          background: 'rgba(232,160,32,0.15)',
+          background: isDownloading ? 'rgba(139,92,246,0.15)' : 'rgba(232,160,32,0.15)',
           borderRadius: '3px',
           overflow: 'hidden',
         }}
@@ -253,7 +260,7 @@ function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
           style={{
             height: '100%',
             width: `${Math.min(Math.max(progressPercent, 0), 100)}%`,
-            background: 'var(--cockpit-amber)',
+            background: isDownloading ? 'var(--cockpit-purple)' : 'var(--cockpit-amber)',
             borderRadius: '3px',
           }}
         />
