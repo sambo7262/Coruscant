@@ -58,7 +58,7 @@ Plans:
 - [x] 02-05-PLAN.md — Visual verification checkpoint on mobile viewport
 - [x] 02-06-PLAN.md — [GAP CLOSURE] CSS design system rework (cockpit palette) + decorative SVG wiring overlay
 - [x] 02-07-PLAN.md — [GAP CLOSURE] StatusDot LED restyle + AppHeader cockpit chrome + back navigation
-- [ ] 02-08-PLAN.md — [GAP CLOSURE] Static instrument wall background + service-specific instrument cards + CardGrid 800x480 optimization
+- [x] 02-08-PLAN.md — [GAP CLOSURE] Static instrument wall background + service-specific instrument cards + CardGrid 800x480 optimization
 - [ ] 02-09-PLAN.md — [GAP CLOSURE] NowPlayingBanner + StreamRow + ServiceDetailPage dot-leaders + StaleIndicator restyle
 - [ ] 02-10-PLAN.md — [GAP CLOSURE] Visual verification checkpoint on 800x480 viewport
 **UI hint**: yes
