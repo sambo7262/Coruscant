@@ -49,9 +49,9 @@ if (existsSync(frontendDist)) {
   })
 }
 
-// Initialise database — run migrations and perform round-trip probe (D-05)
+// Initialise database — idempotent schema bootstrap + round-trip probe (D-05)
 try {
-  initDb(join(__dirname, '../../../drizzle'))
+  initDb()
   const db = getDb()
   // SQLite round-trip: write a probe row and read it back
   db.insert(healthProbe).values({ checkedAt: new Date().toISOString() }).run()
@@ -62,7 +62,8 @@ try {
     fastify.log.warn('SQLite round-trip probe failed: no rows returned')
   }
 } catch (err) {
-  fastify.log.warn({ err }, 'Database migration or probe skipped (migrations may not exist yet)')
+  fastify.log.error({ err }, 'Database init failed')
+  process.exit(1)
 }
 
 // Load saved service configs and start polling (D-06)

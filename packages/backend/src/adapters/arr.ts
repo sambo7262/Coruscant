@@ -1,7 +1,7 @@
 import axios from 'axios'
 import type { ServiceStatus } from '@coruscant/shared'
 
-const TIMEOUT_MS = 10_000
+const TIMEOUT_MS = 5_000
 
 /**
  * Shared arr adapter for Radarr, Sonarr, Lidarr, Prowlarr, and Readarr.

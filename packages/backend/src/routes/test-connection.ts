@@ -32,7 +32,7 @@ export async function testConnectionRoutes(fastify: FastifyInstance) {
 
     const baseUrl = (request.body.baseUrl ?? '').replace(/\/$/, '')
     const apiKey = request.body.apiKey ?? ''
-    const timeout = 10_000
+    const timeout = 5_000
 
     try {
       if (ARR_SERVICES.has(serviceId)) {
