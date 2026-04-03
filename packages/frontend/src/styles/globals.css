@@ -6,6 +6,12 @@
   --cockpit-red: #FF3B3B;
   --cockpit-grey: #666666;
 
+  /* Deep-space blue-grey palette — cockpit-space depth tokens */
+  --space-deep: #080C14;           /* Very dark blue-black — body/background base */
+  --space-mid: #0E1520;            /* Dark blue-grey — panel slot backgrounds */
+  --space-nebula: rgba(30, 60, 120, 0.12);   /* Faint blue glow for background depth */
+  --bg-seam-cold: rgba(60, 100, 180, 0.08);  /* Blue-tinted seam lines (mix with amber seams) */
+
   /* Surface colors — D-04 */
   --bg-panel: #0D0D0D;
   --bg-seam: #1A1A1A;
@@ -35,7 +41,7 @@ html {
   font-size: 14px;
   line-height: 1.5;
   color: var(--text-offwhite);
-  background-color: #0A0A0A;
+  background-color: var(--space-deep);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -110,6 +116,22 @@ body::after {
 /* Arr download bar pulse — amber shimmer while actively downloading */
 @keyframes arrDownloadPulse {
   0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1.0; }
+}
+
+/* Background drift animation — burn-in prevention for always-on kiosk display */
+/* GPU-composited transform only — zero layout/paint cost */
+@keyframes spaceFloat {
+  0%   { transform: translate(0px, 0px); }
+  25%  { transform: translate(2px, -1px); }
+  50%  { transform: translate(1px, 2px); }
+  75%  { transform: translate(-2px, 1px); }
+  100% { transform: translate(0px, 0px); }
+}
+
+/* Nebula glow breath — faint blue intensity shift over 120s */
+@keyframes nebulaBreath {
+  0%, 100% { opacity: 0.6; }
   50%       { opacity: 1.0; }
 }
 
