@@ -48,11 +48,11 @@ Plans:
   3. User taps a service card and navigates to a detail view; browser back returns to the dashboard
   4. The Now Playing banner component renders (with mock data) and scrolls smoothly at 60fps on a physical mobile device
   5. Dashboard layout is usable on both phone and desktop browser without horizontal scrolling
-**Plans:** 5 plans
+**Plans:** 1/5 plans executed
 
 Plans:
 - [ ] 02-01-PLAN.md — Shared types (DashboardSnapshot), SSE endpoint with mock data generator, frontend test infrastructure
-- [ ] 02-02-PLAN.md — Frontend deps, CSS design system, React Router setup, animated grid background, AppHeader
+- [x] 02-02-PLAN.md — Frontend deps, CSS design system, React Router setup, animated grid background, AppHeader
 - [ ] 02-03-PLAN.md — Service cards with border traces and health glow, CardGrid with tier sections, SSE hook wiring
 - [ ] 02-04-PLAN.md — Now Playing banner with expand/collapse drawer, enhanced ServiceDetailPage
 - [ ] 02-05-PLAN.md — Visual verification checkpoint on mobile viewport
@@ -140,7 +140,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Infrastructure Foundation | 2/2 | Complete   | 2026-04-03 |
-| 2. Core UI Shell | 0/5 | Planned | - |
+| 2. Core UI Shell | 1/5 | In Progress|  |
 | 3. Settings + First Service Adapters | 0/? | Not started | - |
 | 4. Rich Service Integrations | 0/? | Not started | - |
 | 5. Network Monitoring | 0/? | Not started | - |

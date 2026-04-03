@@ -14,13 +14,13 @@
 
 ### Dashboard UI
 
-- [ ] **DASH-01**: Main dashboard displays all monitored service cards in a mobile-first responsive grid layout, usable on both phone and desktop browser
-- [ ] **DASH-02**: UI background renders an animated grid with traveling light pulses — the interface feels alive at rest, not static
+- [x] **DASH-01**: Main dashboard displays all monitored service cards in a mobile-first responsive grid layout, usable on both phone and desktop browser
+- [x] **DASH-02**: UI background renders an animated grid with traveling light pulses — the interface feels alive at rest, not static
 - [ ] **DASH-03**: Service card borders animate with light traces running along their edges
 - [ ] **DASH-04**: Health state components glow and pulse (slow breathing animation for healthy; sharp pulse for warning/alert)
 - [ ] **DASH-05**: Color system applied consistently: Tron Blue `#00c8ff` = healthy/online, Red `#ff4444` = down/critical, Amber `#ffaa00` = warning/degraded
 - [ ] **DASH-06**: Scrolling "Now Playing" banner displays active Plex streams (title, user, playback progress) at top or bottom of dashboard
-- [ ] **DASH-07**: Tapping/clicking a service card navigates to a dedicated detail view for that service with expanded metrics
+- [x] **DASH-07**: Tapping/clicking a service card navigates to a dedicated detail view for that service with expanded metrics
 - [ ] **DASH-08**: All animations use `transform` and `opacity` only — no layout-triggering properties — to maintain 60fps on mobile
 
 ### Service Monitoring — Status Only
@@ -122,13 +122,13 @@ These are isolated in their own phase due to complexity, OAuth requirements, and
 | INFRA-02 | Phase 1 | Complete |
 | INFRA-03 | Phase 1 | Complete |
 | INFRA-04 | Phase 1 | Complete |
-| DASH-01 | Phase 2 | Pending |
-| DASH-02 | Phase 2 | Pending |
+| DASH-01 | Phase 2 | Complete |
+| DASH-02 | Phase 2 | Complete |
 | DASH-03 | Phase 2 | Pending |
 | DASH-04 | Phase 2 | Pending |
 | DASH-05 | Phase 2 | Pending |
 | DASH-06 | Phase 2 | Pending |
-| DASH-07 | Phase 2 | Pending |
+| DASH-07 | Phase 2 | Complete |
 | DASH-08 | Phase 2 | Pending |
 | SVCST-01 | Phase 3 | Pending |
 | SVCST-02 | Phase 3 | Pending |

@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: "Completed 01-02-PLAN.md: Docker containerisation, compose.yaml, .env.example, CI/CD pipeline — deployed to NAS at port 1688"
-last_updated: "2026-04-03T06:07:10.626Z"
+status: executing
+stopped_at: Completed 02-02-PLAN.md (Design System, Routing, Layout Components)
+last_updated: "2026-04-03T15:06:12.690Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 9
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 7
+  completed_plans: 3
   percent: 0
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** A single glance from a phone tells you whether your home infrastructure is healthy or needs attention.
-**Current focus:** Phase 01 — infrastructure-foundation
+**Current focus:** Phase 02 — core-ui-shell
 
 ## Current Position
 
-Phase: 09
-Plan: Not started
-Status: Phase complete — ready for verification
+Phase: 02 (core-ui-shell) — EXECUTING
+Plan: 2 of 5
+Status: Ready to execute
 Last activity: 2026-04-03
 
 Progress: [░░░░░░░░░░] 0%
@@ -54,6 +54,7 @@ Progress: [░░░░░░░░░░] 0%
 *Updated after each plan completion*
 | Phase 01 P01 | 6 | 2 tasks | 18 files |
 | Phase 01 P02 | 90 | 2 tasks | 4 files |
+| Phase 02-core-ui-shell P02 | 8 | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,8 @@ Recent decisions affecting current work:
 - [Phase 01]: node:22-slim (Debian) runner — NOT Alpine: musl libc breaks better-sqlite3 prebuilt binaries
 - [Phase 01]: PUID/PGID in compose.yaml user directive — required for Synology NAS bind-mount write permissions
 - [Phase 01]: GitHub Actions CI builds linux/amd64 and linux/arm64 — NAS is ARM64, developer workstation is amd64
+- [Phase 02-core-ui-shell]: Shared types (NasStatus, DashboardSnapshot, PlexStream) added to packages/shared in Plan 02 — AppHeader needed NasStatus for type-safe prop, ahead of Plan 03 but within scope
+- [Phase 02-core-ui-shell]: Settings animation slider uses document.documentElement.style.setProperty for --grid-pulse-opacity — no React state needed; Phase 3 persists to SQLite
 
 ### Roadmap Evolution
 
@@ -91,6 +94,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T05:59:19.617Z
-Stopped at: Completed 01-02-PLAN.md: Docker containerisation, compose.yaml, .env.example, CI/CD pipeline — deployed to NAS at port 1688
+Last session: 2026-04-03T15:06:12.685Z
+Stopped at: Completed 02-02-PLAN.md (Design System, Routing, Layout Components)
 Resume file: None
