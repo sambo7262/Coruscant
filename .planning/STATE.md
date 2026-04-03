@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: "Completed 01-01-PLAN.md: monorepo scaffold, Fastify+SQLite backend, React+Vite frontend, 3 passing tests"
-last_updated: "2026-04-03T05:15:11.179Z"
+status: verifying
+stopped_at: "Completed 01-02-PLAN.md: Docker containerisation, compose.yaml, .env.example, CI/CD pipeline — deployed to NAS at port 1688"
+last_updated: "2026-04-03T05:59:19.622Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 9
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 
 Phase: 01 (infrastructure-foundation) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-03
 
 Progress: [░░░░░░░░░░] 0%
@@ -53,6 +53,7 @@ Progress: [░░░░░░░░░░] 0%
 
 *Updated after each plan completion*
 | Phase 01 P01 | 6 | 2 tasks | 18 files |
+| Phase 01 P02 | 90 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,9 @@ Recent decisions affecting current work:
 - [Phase 01]: DB_PATH read lazily in createDb() default param — prevents ESM test isolation failures where env vars are set after import hoisting
 - [Phase 01]: backend/tsconfig.json sets types:['node'] explicitly — TypeScript 6 changed default to empty types array, breaking Node.js globals
 - [Phase 01]: Frontend tsconfig uses moduleResolution:bundler (not NodeNext) and does not extend root tsconfig — Vite 8 requires bundler resolution
+- [Phase 01]: node:22-slim (Debian) runner — NOT Alpine: musl libc breaks better-sqlite3 prebuilt binaries
+- [Phase 01]: PUID/PGID in compose.yaml user directive — required for Synology NAS bind-mount write permissions
+- [Phase 01]: GitHub Actions CI builds linux/amd64 and linux/arm64 — NAS is ARM64, developer workstation is amd64
 
 ### Roadmap Evolution
 
@@ -87,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T05:15:11.175Z
-Stopped at: Completed 01-01-PLAN.md: monorepo scaffold, Fastify+SQLite backend, React+Vite frontend, 3 passing tests
+Last session: 2026-04-03T05:59:19.617Z
+Stopped at: Completed 01-02-PLAN.md: Docker containerisation, compose.yaml, .env.example, CI/CD pipeline — deployed to NAS at port 1688
 Resume file: None
