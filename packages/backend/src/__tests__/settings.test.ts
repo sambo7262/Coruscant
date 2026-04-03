@@ -1,19 +1,21 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import Fastify from 'fastify'
 import type { FastifyInstance } from 'fastify'
-import { settingsRoutes } from '../routes/settings.js'
-import { createDb } from '../db.js'
 
-// Isolated in-memory SQLite for settings tests
+// Must set env vars BEFORE importing anything that reads them
 process.env.DB_PATH = ':memory:'
 process.env.ENCRYPTION_KEY_SEED = 'test-seed-for-settings-tests'
 
+import { settingsRoutes } from '../routes/settings.js'
+import { getDb } from '../db.js'
+
 /**
- * Create a Fastify instance with settings routes registered and
- * the service_config table created in-memory (no migrations needed).
+ * Bootstrap the shared singleton DB with the service_config table.
+ * The settings route uses getDb() which returns the singleton.
+ * For tests we use :memory: (set above) and create tables manually.
  */
-async function buildApp(): Promise<FastifyInstance> {
-  const db = createDb(':memory:')
+function bootstrapTestDb() {
+  const db = getDb()
   db.run(`
     CREATE TABLE IF NOT EXISTS service_config (
       service_name TEXT PRIMARY KEY,
@@ -23,18 +25,16 @@ async function buildApp(): Promise<FastifyInstance> {
       updated_at TEXT NOT NULL
     )
   `)
-
-  const fastify = Fastify()
-  await fastify.register(settingsRoutes)
-  await fastify.ready()
-  return fastify
 }
 
 describe('Settings API', () => {
   let app: FastifyInstance
 
   beforeAll(async () => {
-    app = await buildApp()
+    bootstrapTestDb()
+    app = Fastify()
+    await app.register(settingsRoutes)
+    await app.ready()
   })
 
   afterAll(async () => {

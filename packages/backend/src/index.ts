@@ -6,7 +6,11 @@ import { existsSync, mkdirSync } from 'node:fs'
 import { initDb, getDb } from './db.js'
 import { healthRoutes } from './routes/health.js'
 import { sseRoutes } from './routes/sse.js'
-import { healthProbe } from './schema.js'
+import { settingsRoutes } from './routes/settings.js'
+import { testConnectionRoutes } from './routes/test-connection.js'
+import { healthProbe, serviceConfig } from './schema.js'
+import { pollManager } from './poll-manager.js'
+import { decrypt } from './crypto.js'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 
@@ -24,6 +28,8 @@ const fastify = Fastify({ logger: true })
 // Register API routes
 await fastify.register(healthRoutes)
 await fastify.register(sseRoutes)
+await fastify.register(settingsRoutes)
+await fastify.register(testConnectionRoutes)
 
 // Serve compiled Vite bundle in production (D-23)
 const frontendDist = join(__dirname, '../../frontend/dist')
@@ -57,6 +63,21 @@ try {
   }
 } catch (err) {
   fastify.log.warn({ err }, 'Database migration or probe skipped (migrations may not exist yet)')
+}
+
+// Load saved service configs and start polling (D-06)
+try {
+  const db = getDb()
+  const configs = db.select().from(serviceConfig).all()
+  const seed = process.env.ENCRYPTION_KEY_SEED ?? ''
+  for (const cfg of configs) {
+    if (cfg.enabled && cfg.baseUrl && cfg.encryptedApiKey) {
+      const apiKey = decrypt(cfg.encryptedApiKey, seed)
+      await pollManager.reload(cfg.serviceName, { baseUrl: cfg.baseUrl, apiKey })
+    }
+  }
+} catch (err) {
+  fastify.log.warn({ err }, 'Failed to load service configs for polling')
 }
 
 // Start server — host 0.0.0.0 is MANDATORY in Docker (research Pitfall 3)
