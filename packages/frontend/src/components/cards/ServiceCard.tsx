@@ -74,53 +74,106 @@ function NasInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   )
 }
 
-// Dot matrix for arr services (Radarr/Sonarr/Lidarr/Bazarr)
-function DotMatrixInstrument({ metrics }: { metrics: Record<string, unknown> }) {
-  const queueCount = typeof metrics.queueCount === 'number' ? metrics.queueCount : 0
-  const monitoredCount = typeof metrics.monitoredCount === 'number' ? metrics.monitoredCount : 0
-  const COLS = 4
-  const ROWS = 3
-  const SLOTS = COLS * ROWS // 12
+// Arr instrument body: minimal 2-row readout (status LED + download indicator)
+// Replaces the dot-matrix grid — shows only what matters at a glance
+function ArrInstrument({ service, metrics }: { service: ServiceStatus; metrics: Record<string, unknown> }) {
+  const isBazarr = service.id === 'bazarr'
+  const downloading = metrics.downloading === true
+  const activeDownloads = typeof metrics.activeDownloads === 'number' ? metrics.activeDownloads : 0
+  const downloadQuality = typeof metrics.downloadQuality === 'string' ? metrics.downloadQuality : ''
+  const downloadProgress = typeof metrics.downloadProgress === 'number' ? metrics.downloadProgress : 0
+  const activeSubtitleGrabs = typeof metrics.activeSubtitleGrabs === 'number' ? metrics.activeSubtitleGrabs : 0
 
-  const dots = Array.from({ length: SLOTS }, (_, i) => {
-    if (i < Math.min(queueCount, SLOTS)) return 'queue'
-    if (i < Math.min(monitoredCount, SLOTS)) return 'healthy'
-    return 'empty'
-  })
+  // Status text for the LED row
+  const statusText =
+    service.status === 'online' ? 'ONLINE'
+    : service.status === 'warning' ? 'DEGRADED'
+    : service.status === 'offline' ? 'OFFLINE'
+    : 'STALE'
 
-  const dotColors: Record<string, string> = {
-    queue: 'var(--cockpit-amber)',
-    healthy: 'var(--cockpit-green)',
-    empty: 'var(--cockpit-grey)',
-  }
+  // LED colour per status
+  const ledColor =
+    service.status === 'online' ? 'var(--cockpit-green)'
+    : service.status === 'warning' ? 'var(--cockpit-amber)'
+    : '#ff3b3b'
 
   return (
-    <div>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: `repeat(${COLS}, 8px)`,
-          gap: '2px',
-        }}
-      >
-        {dots.map((type, i) => (
-          <div
-            key={i}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      {/* Row 1: large status LED + status text */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div
+          style={{
+            width: '10px',
+            height: '10px',
+            borderRadius: '50%',
+            background: ledColor,
+            boxShadow: `0 0 6px ${ledColor}`,
+            flexShrink: 0,
+          }}
+        />
+        <span
+          className="text-label"
+          style={{ color: 'var(--text-offwhite)', fontSize: '11px', textTransform: 'uppercase' }}
+        >
+          {statusText}
+        </span>
+      </div>
+
+      {/* Row 2: download indicator or subtitle grab indicator */}
+      {isBazarr ? (
+        /* Bazarr: subtitle grab indicator */
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span
+            className="text-label"
             style={{
-              width: '8px',
-              height: '8px',
-              background: dotColors[type],
-              opacity: type === 'empty' ? 0.3 : 1,
+              color: activeSubtitleGrabs > 0 ? 'var(--cockpit-amber)' : '#444',
+              fontSize: '9px',
+              textTransform: 'uppercase',
             }}
-          />
-        ))}
-      </div>
-      <div
-        className="text-label"
-        style={{ color: '#C8C8C8', fontSize: '9px', marginTop: '4px' }}
-      >
-        {queueCount} QUEUED / {monitoredCount} MONITORED
-      </div>
+          >
+            {activeSubtitleGrabs > 0
+              ? `SUBTITLES  x${activeSubtitleGrabs}`
+              : 'IDLE'}
+          </span>
+        </div>
+      ) : downloading && activeDownloads > 0 ? (
+        /* Active download: pulsing amber bar + label */
+        <div>
+          <div
+            style={{
+              height: '4px',
+              background: 'rgba(232,160,32,0.15)',
+              borderRadius: '2px',
+              overflow: 'hidden',
+              marginBottom: '4px',
+            }}
+          >
+            <div
+              style={{
+                height: '100%',
+                width: `${Math.min(Math.max(downloadProgress, 5), 100)}%`,
+                background: 'var(--cockpit-amber)',
+                borderRadius: '2px',
+                animation: 'arrDownloadPulse 1.4s ease-in-out infinite',
+              }}
+            />
+          </div>
+          <span
+            className="text-label"
+            style={{ color: 'var(--cockpit-amber)', fontSize: '9px', textTransform: 'uppercase' }}
+          >
+            {`DOWNLOADING  ${downloadQuality} x${activeDownloads}`}
+          </span>
+        </div>
+      ) : (
+        /* Idle */
+        <span
+          className="text-label"
+          style={{ color: '#444', fontSize: '9px', textTransform: 'uppercase' }}
+        >
+          IDLE
+        </span>
+      )}
     </div>
   )
 }
@@ -248,7 +301,7 @@ function renderInstrumentBody(service: ServiceStatus): React.ReactNode {
     return <NasInstrument metrics={metrics} />
   }
   if (ARR_IDS.has(service.id)) {
-    return <DotMatrixInstrument metrics={metrics} />
+    return <ArrInstrument service={service} metrics={metrics} />
   }
   if (service.id === 'plex') {
     return <PlexInstrument metrics={metrics} />
