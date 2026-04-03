@@ -53,8 +53,8 @@ Plans:
 Plans:
 - [x] 02-01-PLAN.md — Shared types (DashboardSnapshot), SSE endpoint with mock data generator, frontend test infrastructure
 - [x] 02-02-PLAN.md — Frontend deps, CSS design system, React Router setup, animated grid background, AppHeader
-- [ ] 02-03-PLAN.md — Service cards with border traces and health glow, CardGrid with tier sections, SSE hook wiring
-- [ ] 02-04-PLAN.md — Now Playing banner with expand/collapse drawer, enhanced ServiceDetailPage
+- [x] 02-03-PLAN.md — Service cards with border traces and health glow, CardGrid with tier sections, SSE hook wiring
+- [x] 02-04-PLAN.md — Now Playing banner with expand/collapse drawer, enhanced ServiceDetailPage
 - [ ] 02-05-PLAN.md — Visual verification checkpoint on mobile viewport
 **UI hint**: yes
 

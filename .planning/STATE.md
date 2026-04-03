@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-core-ui-shell 02-01-PLAN.md
-last_updated: "2026-04-03T15:09:48.144Z"
+stopped_at: Completed 02-core-ui-shell 02-04-PLAN.md
+last_updated: "2026-04-03T15:14:39.935Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 9
   completed_phases: 1
   total_plans: 7
-  completed_plans: 4
+  completed_plans: 6
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 ## Current Position
 
 Phase: 02 (core-ui-shell) — EXECUTING
-Plan: 3 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-04-03
 
@@ -56,6 +56,8 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01 P02 | 90 | 2 tasks | 4 files |
 | Phase 02-core-ui-shell P02 | 8 | 2 tasks | 11 files |
 | Phase 02-core-ui-shell P01 | 18min | 3 tasks | 9 files |
+| Phase 02-core-ui-shell P03 | 2m12s | 2 tasks | 8 files |
+| Phase 02-core-ui-shell P04 | 5 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -79,6 +81,10 @@ Recent decisions affecting current work:
 - [Phase 02-core-ui-shell]: Settings animation slider uses document.documentElement.style.setProperty for --grid-pulse-opacity — no React state needed; Phase 3 persists to SQLite
 - [Phase 02-01]: MockSocket detection for SSE testing: request.raw.socket.constructor.name === 'MockSocket' identifies Fastify inject() — call reply.raw.end() immediately so inject returns with first SSE payload
 - [Phase 02-01]: vitest --passWithNoTests flag added to frontend test script so npm run test succeeds before any component tests are written
+- [Phase 02-core-ui-shell]: SSE hook lifted to App.tsx so AppHeader receives NAS stats and connected state on all routes
+- [Phase 02-core-ui-shell]: Per-card animation stagger uses globalIndex across CardGrid sections for sequential border trace and entrance delays
+- [Phase 02-core-ui-shell]: SSE hook called at App.tsx root level so snapshot is shared across all routes without multiple EventSource connections
+- [Phase 02-core-ui-shell]: ServiceDetailPage accepts snapshot as prop rather than calling useDashboardSSE internally — avoids duplicate connections
 
 ### Roadmap Evolution
 
@@ -97,6 +103,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T15:09:48.139Z
-Stopped at: Completed 02-core-ui-shell 02-01-PLAN.md
+Last session: 2026-04-03T15:14:39.931Z
+Stopped at: Completed 02-core-ui-shell 02-04-PLAN.md
 Resume file: None
