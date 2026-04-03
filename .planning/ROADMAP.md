@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Infrastructure Foundation** - Docker Compose on Synology NAS with proven data persistence and CI/CD pipeline (completed 2026-04-03)
 - [ ] **Phase 2: Core UI Shell** - Star Wars X-Wing cockpit instrument panel UI with SSE live-data loop proven end-to-end with mock data
-- [ ] **Phase 3: Settings + First Service Adapters** - Settings page, then Radarr/Sonarr/Lidarr/Bazarr status cards and SABnzbd activity card
+- [x] **Phase 3: Settings + First Service Adapters** - Settings page, then Radarr/Sonarr/Lidarr/Bazarr status cards and SABnzbd activity card (completed 2026-04-03)
 - [ ] **Phase 4: Rich Service Integrations** - Pi-hole, Plex (Now Playing banner), and Synology NAS CPU/RAM/storage/disk/fans
 - [ ] **Phase 5: UI v2 — Instrument Panel Polish** - Second UI pass with real data: refine card metrics, layout density, interaction details, and visual hierarchy now that actual service data is flowing
 - [ ] **Phase 6: Network Monitoring** - UniFi device cards, client counts, WAN throughput, cookie session management
@@ -74,13 +74,13 @@ Plans:
   3. All four *arr cards (Radarr, Sonarr, Lidarr, Bazarr) show correct Blue/Red/Amber health state from live `/api/v3/health` poll data
   4. SABnzbd card shows current download speed, active queue item count, animated progress bars, and amber error state when queue items have failed status
   5. Settings and service configs survive a container restart without re-entry
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 
 Plans:
 - [x] 03-01-PLAN.md — Backend foundation: Drizzle schema, AES-256-GCM encryption, service adapters (arr/bazarr/sabnzbd), PollManager
 - [x] 03-02-PLAN.md — Backend API routes: settings CRUD, test-connection, SSE refactor from mock to PollManager
 - [x] 03-03-PLAN.md — Frontend Settings page: tabbed layout, per-service config forms, test connection, deep-link
-- [ ] 03-04-PLAN.md — Frontend card integration: NOT CONFIGURED state, Prowlarr/Readarr support, visual verification
+- [x] 03-04-PLAN.md — Frontend card integration: NOT CONFIGURED state, Prowlarr/Readarr support, visual verification
 **UI hint**: yes
 
 ### Phase 4: Rich Service Integrations
@@ -165,7 +165,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 |-------|----------------|--------|-----------|
 | 1. Infrastructure Foundation | 2/2 | Complete | 2026-04-03 |
 | 2. Core UI Shell | 13/13 | Complete | 2026-04-03 |
-| 3. Settings + First Service Adapters | 3/4 | In Progress|  |
+| 3. Settings + First Service Adapters | 4/4 | Complete   | 2026-04-03 |
 | 4. Rich Service Integrations | 0/? | Not started | - |
 | 5. UI v2 — Instrument Panel Polish | 0/? | Not started | - |
 | 6. Network Monitoring | 0/? | Not started | - |
