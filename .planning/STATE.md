@@ -48,6 +48,10 @@ Recent decisions affecting current work:
 - Init: Settings page (Phase 3) must exist before ANY service integration is wired to live credentials
 - Init: Phase 8 (Smart Home) is research-gated and isolated — failure does not affect prior phases
 
+### Roadmap Evolution
+
+- Phase 9 added: Production Deploy and Hardening (self-hosted registry migration, v1.0 tagging, git cleanup)
+
 ### Pending Todos
 
 None yet.
