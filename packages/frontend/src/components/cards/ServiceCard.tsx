@@ -298,7 +298,7 @@ function PiholeInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   )
 }
 
-const ARR_IDS = new Set(['radarr', 'sonarr', 'lidarr', 'bazarr'])
+const ARR_IDS = new Set(['radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 'readarr'])
 
 function renderInstrumentBody(service: ServiceStatus): React.ReactNode {
   const metrics = service.metrics as Record<string, unknown> | undefined
@@ -331,13 +331,43 @@ export function ServiceCard({ service, index }: ServiceCardProps) {
   const navigate = useNavigate()
   const [hovered, setHovered] = useState(false)
 
+  // D-15, D-16: unconfigured services deep-link to settings
+  const isUnconfigured = service.configured === false
+
   const handleClick = () => {
+    if (isUnconfigured) {
+      navigate(`/settings?service=${service.id}`)
+      return
+    }
     // Save scroll position for restoration on back nav (UI-SPEC Scroll behavior)
     sessionStorage.setItem('dashboardScrollY', window.scrollY.toString())
     navigate(`/services/${service.id}`)
   }
 
-  const instrumentBody = renderInstrumentBody(service)
+  // Unconfigured cards show the NOT CONFIGURED label instead of service instruments
+  const instrumentBody = isUnconfigured ? (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%',
+        minHeight: '60px',
+      }}
+    >
+      <span
+        className="text-label"
+        style={{
+          color: 'rgba(200, 200, 200, 0.3)',
+          fontSize: '10px',
+          textTransform: 'uppercase',
+          letterSpacing: '1px',
+        }}
+      >
+        NOT CONFIGURED
+      </span>
+    </div>
+  ) : renderInstrumentBody(service)
 
   return (
     <motion.div
@@ -348,7 +378,7 @@ export function ServiceCard({ service, index }: ServiceCardProps) {
       onClick={handleClick}
       role="button"
       tabIndex={0}
-      aria-label={`${service.name}, status: ${service.status}`}
+      aria-label={`${service.name}, status: ${isUnconfigured ? 'not configured' : service.status}`}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') handleClick()
       }}
@@ -365,7 +395,7 @@ export function ServiceCard({ service, index }: ServiceCardProps) {
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
-        boxShadow: getCardGlow(service.status),
+        boxShadow: getCardGlow(isUnconfigured ? 'stale' : service.status),
       }}
     >
       {/* 6px amber header strip (D-17) */}
@@ -397,7 +427,8 @@ export function ServiceCard({ service, index }: ServiceCardProps) {
         >
           {service.name}
         </span>
-        <StatusDot status={service.status} />
+        {/* Grey LED for unconfigured services — stale maps to grey in StatusDot */}
+        <StatusDot status={isUnconfigured ? 'stale' : service.status} />
       </div>
 
       {/* Stale indicator row */}
@@ -411,7 +442,7 @@ export function ServiceCard({ service, index }: ServiceCardProps) {
         <StaleIndicator lastPollAt={service.lastPollAt} />
       </div>
 
-      {/* Instrument body (service-specific) */}
+      {/* Instrument body (service-specific or NOT CONFIGURED label) */}
       {instrumentBody && (
         <div style={{ padding: '8px 12px 12px 12px', flex: 1 }}>{instrumentBody}</div>
       )}
