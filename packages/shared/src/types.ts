@@ -10,10 +10,17 @@ export interface ServiceStatus {
   metrics?: Record<string, unknown> // populated by Phase 3+
 }
 
+export interface NasVolume {
+  name: string
+  usedPercent: number
+  tempC?: number
+  tempF?: number
+}
+
 export interface NasStatus {
   cpu: number    // percent
   ram: number    // percent
-  volumes: { name: string; usedPercent: number; tempC?: number }[]
+  volumes: NasVolume[]
 }
 
 export interface PlexStream {

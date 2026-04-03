@@ -7,14 +7,25 @@ export function generateMockSnapshot(): DashboardSnapshot {
   const nowIso = now.toISOString()
   const staleTime = new Date(now.getTime() - TEN_MINUTES_MS).toISOString()
 
+  // NAS drive temps: typical range is 86–104°F for a spinning NAS disk
+  const driveTemp1F = Math.round(88 + Math.random() * 8)   // ~88–96°F
+  const driveTemp2F = Math.round(90 + Math.random() * 10)  // ~90–100°F
+
   const nas: NasStatus = {
     cpu: 10 + Math.random() * 5,
     ram: 40 + Math.random() * 3,
     volumes: [
       {
-        name: '/vol1',
+        name: 'TheRock',
         usedPercent: 67,
-        tempC: 41 + Math.random() * 2,
+        tempF: driveTemp1F,
+        tempC: Math.round((driveTemp1F - 32) * 5 / 9),
+      },
+      {
+        name: 'TheRock2',
+        usedPercent: 34,
+        tempF: driveTemp2F,
+        tempC: Math.round((driveTemp2F - 32) * 5 / 9),
       },
     ],
   }
@@ -86,7 +97,7 @@ export function generateMockSnapshot(): DashboardSnapshot {
       tier: 'rich',
       status: 'stale',
       lastPollAt: staleTime,
-      metrics: { cpu: nas.cpu, ram: nas.ram, diskPercent: 67, tempC: 42 },
+      metrics: { cpu: nas.cpu, ram: nas.ram, diskPercent: 67, tempF: nas.volumes[0]?.tempF ?? 91 },
     },
   ]
 

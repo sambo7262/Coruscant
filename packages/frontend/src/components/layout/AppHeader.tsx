@@ -8,6 +8,92 @@ interface AppHeaderProps {
   showBack?: boolean
 }
 
+/** Map a Fahrenheit temp to fill color for the bar */
+function tempColor(tempF: number): string {
+  if (tempF >= 114) return '#FF3B3B'   // red — very hot
+  if (tempF >= 95)  return '#FF8C00'   // orange — warm
+  return 'var(--cockpit-amber)'         // amber — normal
+}
+
+/**
+ * Vertical bar gauge (4px wide × 20px tall).
+ * fillPct: 0–100
+ */
+function VerticalBar({ fillPct, color }: { fillPct: number; color: string }) {
+  const clampedFill = Math.max(0, Math.min(100, fillPct))
+  return (
+    <div
+      style={{
+        width: '4px',
+        height: '20px',
+        background: 'rgba(232,160,32,0.15)',
+        borderRadius: '1px',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: `${clampedFill}%`,
+          background: color,
+          borderRadius: '1px',
+          transition: 'height 0.6s ease',
+        }}
+      />
+    </div>
+  )
+}
+
+/** Single labeled gauge column: label / bar / value */
+function GaugeColumn({
+  label,
+  fillPct,
+  valueText,
+  color = 'var(--cockpit-amber)',
+}: {
+  label: string
+  fillPct: number
+  valueText: string
+  color?: string
+}) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '2px',
+      }}
+    >
+      <span
+        style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: '9px',
+          textTransform: 'uppercase',
+          color: 'rgba(232,160,32,0.6)',
+          letterSpacing: '0.06em',
+        }}
+      >
+        {label}
+      </span>
+      <VerticalBar fillPct={fillPct} color={color} />
+      <span
+        style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: '10px',
+          color,
+        }}
+      >
+        {valueText}
+      </span>
+    </div>
+  )
+}
+
 export function AppHeader({ nas, connected, showBack = false }: AppHeaderProps) {
   return (
     <header
@@ -23,124 +109,153 @@ export function AppHeader({ nas, connected, showBack = false }: AppHeaderProps) 
         boxShadow: '0 1px 8px rgba(232, 160, 32, 0.15)',
       }}
     >
-      {/* Title row — 44px height */}
+      {/* Single title row — 44px height */}
       <div
         style={{
-          display: 'flex',
+          display: 'grid',
+          gridTemplateColumns: '1fr auto 1fr',
           alignItems: 'center',
-          justifyContent: 'space-between',
           height: '44px',
-          padding: '0 16px',
+          padding: '0 12px',
+          maxWidth: '800px',
+          margin: '0 auto',
         }}
       >
-        {showBack ? (
-          <Link
-            to="/"
-            className="text-display"
+        {/* Left: title or back link */}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {showBack ? (
+            <Link
+              to="/"
+              className="text-display"
+              style={{
+                color: 'var(--cockpit-amber)',
+                cursor: 'pointer',
+                textDecoration: 'none',
+              }}
+            >
+              ← CORUSCANT
+            </Link>
+          ) : (
+            <span className="text-display" style={{ color: 'var(--cockpit-amber)' }}>
+              CORUSCANT
+            </span>
+          )}
+        </div>
+
+        {/* Center: NAS instrument panel (hidden when showBack) */}
+        {!showBack && (
+          <div
             style={{
-              color: 'var(--cockpit-amber)',
-              cursor: 'pointer',
-              textDecoration: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              maxWidth: '220px',
             }}
           >
-            ← CORUSCANT
-          </Link>
-        ) : (
-          <span className="text-display" style={{ color: 'var(--cockpit-amber)' }}>
-            CORUSCANT
-          </span>
+            {/* Disconnected indicator */}
+            {!connected && (
+              <span
+                title="Connection lost. Reconnecting..."
+                style={{
+                  display: 'inline-block',
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  backgroundColor: 'var(--cockpit-amber)',
+                  boxShadow: '0 0 5px 2px rgba(232, 160, 32, 0.6)',
+                  animation: 'ledPulseWarn 1s ease-in-out infinite',
+                  flexShrink: 0,
+                }}
+              />
+            )}
+
+            {/* CPU / RAM / Disk gauges */}
+            <GaugeColumn
+              label="CPU"
+              fillPct={nas ? nas.cpu : 0}
+              valueText={nas ? `${Math.round(nas.cpu)}%` : '--'}
+            />
+            <GaugeColumn
+              label="RAM"
+              fillPct={nas ? nas.ram : 0}
+              valueText={nas ? `${Math.round(nas.ram)}%` : '--'}
+            />
+            <GaugeColumn
+              label="DSK"
+              fillPct={nas ? (nas.volumes[0]?.usedPercent ?? 0) : 0}
+              valueText={nas ? `${Math.round(nas.volumes[0]?.usedPercent ?? 0)}%` : '--'}
+            />
+
+            {/* Separator */}
+            <div
+              style={{
+                width: '1px',
+                height: '24px',
+                background: 'rgba(232,160,32,0.25)',
+                flexShrink: 0,
+              }}
+            />
+
+            {/* Drive temp bars */}
+            {nas
+              ? nas.volumes.map((vol) => {
+                  const tf = vol.tempF ?? Math.round((vol.tempC ?? 0) * 9 / 5 + 32)
+                  const fillPct = Math.max(0, Math.min(100, ((tf - 32) / (140 - 32)) * 100))
+                  return (
+                    <GaugeColumn
+                      key={vol.name}
+                      label={vol.name}
+                      fillPct={fillPct}
+                      valueText={`${tf}°F`}
+                      color={tempColor(tf)}
+                    />
+                  )
+                })
+              : (
+                <GaugeColumn
+                  label="DRV"
+                  fillPct={0}
+                  valueText="--°F"
+                />
+              )}
+          </div>
         )}
-        {!showBack && (
-          <div style={{ display: 'flex', gap: '4px' }}>
+
+        {/* Right: nav icons (hidden when showBack) */}
+        {!showBack ? (
+          <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
             <Link
               to="/settings"
               aria-label="Open Settings"
               style={{
                 color: 'var(--cockpit-amber)',
-                width: '44px',
-                height: '44px',
+                width: '40px',
+                height: '40px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <Settings size={24} />
+              <Settings size={20} />
             </Link>
             <Link
               to="/logs"
               aria-label="Open Logs"
               style={{
                 color: 'var(--cockpit-amber)',
-                width: '44px',
-                height: '44px',
+                width: '40px',
+                height: '40px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <List size={24} />
+              <List size={20} />
             </Link>
           </div>
+        ) : (
+          <div />
         )}
-      </div>
-
-      {/* NAS stats strip */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          height: '28px',
-          padding: '0 16px',
-          borderTop: '1px solid rgba(232, 160, 32, 0.10)',
-        }}
-      >
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-          {!connected && (
-            <span
-              title="Connection lost. Reconnecting..."
-              style={{
-                display: 'inline-block',
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                backgroundColor: 'var(--cockpit-amber)',
-                boxShadow: '0 0 6px 2px rgba(232, 160, 32, 0.6)',
-                animation: 'ledPulseWarn 1s ease-in-out infinite',
-                flexShrink: 0,
-              }}
-            />
-          )}
-          <span>
-            <span className="text-label" style={{ color: 'var(--text-offwhite)' }}>CPU </span>
-            <span className="text-body" style={{ color: 'var(--cockpit-amber)' }}>
-              {nas ? `${Math.round(nas.cpu)}%` : '---'}
-            </span>
-          </span>
-          <span>
-            <span className="text-label" style={{ color: 'var(--text-offwhite)' }}>RAM </span>
-            <span className="text-body" style={{ color: 'var(--cockpit-amber)' }}>
-              {nas ? `${Math.round(nas.ram)}%` : '---'}
-            </span>
-          </span>
-        </div>
-        <div style={{ display: 'flex', gap: '16px' }}>
-          {nas?.volumes.map((vol) => (
-            <span key={vol.name}>
-              <span className="text-label" style={{ color: 'var(--text-offwhite)' }}>{vol.name} </span>
-              <span className="text-body" style={{ color: 'var(--cockpit-amber)' }}>
-                {Math.round(vol.usedPercent)}%
-              </span>
-              {vol.tempC != null && (
-                <span className="text-body" style={{ color: 'var(--cockpit-amber)', marginLeft: '8px' }}>
-                  {vol.tempC}&deg;C
-                </span>
-              )}
-            </span>
-          )) ?? (
-            <span className="text-body" style={{ color: 'var(--text-offwhite)' }}>---</span>
-          )}
-        </div>
       </div>
     </header>
   )
