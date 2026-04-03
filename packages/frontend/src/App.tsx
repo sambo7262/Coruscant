@@ -9,15 +9,15 @@ import { LogsPage } from './pages/LogsPage.js'
 import { useDashboardSSE } from './hooks/useDashboardSSE.js'
 
 export default function App() {
-  const { snapshot } = useDashboardSSE()
+  const { snapshot, connected } = useDashboardSSE()
 
   return (
     <>
       <GridBackground />
-      <AppHeader nas={snapshot?.nas ?? null} />
+      <AppHeader nas={snapshot?.nas ?? null} connected={connected} />
       <main style={{ position: 'relative', zIndex: 1, paddingTop: '88px', paddingBottom: '64px' }}>
         <Routes>
-          <Route path="/" element={<DashboardPage />} />
+          <Route path="/" element={<DashboardPage snapshot={snapshot} />} />
           <Route path="/services/:serviceId" element={<ServiceDetailPage snapshot={snapshot} />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/logs" element={<LogsPage />} />

@@ -4,9 +4,10 @@ import type { NasStatus } from '@coruscant/shared'
 
 interface AppHeaderProps {
   nas: NasStatus | null
+  connected: boolean
 }
 
-export function AppHeader({ nas }: AppHeaderProps) {
+export function AppHeader({ nas, connected }: AppHeaderProps) {
   const navigate = useNavigate()
 
   return (
@@ -84,7 +85,22 @@ export function AppHeader({ nas }: AppHeaderProps) {
           borderTop: '1px solid rgba(0, 200, 255, 0.06)',
         }}
       >
-        <div style={{ display: 'flex', gap: '16px' }}>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          {!connected && (
+            <span
+              title="Connection lost. Reconnecting..."
+              style={{
+                display: 'inline-block',
+                width: '8px',
+                height: '8px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--tron-amber)',
+                boxShadow: '0 0 6px 1px var(--tron-amber)',
+                animation: 'pulseAmber 1.2s ease-in-out infinite',
+                flexShrink: 0,
+              }}
+            />
+          )}
           <span>
             <span className="text-label" style={{ color: 'var(--text-muted)' }}>CPU </span>
             <span className="text-body" style={{ color: 'var(--tron-blue)' }}>
