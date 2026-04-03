@@ -13,7 +13,7 @@ interface CardGridProps {
 
 export function CardGrid({ snapshot }: CardGridProps) {
   if (!snapshot) {
-    // Skeleton state per UI-SPEC: show placeholder cards with border trace running, no content
+    // Skeleton state: placeholder cards with chamfer styling
     return (
       <div style={{ padding: '0 16px' }}>
         {TIER_ORDER.map(({ label }) => (
@@ -21,7 +21,7 @@ export function CardGrid({ snapshot }: CardGridProps) {
             <h2
               className="text-heading"
               style={{
-                color: 'var(--section-label)',
+                color: 'var(--cockpit-amber)',
                 textTransform: 'uppercase',
                 marginBottom: '12px',
               }}
@@ -31,18 +31,18 @@ export function CardGrid({ snapshot }: CardGridProps) {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
                 gap: '16px',
               }}
             >
               {[0, 1].map((i) => (
                 <div
                   key={i}
+                  className="chamfer-card"
                   style={{
-                    height: '88px',
-                    borderRadius: '6px',
-                    background: 'rgba(13, 17, 23, 0.85)',
-                    border: '1px solid rgba(0, 200, 255, 0.15)',
+                    height: '160px',
+                    background: 'var(--bg-panel)',
+                    border: '1px solid var(--border-rest)',
                   }}
                 />
               ))}
@@ -71,7 +71,7 @@ export function CardGrid({ snapshot }: CardGridProps) {
             <h2
               className="text-heading"
               style={{
-                color: 'var(--section-label)',
+                color: 'var(--cockpit-amber)',
                 textTransform: 'uppercase',
                 marginBottom: '12px',
               }}
@@ -81,7 +81,7 @@ export function CardGrid({ snapshot }: CardGridProps) {
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
                 gap: '16px',
               }}
             >
