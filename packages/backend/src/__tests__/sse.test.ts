@@ -67,4 +67,29 @@ describe('GET /api/sse', () => {
     expect(parsed).toHaveProperty('streams')
     expect(parsed).toHaveProperty('timestamp')
   })
+
+  it('snapshot services array contains entries sourced from PollManager (not mock generator)', async () => {
+    const response = await fastify.inject({
+      method: 'GET',
+      url: '/api/sse',
+    })
+
+    const dataMatch = response.body.match(/^data: (.+)$/m)
+    expect(dataMatch).not.toBeNull()
+
+    const parsed = JSON.parse(dataMatch![1])
+    // PollManager initialises all services as unconfigured (status=stale, configured=false)
+    // since no configs are saved in the test environment
+    const services: Array<{ id: string; status: string; configured: boolean }> = parsed.services
+    expect(Array.isArray(services)).toBe(true)
+    expect(services.length).toBeGreaterThan(0)
+
+    // All services from PollManager should have a configured field
+    const hasConfiguredField = services.every((s) => 'configured' in s)
+    expect(hasConfiguredField).toBe(true)
+
+    // Without any saved configs, all managed services appear as unconfigured/stale
+    const unconfiguredServices = services.filter((s) => s.configured === false)
+    expect(unconfiguredServices.length).toBeGreaterThan(0)
+  })
 })

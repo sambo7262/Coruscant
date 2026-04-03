@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { generateMockSnapshot } from '../mock/generator.js'
+import { pollManager } from '../poll-manager.js'
 
 export async function sseRoutes(fastify: FastifyInstance) {
   fastify.get('/api/sse', async (request, reply) => {
@@ -10,7 +10,7 @@ export async function sseRoutes(fastify: FastifyInstance) {
     reply.raw.flushHeaders()
 
     const send = () => {
-      const snapshot = generateMockSnapshot()
+      const snapshot = pollManager.getSnapshot()
       reply.raw.write(`event: dashboard-update\ndata: ${JSON.stringify(snapshot)}\n\n`)
     }
 
