@@ -1,0 +1,40 @@
+# Dependency directories — Docker installs these fresh in the builder stage
+node_modules
+packages/*/node_modules
+
+# Build output — builder stage produces these
+packages/*/dist
+packages/frontend/dist
+
+# TypeScript incremental build cache — must NOT be in builder (causes tsc to skip compilation)
+*.tsbuildinfo
+packages/*/*.tsbuildinfo
+
+# Local database and data files
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# Drizzle generated migrations (generated in builder stage)
+drizzle/
+
+# Git and planning artifacts
+.git
+.planning
+
+# Environment files — never bake secrets into an image
+.env
+.env.*
+!.env.example
+
+# Development tooling
+.vscode
+.idea
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Test outputs
+coverage/
