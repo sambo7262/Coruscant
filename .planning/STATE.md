@@ -121,6 +121,7 @@ Recent decisions affecting current work:
 ### Roadmap Evolution
 
 - Phase 9 added: Production Deploy and Hardening (self-hosted registry migration, v1.0 tagging, git cleanup)
+- Phase 11 added: Raspberry Pi kiosk — SSH-driven fullscreen browser kiosk on local LAN
 
 ### Pending Todos
 

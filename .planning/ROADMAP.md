@@ -182,3 +182,13 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 
 Plans:
 - [ ] TBD (run /gsd:plan-phase 9 to break down)
+
+### Phase 11: Raspberry Pi kiosk deployment — SSH-driven setup of Coruscant as a fullscreen browser kiosk on a Raspberry Pi on the local LAN
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 10
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 11 to break down)
