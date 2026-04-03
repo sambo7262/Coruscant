@@ -25,17 +25,17 @@
 
 ### Service Monitoring — Status Only
 
-- [ ] **SVCST-01**: Radarr card shows up/down health state (Tron Blue = online, Red = unreachable, Amber = health warnings from API)
-- [ ] **SVCST-02**: Sonarr card shows up/down health state
-- [ ] **SVCST-03**: Lidarr card shows up/down health state
-- [ ] **SVCST-04**: Bazarr card shows up/down health state
-- [ ] **SVCST-05**: Status-tier services poll their `/api/v3/health` endpoints every 30–60 seconds
+- [x] **SVCST-01**: Radarr card shows up/down health state (Tron Blue = online, Red = unreachable, Amber = health warnings from API)
+- [x] **SVCST-02**: Sonarr card shows up/down health state
+- [x] **SVCST-03**: Lidarr card shows up/down health state
+- [x] **SVCST-04**: Bazarr card shows up/down health state
+- [x] **SVCST-05**: Status-tier services poll their `/api/v3/health` endpoints every 30–60 seconds
 
 ### Service Monitoring — Activity
 
-- [ ] **SVCACT-01**: SABnzbd card shows up/down status, current download speed (MB/s), active queue item count, and animated progress bars for active downloads
-- [ ] **SVCACT-02**: SABnzbd card displays amber error state when queue items have failed status
-- [ ] **SVCACT-03**: SABnzbd polls at 5–15 second intervals to show live download progress
+- [x] **SVCACT-01**: SABnzbd card shows up/down status, current download speed (MB/s), active queue item count, and animated progress bars for active downloads
+- [x] **SVCACT-02**: SABnzbd card displays amber error state when queue items have failed status
+- [x] **SVCACT-03**: SABnzbd polls at 5–15 second intervals to show live download progress
 
 ### Service Monitoring — Rich Data
 
@@ -72,7 +72,7 @@
 
 - [ ] **CFG-01**: Settings page lets user configure the base URL and API key for each service integration
 - [ ] **CFG-02**: Settings page lets user configure per-service notification thresholds
-- [ ] **CFG-03**: All settings are persisted to SQLite and survive app restarts and container restarts
+- [x] **CFG-03**: All settings are persisted to SQLite and survive app restarts and container restarts
 - [ ] **CFG-04**: Each service configuration has a "Test Connection" action that validates the URL and credentials live
 
 ## v2 Requirements
@@ -130,16 +130,16 @@ These are isolated in their own phase due to complexity, OAuth requirements, and
 | DASH-06 | Phase 2 | Complete |
 | DASH-07 | Phase 2 | Complete |
 | DASH-08 | Phase 2 | Complete |
-| SVCST-01 | Phase 3 | Pending |
-| SVCST-02 | Phase 3 | Pending |
-| SVCST-03 | Phase 3 | Pending |
-| SVCST-04 | Phase 3 | Pending |
-| SVCST-05 | Phase 3 | Pending |
-| SVCACT-01 | Phase 3 | Pending |
-| SVCACT-02 | Phase 3 | Pending |
-| SVCACT-03 | Phase 3 | Pending |
+| SVCST-01 | Phase 3 | Complete |
+| SVCST-02 | Phase 3 | Complete |
+| SVCST-03 | Phase 3 | Complete |
+| SVCST-04 | Phase 3 | Complete |
+| SVCST-05 | Phase 3 | Complete |
+| SVCACT-01 | Phase 3 | Complete |
+| SVCACT-02 | Phase 3 | Complete |
+| SVCACT-03 | Phase 3 | Complete |
 | CFG-01 | Phase 3 | Pending |
-| CFG-03 | Phase 3 | Pending |
+| CFG-03 | Phase 3 | Complete |
 | CFG-04 | Phase 3 | Pending |
 | SVCRICH-01 | Phase 4 | Pending |
 | SVCRICH-02 | Phase 4 | Pending |

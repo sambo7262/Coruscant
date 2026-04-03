@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-core-ui-shell 02-11-PLAN.md
-last_updated: "2026-04-03T17:38:50.834Z"
+stopped_at: Completed 03-settings-first-service-adapters 03-01-PLAN.md
+last_updated: "2026-04-03T20:23:14.796Z"
 last_activity: 2026-04-03
 progress:
-  total_phases: 9
+  total_phases: 10
   completed_phases: 2
   total_plans: 15
-  completed_plans: 15
+  completed_plans: 16
   percent: 0
 ---
 
@@ -65,6 +65,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02-core-ui-shell P13 | 8m | 2 tasks | 2 files |
 | Phase 02-core-ui-shell P12 | 187s | 2 tasks | 4 files |
 | Phase 02-core-ui-shell P11 | 188s | 2 tasks | 4 files |
+| Phase 03-settings-first-service-adapters P01 | 5min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -106,6 +107,8 @@ Recent decisions affecting current work:
 - [Phase 02-core-ui-shell]: Attention Required section in arr detail page uses amber tint + left border, only rendered when attentionItems exist
 - [Phase 02-core-ui-shell]: AppHeader uses 3-col CSS grid for single-row NAS instrument panel layout at 800px
 - [Phase 02-core-ui-shell]: NasVolume interface exported from shared types with tempF field; mock uses TheRock volume name with realistic 88-100°F temps
+- [Phase 03-settings-first-service-adapters]: PollManager uses setInterval (not node-cron) for service polling — interval-based not schedule-based, simpler to test
+- [Phase 03-settings-first-service-adapters]: crypto.ts: use parts.length !== 3 guard in decrypt() — !ciphertextHex fails for empty string encryption (empty hex is falsy)
 
 ### Roadmap Evolution
 
@@ -130,6 +133,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T17:21:16.995Z
-Stopped at: Completed 02-core-ui-shell 02-11-PLAN.md
+Last session: 2026-04-03T20:23:14.790Z
+Stopped at: Completed 03-settings-first-service-adapters 03-01-PLAN.md
 Resume file: None
