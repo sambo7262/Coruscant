@@ -53,10 +53,10 @@ export function CardGrid({ snapshot }: CardGridProps) {
     )
   }
 
-  // Group services by tier
+  // Group services by tier, excluding NAS (shown in AppHeader instrument panel)
   const grouped = TIER_ORDER.map(({ tier, label }) => ({
     label,
-    services: snapshot.services.filter((s) => s.tier === tier),
+    services: snapshot.services.filter((s) => s.tier === tier && s.id !== 'nas-detail'),
   }))
 
   // Track global card index for stagger offset
