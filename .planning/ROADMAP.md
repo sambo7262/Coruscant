@@ -74,11 +74,11 @@ Plans:
   3. All four *arr cards (Radarr, Sonarr, Lidarr, Bazarr) show correct Blue/Red/Amber health state from live `/api/v3/health` poll data
   4. SABnzbd card shows current download speed, active queue item count, animated progress bars, and amber error state when queue items have failed status
   5. Settings and service configs survive a container restart without re-entry
-**Plans:** 4 plans
+**Plans:** 3/4 plans executed
 
 Plans:
 - [x] 03-01-PLAN.md — Backend foundation: Drizzle schema, AES-256-GCM encryption, service adapters (arr/bazarr/sabnzbd), PollManager
-- [ ] 03-02-PLAN.md — Backend API routes: settings CRUD, test-connection, SSE refactor from mock to PollManager
+- [x] 03-02-PLAN.md — Backend API routes: settings CRUD, test-connection, SSE refactor from mock to PollManager
 - [x] 03-03-PLAN.md — Frontend Settings page: tabbed layout, per-service config forms, test connection, deep-link
 - [ ] 03-04-PLAN.md — Frontend card integration: NOT CONFIGURED state, Prowlarr/Readarr support, visual verification
 **UI hint**: yes
@@ -165,7 +165,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 |-------|----------------|--------|-----------|
 | 1. Infrastructure Foundation | 2/2 | Complete | 2026-04-03 |
 | 2. Core UI Shell | 13/13 | Complete | 2026-04-03 |
-| 3. Settings + First Service Adapters | 0/4 | Planned | - |
+| 3. Settings + First Service Adapters | 3/4 | In Progress|  |
 | 4. Rich Service Integrations | 0/? | Not started | - |
 | 5. UI v2 — Instrument Panel Polish | 0/? | Not started | - |
 | 6. Network Monitoring | 0/? | Not started | - |

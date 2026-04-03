@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-settings-first-service-adapters 03-03-PLAN.md
-last_updated: "2026-04-03T20:28:01.197Z"
+stopped_at: Completed 03-settings-first-service-adapters 03-02-PLAN.md
+last_updated: "2026-04-03T20:32:15.613Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 10
   completed_phases: 2
   total_plans: 19
-  completed_plans: 17
+  completed_plans: 18
   percent: 0
 ---
 
@@ -67,6 +67,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02-core-ui-shell P11 | 188s | 2 tasks | 4 files |
 | Phase 03-settings-first-service-adapters P01 | 5min | 2 tasks | 11 files |
 | Phase 03-settings-first-service-adapters P03 | 8min | 1 tasks | 2 files |
+| Phase 03-settings-first-service-adapters P02 | 6m4s | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,8 @@ Recent decisions affecting current work:
 - [Phase 03-settings-first-service-adapters]: PollManager uses setInterval (not node-cron) for service polling — interval-based not schedule-based, simpler to test
 - [Phase 03-settings-first-service-adapters]: crypto.ts: use parts.length !== 3 guard in decrypt() — !ciphertextHex fails for empty string encryption (empty hex is falsy)
 - [Phase 03-settings-first-service-adapters]: SettingsPage accepts snapshot as prop from App.tsx — avoids duplicate SSE connections
+- [Phase 03-settings-first-service-adapters]: Settings GET never returns encryptedApiKey or plaintext key — only hasApiKey boolean for frontend display
+- [Phase 03-settings-first-service-adapters]: test-connection always returns HTTP 200 with success/failure in JSON body — simpler frontend error handling
 
 ### Roadmap Evolution
 
@@ -135,6 +138,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T20:28:01.192Z
-Stopped at: Completed 03-settings-first-service-adapters 03-03-PLAN.md
+Last session: 2026-04-03T20:32:11.004Z
+Stopped at: Completed 03-settings-first-service-adapters 03-02-PLAN.md
 Resume file: None
