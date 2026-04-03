@@ -182,4 +182,5 @@ Confirmed: bad API key (401/403) → red (connection failure), not amber.
 
 ## Deferred Ideas
 
-None.
+### Arr UI grouping
+Post-discussion addition: Prowlarr and Readarr added to Phase 3 scope. User noted the arr section will eventually be collapsed into a grouped UI display — deferred to a future UI phase. Phase 3 wires all six arr adapters as individual cards.

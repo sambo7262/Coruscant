@@ -6,15 +6,17 @@
 <domain>
 ## Phase Boundary
 
-Build the Settings UI that persists service configurations (base URL + API key) to SQLite, and wire up live polling adapters for Radarr, Sonarr, Lidarr, Bazarr (status cards) and SABnzbd (activity card) so the dashboard shows real data instead of mock data.
+Build the Settings UI that persists service configurations (base URL + API key) to SQLite, and wire up live polling adapters for Radarr, Sonarr, Lidarr, Bazarr, Prowlarr, Readarr (status cards) and SABnzbd (activity card) so the dashboard shows real data instead of mock data.
 
 Phase ends when:
 - User can enter and save credentials for each service via the Settings page
-- Dashboard cards for all five services show live data from real API polls
+- Dashboard cards for all seven arr services + SABnzbd show live data from real API polls
 - Settings and credentials survive a container restart
 - "Test Connection" validates credentials immediately on demand
 
 No notification thresholds, no Pi-hole/Plex/NAS/UniFi integrations — those are Phase 4+.
+
+**UI note:** The arr services (Radarr, Sonarr, Lidarr, Bazarr, Prowlarr, Readarr) will eventually be collapsed into a grouped section in the dashboard UI. That UI grouping is deferred to a future phase — Phase 3 adds all six to config/settings and wires their adapters. The dashboard currently shows individual cards for each.
 
 </domain>
 
@@ -23,7 +25,7 @@ No notification thresholds, no Pi-hole/Plex/NAS/UniFi integrations — those are
 
 ### Settings Page Layout
 
-- **D-01:** Settings page uses a **tabbed layout** — a horizontal tab bar listing each service by name (RADARR, SONARR, LIDARR, BAZARR, SABNZBD). Clicking a tab shows that service's config panel.
+- **D-01:** Settings page uses a **tabbed layout** — a horizontal tab bar listing each service by name (RADARR, SONARR, LIDARR, BAZARR, PROWLARR, READARR, SABNZBD). Clicking a tab shows that service's config panel.
 - **D-02:** Tab bar overflows horizontally with horizontal scroll when tabs don't fit the viewport. No wrapping to two rows, no dropdown fallback.
 - **D-03:** Each tab shows a **status LED** (same cockpit LED design as dashboard cards) reflecting the current live state of that service: green = configured + online, red = configured + offline/unreachable, amber = configured + user action required (arr health warnings), grey = not yet configured.
 - **D-04:** Each service tab panel contains: URL field, API key field (password-masked), show/hide eye icon toggle for the API key, TEST button, inline result line, and a SAVE button.
@@ -142,7 +144,8 @@ No external API specs — arr `/api/v3/health` and SABnzbd queue API are well-do
 <deferred>
 ## Deferred Ideas
 
-None — discussion stayed within phase scope.
+### Arr UI Grouping
+All six arr services (Radarr, Sonarr, Lidarr, Bazarr, Prowlarr, Readarr) will eventually be collapsed into a grouped/sectioned display in the dashboard rather than six separate cards. Deferred to a future UI phase — Phase 3 just adds them all to config and wires their adapters as individual cards.
 
 </deferred>
 
