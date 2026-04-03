@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-core-ui-shell 02-08-PLAN.md
-last_updated: "2026-04-03T16:06:16.759Z"
+stopped_at: Completed 02-core-ui-shell 02-09-PLAN.md
+last_updated: "2026-04-03T16:10:58.922Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 9
   completed_phases: 1
   total_plans: 12
-  completed_plans: 9
+  completed_plans: 10
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 ## Current Position
 
 Phase: 02 (core-ui-shell) — EXECUTING
-Plan: 4 of 10
+Plan: 5 of 10
 Status: Ready to execute
 Last activity: 2026-04-03
 
@@ -61,6 +61,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02-core-ui-shell P07 | 8m | 2 tasks | 5 files |
 | Phase 02-core-ui-shell P06 | 153s | 2 tasks | 3 files |
 | Phase 02-core-ui-shell P08 | 3m | 2 tasks | 4 files |
+| Phase 02-core-ui-shell P09 | 124s | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -95,6 +96,8 @@ Recent decisions affecting current work:
 - [Phase 02-core-ui-shell]: WiringOverlay uses preserveAspectRatio=none so paths stretch to fill any viewport
 - [Phase 02-core-ui-shell]: Static instrument wall uses repeating-linear-gradient at 120px/200px pitch for amber seam lines — no animated pulses
 - [Phase 02-core-ui-shell]: ServiceCard: chamfered instrument panel with service-specific instrument bodies — NAS gauges, arr dot matrix, Plex signal bars, SABnzbd progress, Pi-hole stats
+- [Phase 02-core-ui-shell]: Back button removed from ServiceDetailPage — AppHeader showBack prop handles back navigation on all sub-pages (D-37)
+- [Phase 02-core-ui-shell]: StreamRow restructured to single row (USER > TITLE left, QUAL/DIRECT right) with 1px amber progress line below
 
 ### Roadmap Evolution
 
@@ -113,6 +116,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T16:06:16.754Z
-Stopped at: Completed 02-core-ui-shell 02-08-PLAN.md
+Last session: 2026-04-03T16:10:58.918Z
+Stopped at: Completed 02-core-ui-shell 02-09-PLAN.md
 Resume file: None
