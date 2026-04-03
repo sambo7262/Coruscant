@@ -77,9 +77,9 @@ Plans:
 **Plans:** 4 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Backend foundation: Drizzle schema, AES-256-GCM encryption, service adapters (arr/bazarr/sabnzbd), PollManager
+- [x] 03-01-PLAN.md — Backend foundation: Drizzle schema, AES-256-GCM encryption, service adapters (arr/bazarr/sabnzbd), PollManager
 - [ ] 03-02-PLAN.md — Backend API routes: settings CRUD, test-connection, SSE refactor from mock to PollManager
-- [ ] 03-03-PLAN.md — Frontend Settings page: tabbed layout, per-service config forms, test connection, deep-link
+- [x] 03-03-PLAN.md — Frontend Settings page: tabbed layout, per-service config forms, test connection, deep-link
 - [ ] 03-04-PLAN.md — Frontend card integration: NOT CONFIGURED state, Prowlarr/Readarr support, visual verification
 **UI hint**: yes
 

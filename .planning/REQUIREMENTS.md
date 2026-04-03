@@ -70,10 +70,10 @@
 
 ### Configuration & Settings
 
-- [ ] **CFG-01**: Settings page lets user configure the base URL and API key for each service integration
+- [x] **CFG-01**: Settings page lets user configure the base URL and API key for each service integration
 - [ ] **CFG-02**: Settings page lets user configure per-service notification thresholds
 - [x] **CFG-03**: All settings are persisted to SQLite and survive app restarts and container restarts
-- [ ] **CFG-04**: Each service configuration has a "Test Connection" action that validates the URL and credentials live
+- [x] **CFG-04**: Each service configuration has a "Test Connection" action that validates the URL and credentials live
 
 ## v2 Requirements
 
@@ -138,9 +138,9 @@ These are isolated in their own phase due to complexity, OAuth requirements, and
 | SVCACT-01 | Phase 3 | Complete |
 | SVCACT-02 | Phase 3 | Complete |
 | SVCACT-03 | Phase 3 | Complete |
-| CFG-01 | Phase 3 | Pending |
+| CFG-01 | Phase 3 | Complete |
 | CFG-03 | Phase 3 | Complete |
-| CFG-04 | Phase 3 | Pending |
+| CFG-04 | Phase 3 | Complete |
 | SVCRICH-01 | Phase 4 | Pending |
 | SVCRICH-02 | Phase 4 | Pending |
 | SVCRICH-03 | Phase 4 | Pending |
