@@ -6,40 +6,13 @@ export function GridBackground() {
         position: 'fixed',
         inset: 0,
         zIndex: 0,
-        backgroundColor: 'var(--bg-dominant)',
-        backgroundImage: `
-          linear-gradient(var(--grid-line-color) 1px, transparent 1px),
-          linear-gradient(90deg, var(--grid-line-color) 1px, transparent 1px)
-        `,
-        backgroundSize: 'var(--grid-size) var(--grid-size)',
+        backgroundColor: '#0A0A0A',
+        backgroundImage: [
+          'repeating-linear-gradient(to bottom, transparent 0px, transparent 119px, rgba(232, 160, 32, 0.15) 119px, rgba(232, 160, 32, 0.15) 120px)',
+          'repeating-linear-gradient(to right, transparent 0px, transparent 199px, rgba(232, 160, 32, 0.15) 199px, rgba(232, 160, 32, 0.15) 200px)',
+        ].join(', '),
         pointerEvents: 'none',
       }}
-    >
-      {/* Vertical pulse sweep */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: `linear-gradient(to bottom, transparent 0%, rgba(0, 200, 255, var(--grid-pulse-opacity)) 50%, transparent 100%)`,
-          backgroundSize: '100% 200px',
-          animation: 'gridPulseVertical var(--pulse-duration) linear infinite',
-          willChange: 'transform',
-          opacity: 1,
-        }}
-      />
-      {/* Horizontal pulse sweep */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: `linear-gradient(to right, transparent 0%, rgba(0, 200, 255, calc(var(--grid-pulse-opacity) * 0.6)) 50%, transparent 100%)`,
-          backgroundSize: '200px 100%',
-          animation: 'gridPulseHorizontal calc(var(--pulse-duration) * 1.3) linear infinite',
-          animationDelay: 'calc(var(--pulse-duration) * 0.5)',
-          willChange: 'transform',
-          opacity: 1,
-        }}
-      />
-    </div>
+    />
   )
 }
