@@ -8,7 +8,7 @@
 ### Infrastructure & Deployment
 
 - [x] **INFRA-01**: App runs as a Docker Compose project deployable via Synology NAS Container Manager
-- [x] **INFRA-02**: Docker images are built from a GitHub repo and pushed to the user's self-hosted registry; compose file references versioned image tags
+- [x] **INFRA-02**: Docker images are built from a GitHub repo and pushed to the user's Docker Hub registry (sambo7262/coruscant); compose file references versioned image tags
 - [x] **INFRA-03**: App is accessible in any browser via local IP and port
 - [x] **INFRA-04**: No app-level tunnel configuration required; Tailscale provides external access transparently
 
