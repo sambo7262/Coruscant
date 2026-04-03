@@ -3,9 +3,18 @@ import type { ServiceStatus } from '@coruscant/shared'
 
 const TIMEOUT_MS = 5_000
 
+// Radarr and Sonarr use /api/v3; Lidarr, Prowlarr, Readarr use /api/v1
+const API_VERSION: Record<string, string> = {
+  radarr: 'v3',
+  sonarr: 'v3',
+  lidarr: 'v1',
+  prowlarr: 'v1',
+  readarr: 'v1',
+}
+
 /**
  * Shared arr adapter for Radarr, Sonarr, Lidarr, Prowlarr, and Readarr.
- * Calls /api/v3/health and maps the response to a ServiceStatus.
+ * Calls /api/{version}/health — version is per-service (v3 for Radarr/Sonarr, v1 for the rest).
  *
  * Status mapping:
  *   - Network error / timeout / non-2xx  → offline
@@ -22,9 +31,10 @@ export async function pollArr(
   apiKey: string,
 ): Promise<ServiceStatus> {
   const lastPollAt = new Date().toISOString()
+  const version = API_VERSION[serviceId] ?? 'v1'
 
   try {
-    const response = await axios.get(`${baseUrl}/api/v3/health`, {
+    const response = await axios.get(`${baseUrl}/api/${version}/health`, {
       headers: { 'X-Api-Key': apiKey },
       timeout: TIMEOUT_MS,
     })
@@ -59,7 +69,8 @@ export async function pollArr(
       configured: true,
       lastPollAt,
     }
-  } catch {
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : String(err)
     return {
       id: serviceId,
       name: serviceName,
@@ -67,6 +78,7 @@ export async function pollArr(
       status: 'offline',
       configured: true,
       lastPollAt,
+      metrics: { error: reason },
     }
   }
 }

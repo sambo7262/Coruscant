@@ -36,9 +36,10 @@ export async function testConnectionRoutes(fastify: FastifyInstance) {
 
     try {
       if (ARR_SERVICES.has(serviceId)) {
-        // *arr services: hit /api/v3/health with X-Api-Key header
+        // v3 for Radarr/Sonarr, v1 for Lidarr/Prowlarr/Readarr
+        const apiVersion = (serviceId === 'radarr' || serviceId === 'sonarr') ? 'v3' : 'v1'
         const response = await axios.get<Array<{ type: string; message: string }>>(
-          `${baseUrl}/api/v3/health`,
+          `${baseUrl}/api/${apiVersion}/health`,
           {
             headers: { 'X-Api-Key': apiKey },
             timeout,
@@ -53,7 +54,7 @@ export async function testConnectionRoutes(fastify: FastifyInstance) {
 
         return reply.send({
           success: true,
-          message: `Connected v3 - ${warningCount} warning${warningCount !== 1 ? 's' : ''}`,
+          message: `Connected (${apiVersion}) — ${warningCount} warning${warningCount !== 1 ? 's' : ''}`,
         })
       }
 
