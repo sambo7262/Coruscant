@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import type { DashboardSnapshot } from '@coruscant/shared'
 import { StatusDot } from '../components/ui/StatusDot.js'
 
@@ -9,7 +9,6 @@ interface ServiceDetailPageProps {
 
 export function ServiceDetailPage({ snapshot }: ServiceDetailPageProps) {
   const { serviceId } = useParams<{ serviceId: string }>()
-  const navigate = useNavigate()
 
   // Focus management: focus h1 on mount (UI-SPEC Accessibility)
   useEffect(() => {
@@ -21,66 +20,124 @@ export function ServiceDetailPage({ snapshot }: ServiceDetailPageProps) {
 
   return (
     <div style={{ padding: '0 16px' }}>
-      <button
-        onClick={() => navigate('/')}
-        style={{
-          background: 'none',
-          border: 'none',
-          color: 'var(--tron-blue)',
-          fontFamily: 'var(--font-mono)',
-          fontSize: '14px',
-          cursor: 'pointer',
-          padding: '8px 0',
-          marginBottom: '16px',
-        }}
-        aria-label="Back to dashboard"
-      >
-        &larr; Dashboard
-      </button>
-
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
         {service && <StatusDot status={service.status} />}
         <h1
           id="detail-heading"
           className="text-heading"
-          style={{ textTransform: 'capitalize', outline: 'none' }}
+          style={{ textTransform: 'uppercase', color: 'var(--cockpit-amber)', outline: 'none' }}
           tabIndex={-1}
         >
           {service?.name ?? serviceId}
         </h1>
       </div>
 
-      {/* Mock metric slots — D-21: labeled slots with dash indicating unpopulated */}
+      {/* Mock metric slots — dot-leader readout format: LABEL ........... VALUE */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <div>
-          <span className="text-label" style={{ color: 'var(--text-muted)' }}>Status: </span>
-          <span className="text-body" style={{ color: 'var(--tron-blue)' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline' }}>
+          <span
+            className="text-label"
+            style={{ color: 'var(--text-offwhite)', textTransform: 'uppercase', flexShrink: 0 }}
+          >
+            Status
+          </span>
+          <span
+            style={{
+              flex: 1,
+              borderBottom: '1px dotted rgba(232,160,32,0.20)',
+              margin: '0 8px',
+              minWidth: '20px',
+            }}
+          />
+          <span className="text-body" style={{ color: 'var(--cockpit-amber)', flexShrink: 0 }}>
             {service?.status ?? '---'}
           </span>
         </div>
-        <div>
-          <span className="text-label" style={{ color: 'var(--text-muted)' }}>Last checked: </span>
-          <span className="text-body" style={{ color: 'var(--tron-blue)' }}>
+
+        <div style={{ display: 'flex', alignItems: 'baseline' }}>
+          <span
+            className="text-label"
+            style={{ color: 'var(--text-offwhite)', textTransform: 'uppercase', flexShrink: 0 }}
+          >
+            Last Checked
+          </span>
+          <span
+            style={{
+              flex: 1,
+              borderBottom: '1px dotted rgba(232,160,32,0.20)',
+              margin: '0 8px',
+              minWidth: '20px',
+            }}
+          />
+          <span className="text-body" style={{ color: 'var(--cockpit-amber)', flexShrink: 0 }}>
             {service?.lastPollAt
               ? new Date(service.lastPollAt).toLocaleTimeString()
               : '---'}
           </span>
         </div>
-        <div>
-          <span className="text-label" style={{ color: 'var(--text-muted)' }}>Response time: </span>
-          <span className="text-body" style={{ color: 'var(--text-muted)' }}>---</span>
+
+        <div style={{ display: 'flex', alignItems: 'baseline' }}>
+          <span
+            className="text-label"
+            style={{ color: 'var(--text-offwhite)', textTransform: 'uppercase', flexShrink: 0 }}
+          >
+            Response Time
+          </span>
+          <span
+            style={{
+              flex: 1,
+              borderBottom: '1px dotted rgba(232,160,32,0.20)',
+              margin: '0 8px',
+              minWidth: '20px',
+            }}
+          />
+          <span className="text-body" style={{ color: 'var(--cockpit-amber)', flexShrink: 0 }}>
+            ---
+          </span>
         </div>
-        <div>
-          <span className="text-label" style={{ color: 'var(--text-muted)' }}>Uptime: </span>
-          <span className="text-body" style={{ color: 'var(--text-muted)' }}>---</span>
+
+        <div style={{ display: 'flex', alignItems: 'baseline' }}>
+          <span
+            className="text-label"
+            style={{ color: 'var(--text-offwhite)', textTransform: 'uppercase', flexShrink: 0 }}
+          >
+            Uptime
+          </span>
+          <span
+            style={{
+              flex: 1,
+              borderBottom: '1px dotted rgba(232,160,32,0.20)',
+              margin: '0 8px',
+              minWidth: '20px',
+            }}
+          />
+          <span className="text-body" style={{ color: 'var(--cockpit-amber)', flexShrink: 0 }}>
+            ---
+          </span>
         </div>
-        <div>
-          <span className="text-label" style={{ color: 'var(--text-muted)' }}>Version: </span>
-          <span className="text-body" style={{ color: 'var(--text-muted)' }}>---</span>
+
+        <div style={{ display: 'flex', alignItems: 'baseline' }}>
+          <span
+            className="text-label"
+            style={{ color: 'var(--text-offwhite)', textTransform: 'uppercase', flexShrink: 0 }}
+          >
+            Version
+          </span>
+          <span
+            style={{
+              flex: 1,
+              borderBottom: '1px dotted rgba(232,160,32,0.20)',
+              margin: '0 8px',
+              minWidth: '20px',
+            }}
+          />
+          <span className="text-body" style={{ color: 'var(--cockpit-amber)', flexShrink: 0 }}>
+            ---
+          </span>
         </div>
       </div>
 
-      <p className="text-label" style={{ color: 'var(--text-muted)', marginTop: '24px' }}>
+      <p className="text-label" style={{ color: 'var(--text-offwhite)', marginTop: '24px' }}>
         Detailed metrics will be available when service integration is configured.
       </p>
     </div>

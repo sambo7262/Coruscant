@@ -13,10 +13,11 @@ export function StaleIndicator({ lastPollAt }: StaleIndicatorProps) {
     <span
       className="text-label"
       style={{
-        color: 'var(--tron-amber)',
-        padding: '2px 6px',
+        color: 'var(--cockpit-amber)',
+        padding: '1px 6px',
         borderRadius: '3px',
-        border: '1px solid rgba(255, 170, 0, 0.3)',
+        border: '1px solid var(--cockpit-amber)',
+        textTransform: 'uppercase',
       }}
     >
       stale
