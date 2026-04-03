@@ -116,7 +116,7 @@ function ArrDetailView({
                 fontSize: '11px',
               }}
             >
-              ⚠ Attention Required
+              [!] ATTENTION REQUIRED
             </span>
           </div>
 
