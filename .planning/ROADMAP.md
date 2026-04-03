@@ -2,7 +2,7 @@
 
 ## Overview
 
-Coruscant is built in eight phases that follow the natural dependency order of a monitoring dashboard: infrastructure before application code, architecture proven with one service before building ten, UI built against real data, and the two hardest integrations saved for last. Phases 1-2 are the critical path — everything after Phase 2 can be planned in parallel. Phase 8 (Smart Home) is research-gated and isolated from all other phases.
+Coruscant is built in nine phases that follow the natural dependency order of a monitoring dashboard: infrastructure before application code, architecture proven with one service before building ten, UI built against real data, and the two hardest integrations saved for last. Phases 1-2 are the critical path — everything after Phase 2 can be planned in parallel. Phase 9 (Smart Home) is research-gated and isolated from all other phases.
 
 ## Phases
 
@@ -16,10 +16,11 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 2: Core UI Shell** - Star Wars X-Wing cockpit instrument panel UI with SSE live-data loop proven end-to-end with mock data
 - [ ] **Phase 3: Settings + First Service Adapters** - Settings page, then Radarr/Sonarr/Lidarr/Bazarr status cards and SABnzbd activity card
 - [ ] **Phase 4: Rich Service Integrations** - Pi-hole, Plex (Now Playing banner), and Synology NAS CPU/RAM/storage/disk/fans
-- [ ] **Phase 5: Network Monitoring** - UniFi device cards, client counts, WAN throughput, cookie session management
-- [ ] **Phase 6: Notifications** - Pushover alert engine, per-service threshold config, debouncing/cooldown
-- [ ] **Phase 7: Logging + Polish** - In-app log viewer, purge/export, SQLite WAL pruning, operational quality
-- [ ] **Phase 8: Smart Home** - Google Nest OAuth wizard, Ring unofficial API integration — isolated, best-effort
+- [ ] **Phase 5: UI v2 — Instrument Panel Polish** - Second UI pass with real data: refine card metrics, layout density, interaction details, and visual hierarchy now that actual service data is flowing
+- [ ] **Phase 6: Network Monitoring** - UniFi device cards, client counts, WAN throughput, cookie session management
+- [ ] **Phase 7: Notifications** - Pushover alert engine, per-service threshold config, debouncing/cooldown
+- [ ] **Phase 8: Logging + Polish** - In-app log viewer, purge/export, SQLite WAL pruning, operational quality
+- [ ] **Phase 9: Smart Home** - Google Nest OAuth wizard, Ring unofficial API integration — isolated, best-effort
 
 ## Phase Details
 
@@ -89,9 +90,21 @@ Plans:
 **Plans**: TBD
 **UI hint**: yes
 
-### Phase 5: Network Monitoring
-**Goal**: UniFi network equipment is visible on the dashboard with device status, client counts, and throughput — and the backend manages session auth automatically
+### Phase 5: UI v2 — Instrument Panel Polish
+**Goal**: The dashboard feels finished — card metrics reflect real service data, layout density is right for the 800×480 kiosk, and interaction details are solid
 **Depends on**: Phase 4
+**Requirements**: DASH-01, DASH-02, DASH-03, DASH-04, DASH-05, DASH-06, DASH-07, DASH-08
+**Success Criteria** (what must be TRUE):
+  1. Card instrument bodies show real metrics drawn from live service data (not mock placeholders)
+  2. Any metric that was confusing or redundant on mock data has been simplified or removed
+  3. Touch targets and tap areas are comfortable on the physical 800×480 Pi touchscreen
+  4. Any visual bugs deferred from Phase 2 are resolved
+  5. Overall aesthetic is cohesive — no obvious rough edges at normal kiosk viewing distance
+**Plans**: TBD
+
+### Phase 6: Network Monitoring
+**Goal**: UniFi network equipment is visible on the dashboard with device status, client counts, and throughput — and the backend manages session auth automatically
+**Depends on**: Phase 5
 **Requirements**: NET-01, NET-02, NET-03, NET-04
 **Success Criteria** (what must be TRUE):
   1. UniFi card shows live active client count, WAN rx/tx throughput, and an overall network health state dot
@@ -101,9 +114,9 @@ Plans:
 **Plans**: TBD
 **UI hint**: yes
 
-### Phase 6: Notifications
+### Phase 7: Notifications
 **Goal**: User receives Pushover alerts when services go down or configured thresholds are breached, with no duplicate-alert spam
-**Depends on**: Phase 5
+**Depends on**: Phase 6
 **Requirements**: NOTIF-01, NOTIF-02, NOTIF-03, NOTIF-04, NOTIF-05, NOTIF-06, CFG-02
 **Success Criteria** (what must be TRUE):
   1. User enters their Pushover application token and user key in Settings and receives a test notification confirming the credentials are valid
@@ -113,9 +126,9 @@ Plans:
   5. Pushover messages include the service name, condition, current value, and a deep-link URL to the Coruscant dashboard
 **Plans**: TBD
 
-### Phase 7: Logging + Polish
+### Phase 8: Logging + Polish
 **Goal**: The user can inspect, filter, purge, and export application logs from within the dashboard, and the app operates cleanly over time without unbounded SQLite growth
-**Depends on**: Phase 6
+**Depends on**: Phase 7
 **Requirements**: LOG-01, LOG-02, LOG-03, LOG-04
 **Success Criteria** (what must be TRUE):
   1. User navigates to the log viewer and sees structured log entries covering poll events, errors, service state changes, and alert dispatches — filterable by service and level
@@ -125,9 +138,9 @@ Plans:
 **Plans**: TBD
 **UI hint**: yes
 
-### Phase 8: Smart Home
+### Phase 9: Smart Home
 **Goal**: Google Nest thermostat state and Amazon Ring device/event status are visible on the dashboard — both integrations are isolated and their absence does not affect any other phase
-**Depends on**: Phase 7
+**Depends on**: Phase 8
 **Requirements**: SMRTH-01, SMRTH-02, SMRTH-03, SMRTH-04
 **Success Criteria** (what must be TRUE):
   1. User completes the one-time Nest OAuth wizard in the dashboard and the Nest card shows current temperature, humidity, and HVAC state without requiring manual token entry
@@ -140,24 +153,25 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Infrastructure Foundation | 2/2 | Complete   | 2026-04-03 |
-| 2. Core UI Shell | 12/13 | In Progress|  |
+| 1. Infrastructure Foundation | 2/2 | Complete | 2026-04-03 |
+| 2. Core UI Shell | 13/13 | Complete | 2026-04-03 |
 | 3. Settings + First Service Adapters | 0/? | Not started | - |
 | 4. Rich Service Integrations | 0/? | Not started | - |
-| 5. Network Monitoring | 0/? | Not started | - |
-| 6. Notifications | 0/? | Not started | - |
-| 7. Logging + Polish | 0/? | Not started | - |
-| 8. Smart Home | 0/? | Not started | - |
+| 5. UI v2 — Instrument Panel Polish | 0/? | Not started | - |
+| 6. Network Monitoring | 0/? | Not started | - |
+| 7. Notifications | 0/? | Not started | - |
+| 8. Logging + Polish | 0/? | Not started | - |
+| 9. Smart Home | 0/? | Not started | - |
 
-### Phase 9: Production Deploy and Hardening
+### Phase 10: Production Deploy and Hardening
 
 **Goal:** [To be planned]
 **Requirements**: TBD
-**Depends on:** Phase 8
+**Depends on:** Phase 9
 **Plans:** 0 plans
 
 Plans:
