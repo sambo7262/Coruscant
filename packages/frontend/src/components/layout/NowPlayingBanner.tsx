@@ -62,9 +62,9 @@ export function NowPlayingBanner({ streams }: NowPlayingBannerProps) {
           left: 0,
           right: 0,
           zIndex: expanded ? 30 : 20,
-          background: 'rgba(13, 17, 23, 0.95)',
+          background: 'rgba(13, 13, 13, 0.95)',
           backdropFilter: 'blur(8px)',
-          borderTop: '1px solid rgba(0, 200, 255, 0.15)',
+          borderTop: '1px solid rgba(232, 160, 32, 0.30)',
         }}
       >
         {/* Collapsed strip — 48px (UI-SPEC Spacing) */}
@@ -86,14 +86,14 @@ export function NowPlayingBanner({ streams }: NowPlayingBannerProps) {
             overflow: 'hidden',
           }}
         >
-          <span className="text-body" style={{ color: 'var(--tron-blue)', flexShrink: 0 }}>
+          <span className="text-body" style={{ color: 'var(--cockpit-amber)', flexShrink: 0 }}>
             &#9654; {streams.length} stream{pluralS}
           </span>
           <span
             ref={tickerRef}
             className="text-body"
             style={{
-              color: 'var(--text-muted)',
+              color: 'var(--text-offwhite)',
               overflow: 'hidden',
               whiteSpace: 'nowrap',
               flex: 1,
@@ -129,6 +129,7 @@ export function NowPlayingBanner({ streams }: NowPlayingBannerProps) {
                 maxHeight: 'min(60vh, 320px)',
                 overflowY: 'auto',
                 padding: '0 16px',
+                borderTop: '1px solid var(--cockpit-amber)',
               }}
             >
               {streams.map((stream, i) => (
