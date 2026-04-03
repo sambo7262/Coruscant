@@ -1,113 +1,124 @@
 # Phase 2: Core UI Shell — Context
 
 **Gathered:** 2026-04-02
+**Updated:** 2026-04-03 (aesthetic rework — Tron replaced by Star Wars cockpit)
 **Status:** Ready for planning
 
 <domain>
 ## Phase Boundary
 
-Build the Tron/Grid living UI shell with animated background, service card grid, NAS header stats bar, Now Playing banner, and card-to-detail navigation. Prove the full data pipeline (mock poll → SQLite → SSE → browser state → animated UI) end-to-end. Phase ends when a user can open the dashboard on a physical phone, see an animated grid with live-ish data updating every 5 seconds, tap a card to reach a detail view, and tap a Plex stream summary to see per-stream details. All data is mock in Phase 2 — real service integrations come in Phase 3+.
+Build the Star Wars X-Wing cockpit instrument panel UI shell with dark segmented background, service-specific instrument cards, NAS header stats bar, Now Playing banner, and card-to-detail navigation. Prove the full data pipeline (mock poll → SSE → browser state → instrument UI) end-to-end. Phase ends when a user can open the dashboard on a physical phone, see an instrument panel with live-ish data updating every 5 seconds, tap a card to reach a detail view, and tap a Plex stream summary to see per-stream details. All data is mock in Phase 2 — real service integrations come in Phase 3+.
 
 No service credentials, no real API calls, no Settings page content — that's Phase 3.
+
+**Reference aesthetic:** Original Star Wars (1977) cockpit instrumentation — retro-70s utilitarian, analog instrument panels, warm amber/green on near-black, physical-feeling controls and readouts. Like the X-Wing cockpit: https://kalspriggs.com/wp-content/uploads/2014/12/b262918263290b76bdaaa35a4511684abe962dd2.jpg
+
+**PRIMARY DISPLAY: 800×480 Raspberry Pi touchscreen (landscape, kiosk mode).** The app loads full-screen on this device as an always-on panel. This is the primary target viewport — NOT a phone. Phone access via Tailscale is secondary. All layout, grid density, font sizing, and touch targets must be designed for 800×480 landscape first. No browser chrome assumed.
 
 </domain>
 
 <decisions>
 ## Implementation Decisions
 
-### Grid Background Animation
+### Colour Palette (replaces Tron palette)
 
-- **D-01:** CSS-only animated grid — no Three.js/WebGL canvas. CSS Grid lines + `@keyframes` for traveling pulses via pseudo-elements or SVG dashes. Zero runtime cost on NAS ARM hardware.
-- **D-02:** Grid is `position: fixed` — it stays put as the user scrolls. Cards scroll over the grid. No parallax (scroll-jank risk on mobile, not worth it).
-- **D-03:** Pulse intensity at rest is subtle (low-opacity, slow-moving). However, a **Settings toggle** must exist for animation intensity/speed — user wants to tune it after shipping. This is in-scope for Phase 2 as a Settings stub that Phase 3 wires to persisted config.
-- **D-04:** Card glow/pulse rhythm changes with health state: healthy = slow breathing glow, warning = faster amber pulse, critical = sharp red flash. Animation rhythm communicates state, not just color.
+- **D-01:** Primary accent: warm amber `#E8A020`. Used for structural chrome — panel borders, section labels, headings, title.
+- **D-02:** Health-state green: muted `#4ADE80` at 80% opacity. Used ONLY for healthy/online status indicators. Not a general accent.
+- **D-03:** Alert red: `#FF3B3B`. Used for offline/down status and warning outlines.
+- **D-04:** Panel background: near-black `#0D0D0D` for card/panel faces. Structural seam colour: `#1A1A1A`.
+- **D-05:** Off-white stencil labels: `#C8C8C8` for secondary text, values, timestamps.
+- **D-06:** Amber at 20% opacity (`rgba(232,160,32,0.20)`) for panel borders at rest; full amber on active/hover.
+- **D-07:** NO cyan, NO neon blue, NO `#00c8ff`. Strip all Tron palette values.
+
+### Background — Instrument Wall Panel
+
+- **D-08:** Background is a **physical instrument wall**. Dark structural segments divided by visible amber seam lines (`1px solid rgba(232,160,32,0.15)`). The seams form a grid of panel "slots" — not an animated light grid.
+- **D-09:** **Decorative SVG wiring** rendered as a fixed-position SVG overlay behind cards. Paths represent bundled cable runs / PCB traces connecting panel sections — organic but geometric (horizontal/vertical with corner curves). Amber at 8% opacity. Static, no animation. SVG is `pointer-events: none`.
+- **D-10:** Subtle CRT scanline overlay: repeating-linear-gradient of 1px lines at 2px pitch, `rgba(0,0,0,0.15)` — baked into body `::after` pseudo-element. Adds texture depth without performance cost.
+- **D-11:** NO animated traveling light pulses. NO glowing grid lines. Background is structural, not decorative.
+
+### Status Indicators (replaces border traces)
+
+- **D-12:** Primary status indicator: **round LED** — 10px circle with `box-shadow` radial glow in status colour.
+  - Online/healthy: muted green `#4ADE80`, slow breathing pulse (3s ease-in-out, opacity 0.7→1.0)
+  - Warning/degraded: amber `#E8A020`, faster pulse (1s)
+  - Offline/down: red `#FF3B3B`, rapid flash (0.4s)
+  - Unknown/stale: dim grey `#666666`, static (no animation)
+- **D-13:** Cards with **non-healthy status** get an amber or red `box-shadow` outline glow on the card border (not the LED). Healthy cards have no outline glow — they blend into the panel.
+- **D-14:** NO conic-gradient border traces. NO neon sweeps. Status communicated by LED + card outline glow only.
+
+### Card Design — Instrument Cluster Panels
+
+- **D-15:** Each card = a physical instrument section. Chamfered corners (CSS `clip-path: polygon(8px 0%, ...)` cutting the top-left and bottom-right corners at 8px). Inset appearance: `inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.4)` inner shadow.
+- **D-16:** Card border: `1px solid rgba(232,160,32,0.20)` at rest. Amber `#E8A020` at 60% on hover/focus.
+- **D-17:** Card header strip: `6px` tall amber bar across the full card top. Contains service name in uppercase stencil mono, flush left. Status LED flush right.
+- **D-18:** Card body instrument type is **service-specific**:
+  - **NAS card** → horizontal bar gauges with tick marks: CPU%, RAM%, disk usage per volume, temperature (°C). Each gauge is a labeled meter bar.
+  - **Radarr / Sonarr / Lidarr / Bazarr** → dot matrix panel: N×M grid of small square LEDs (8px), each representing a queue item or monitored-item slot. Colour = status of that item.
+  - **Plex** → signal strength bars (5 vertical bars, fill = stream count / max), plus active stream count label.
+  - **SABnzbd** → download progress bar with speed label and queue count.
+  - **Pi-hole** → two stat readouts: queries blocked % + total queries. Minimal display.
+  - **UniFi** → client count + network health bar.
+  - **Generic / unknown service** → icon + name + LED only. No data body.
+- **D-19:** All Phase 2 card instruments use mock data from the existing `DashboardSnapshot` mock generator. No new data contracts needed — executors map existing mock fields to visual instrument types.
+- **D-20:** Framer Motion used for card entrance (stagger 0.05s, y: 12px→0, opacity 0→1, spring). NO border trace animations. Entrance happens once on mount.
 
 ### App Header
 
-- **D-05:** Fixed top app bar structure (top-to-bottom):
-  1. **Title row:** "CORUSCANT" left, Settings (⚙) and Logs (≡) icon buttons right
-  2. **NAS stats strip:** split horizontally — left: CPU % + RAM %, right: /vol1 disk usage + temperature. Uses mock data in Phase 2; Phase 4 wires it live.
-- **D-06:** Header uses the same Tron glow/animation treatment as cards — not a plain static bar.
-- **D-07:** NAS stats live in the header, not as a service card. This frees up card grid space.
+- **D-21:** Fixed top bar. Two rows (same structure as before):
+  1. **Title row:** `CORUSCANT` in amber monospace uppercase. Settings and Logs icon buttons right (44×44px touch targets).
+  2. **NAS stats strip:** CPU% + RAM% left, disk usage + temp right. Values in amber. Labels in dim off-white.
+- **D-22:** Header border-bottom: `1px solid rgba(232,160,32,0.30)`. Subtle amber glow `box-shadow: 0 1px 8px rgba(232,160,32,0.15)`.
+- **D-23:** Header background: same near-black as body with slight transparency `rgba(13,13,13,0.95)` + `backdrop-filter: blur(4px)`.
+- **D-24:** **Back navigation fix**: Settings and Logs pages must include a back/home link. AppHeader receives an optional `showBack: boolean` prop. When true, the title becomes a tappable link to `/`. Applied on all non-dashboard routes.
 
 ### Card Grid Layout
 
-- **D-08:** **2-column CSS grid** on mobile (two cards side-by-side). `grid-template-columns: repeat(auto-fit, minmax(160px, 1fr))` — naturally expands to 3-4 columns on tablet, 4-5 on desktop. No explicit breakpoints needed.
-- **D-09:** Cards are **grouped by tier** with section labels:
-  - **STATUS** — Radarr, Sonarr, Lidarr, Bazarr (Phase 3)
-  - **ACTIVITY** — SABnzbd (Phase 3)
-  - **RICH DATA** — Pi-hole, Plex, NAS (Phase 4); UniFi (Phase 5)
-  - **SMART HOME** — Nest, Ring (Phase 8)
-  Phase 2 renders the section structure with representative mock cards for each tier.
-- **D-10:** Status-tier card face: service icon + service name + status dot. **No timestamp at rest.** A stale-data indicator (last-poll time) appears only when last poll was >5 minutes ago. Implemented as a conditional dim overlay or small timestamp badge.
-- **D-11:** Card border traces: **staggered continuous loop** — all cards trace on infinite loop with per-card phase offset (e.g., 0s, 0.3s, 0.6s stagger) so traces feel independent. No event trigger required.
+- **D-25:** Same tier grouping as before (STATUS / ACTIVITY / RICH DATA / SMART HOME). Section labels in amber uppercase.
+- **D-26:** Grid optimized for 800×480 landscape: `repeat(auto-fill, minmax(180px, 1fr))`. At 800px wide with ~16px gutters, this yields ~4 cards per row — good density for the kiosk display. Cards should be ~160px tall minimum to show instrument content without scrolling.
+- **D-27:** Available viewport area at 800×480: subtract header (~72px) + bottom banner (~48px when visible) = ~360px card grid height. The grid should ideally show 2 rows of cards without scrolling — 2×160px = 320px fits.
+- **D-28:** Stale-data indicator: amber "STALE" badge on card when last poll >5 min. Same logic, different styling.
 
 ### Typography
 
-- **D-12:** **Monospace throughout** — all text uses a monospace font (system monospace stack or a single loaded mono font like JetBrains Mono / IBM Plex Mono). Reinforces the Tron/terminal aesthetic. Values, labels, names, section headers — all mono.
+- **D-28:** Monospace throughout — JetBrains Mono loaded, system monospace fallback. No change.
+- **D-29:** Uppercase for labels, section headers, card names. Lowercase for values. Font weight 400 for values, 500/600 for labels.
+- **D-30:** NO italic. Stencil / utilitarian feel — everything is structured, nothing is decorative.
 
 ### Now Playing Banner
 
-- **D-13:** Fixed **bottom strip** — `position: fixed; bottom: 0` — sits at the bottom of the viewport, above the browser's home indicator on iOS.
-- **D-14:** **Hidden completely when no active Plex streams** (zero height, no placeholder). Fades in when a stream starts. Card grid gets the full viewport when idle.
-- **D-15:** **Collapsed state:** stream count + scrolling ticker of first stream title. Example: `▶ 2 streams  Succession S4E3 • sambo...`
-- **D-16:** **Tap to expand:** banner slides upward into a drawer showing all active streams. Each stream row shows: username/player, title + season/episode, playback progress bar, stream quality + transcode vs direct-play indicator.
-- **D-17:** Tap again (or tap outside) to collapse back to the strip. Smooth slide animation.
-- **D-18:** Phase 2 renders the banner with mock stream data (2 mock streams) to validate the expand/collapse interaction and 60fps scroll.
+- **D-31:** Same structure (fixed bottom strip, expand/collapse drawer). Restyled to match cockpit aesthetic.
+- **D-32:** Collapsed: amber "▶ N STREAMS" label + scrolling ticker text in off-white mono.
+- **D-33:** Expanded drawer: dark panel with amber top border. Stream rows in utilitarian list style — no rounded cards, just horizontal dividers.
+- **D-34:** Stream row: `USER > TITLE S0XEX` left, `QUAL / DIRECT` right. Progress as a simple `1px` amber bar below the row text.
 
 ### Detail View Navigation
 
-- **D-19:** **React Router** for client-side routing. URL pattern: `/services/:serviceId` (e.g., `/services/radarr`, `/services/plex`).
-- **D-20:** Tapping a service card navigates to its detail page. Browser back returns to dashboard at the same scroll position (React Router's scroll restoration or manual scroll-position save).
-- **D-21:** Phase 2 detail view content: service name, status dot, and labeled **mock metric slots** (e.g., "Last checked: —", "Response time: —", with mock values). Phase 3/4/5 replace mock slots with real components per service.
-- **D-22:** The dashboard route is `/` (or `/dashboard`). Settings at `/settings` (stub in Phase 2). Logs at `/logs` (stub in Phase 2).
+- **D-35:** Same React Router pattern (`/services/:serviceId`). Scroll restoration unchanged.
+- **D-36:** Detail page: service name as page title (amber), status LED, mock metric slots as labeled readout rows (not floating cards). Each readout row: `LABEL ........... VALUE` format with dot leaders.
+- **D-37:** Back navigation: AppHeader shows `← CORUSCANT` link on detail/settings/logs pages.
 
 ### SSE Data Pipeline
 
-- **D-23:** SSE event type: `dashboard-update`. Payload is a **full snapshot** of all service states on every event. No delta/merge logic on the client — full replace.
-- **D-24:** Snapshot shape (TypeScript type defined in `packages/shared/src/types.ts`):
-  ```ts
-  interface DashboardSnapshot {
-    services: ServiceStatus[]
-    nas: NasStatus
-    streams: PlexStream[]
-    timestamp: string // ISO 8601
-  }
-  interface ServiceStatus {
-    id: string          // e.g. 'radarr'
-    name: string
-    tier: 'status' | 'activity' | 'rich'
-    status: 'online' | 'offline' | 'warning' | 'stale'
-    lastPollAt: string  // ISO 8601
-    metrics?: Record<string, unknown> // populated by Phase 3+
-  }
-  interface NasStatus {
-    cpu: number    // percent
-    ram: number    // percent
-    volumes: { name: string; usedPercent: number; tempC?: number }[]
-  }
-  interface PlexStream {
-    user: string
-    title: string
-    year?: number
-    season?: number
-    episode?: number
-    progressPercent: number
-    quality: string       // e.g. '1080p'
-    transcode: boolean    // true = transcoding, false = direct play
-  }
-  ```
-- **D-25:** Backend mock data generator fires a `dashboard-update` SSE event every **5 seconds** in Phase 2. Mock data varies slightly per tick (e.g., CPU jitter) to prove live updates are reaching the browser.
-- **D-26:** SSE endpoint: `GET /api/sse` — standard EventSource URL. Frontend uses the native `EventSource` API (no library). Fastify handles the SSE connection lifecycle.
+- **D-38:** No change to SSE plumbing, types, or mock data structure. Only visual layer changes.
+- **D-39:** `DashboardSnapshot`, `ServiceStatus`, `NasStatus`, `PlexStream` types remain identical.
+
+### Animation Philosophy
+
+- **D-40:** Near-static at rest. Only LED status lights animate (breathing/pulsing per health state).
+- **D-41:** Card entrance: stagger spring animation (once on mount only).
+- **D-42:** Data value updates: snap immediately (no tween) — like a physical instrument changing reading.
+- **D-43:** Banner expand/collapse: spring slide (Framer Motion `AnimatePresence`). Same as before but snappier.
+- **D-44:** Reduce motion: `@media (prefers-reduced-motion: reduce)` — all animations disabled, LEDs static.
 
 ### Claude's Discretion
 
-- Exact CSS animation keyframe curves and timing values (easing, duration, opacity range)
-- Icon set choice for service icons (lucide-react, heroicons, or custom SVGs)
-- Exact monospace font — system stack first, fallback to a loaded font if system mono looks poor
-- Mock data values and variation logic for the 5-second tick
-- Color values for section label headers (dim blue or Tron Blue with lower opacity)
-- Whether to use Framer Motion for card entrance animations and banner slide, or pure CSS transitions
+- Exact SVG wiring path coordinates and number of cable run paths
+- Icon set for service-specific icons within instrument panels
+- Exact tick mark count on NAS gauge bars
+- Dot matrix dimensions per service card (e.g., 5×3 for Radarr queue)
+- Exact chamfer angle/size on card corners
+- Whether CRT scanline overlay uses `::after` on body or a fixed `<div>`
 
 </decisions>
 
@@ -120,65 +131,56 @@ No service credentials, no real API calls, no Settings page content — that's P
 - `.planning/REQUIREMENTS.md` §DASH-01 through DASH-08 — all eight dashboard requirements this phase must satisfy
 
 ### Project Context
-- `.planning/PROJECT.md` §Requirements (Dashboard — Core) — vision-level description of the Tron/Grid aesthetic
-- `.planning/PROJECT.md` §Key Decisions — stack locked (Node.js 22, Fastify, React, Vite, SSE, Drizzle, monospace)
-- `.planning/PROJECT.md` §Constraints — must run on ARM NAS, mobile-first, local-only
+- `.planning/PROJECT.md` §Requirements (Dashboard — Core) — vision-level description
+- `.planning/PROJECT.md` §Key Decisions — stack locked
+- `.planning/PROJECT.md` §Constraints — ARM NAS, mobile-first, local-only
 
 ### Prior Phase Context
-- `.planning/phases/01-infrastructure-foundation/01-CONTEXT.md` — decisions D-23 (Fastify serves static), D-16 (service URLs/keys NOT in .env), SSE chosen over WebSocket
+- `.planning/phases/01-infrastructure-foundation/01-CONTEXT.md` — SSE chosen, Fastify serves static, PUID/PGID
 
 ### Technology Stack Reference
-- `CLAUDE.md` §Technology Stack — full stack table including Framer Motion 11.x, CSS animation variant guidance
-- `CLAUDE.md` §Stack Patterns by Variant — CSS-only animation pattern (chosen), and when to upgrade to Three.js
+- `CLAUDE.md` §Technology Stack — Framer Motion, CSS animation variant guidance
+- `CLAUDE.md` §Stack Patterns by Variant — CSS-only animation pattern (chosen)
 
-### Existing Code
-- `packages/frontend/src/App.tsx` — current placeholder (Tron Blue color + monospace already applied)
-- `packages/backend/src/index.ts` — Fastify server structure, static serving pattern
-- `packages/shared/src/types.ts` — empty, Phase 2 populates this with `DashboardSnapshot` and related types
+### Existing Implemented Code (Phase 2 Wave 1+2 — to be restyled)
+- `packages/frontend/src/styles/globals.css` — current Tron CSS vars/keyframes to be REPLACED
+- `packages/frontend/src/components/layout/GridBackground.tsx` — to be REPLACED with instrument wall panel
+- `packages/frontend/src/components/layout/AppHeader.tsx` — to be RESTYLED + back nav added
+- `packages/frontend/src/components/layout/NowPlayingBanner.tsx` — to be RESTYLED
+- `packages/frontend/src/components/cards/ServiceCard.tsx` — to be REPLACED with instrument cluster
+- `packages/frontend/src/components/cards/CardGrid.tsx` — section labels to be restyled
+- `packages/frontend/src/components/ui/StatusDot.tsx` — to be RESTYLED as LED
+- `packages/frontend/src/pages/DashboardPage.tsx` — minor restyle
+- `packages/frontend/src/pages/ServiceDetailPage.tsx` — to be RESTYLED with dot-leader readouts
+- `packages/frontend/src/pages/SettingsPage.tsx` — add back navigation
+- `packages/frontend/src/pages/LogsPage.tsx` — add back navigation
+- `packages/backend/src/mock/generator.ts` — may need minor extension for service-type-specific mock fields
 
 </canonical_refs>
-
-<code_context>
-## Existing Code Insights
-
-### Reusable Assets
-- `App.tsx`: Already sets `background: '#0a0a0f'` (correct near-black), `color: '#00c8ff'` (Tron Blue), `fontFamily: 'monospace'` — consistent with D-12
-- `packages/backend/src/index.ts`: Fastify static serving pattern already established — SSE endpoint will be added alongside `/health`
-- `packages/shared/src/types.ts`: Empty export ready for `DashboardSnapshot` types
-
-### Established Patterns
-- Fastify route registration via plugin (`await fastify.register(...)`) — SSE route follows same pattern
-- SQLite accessed via `getDb()` from `db.ts` — mock data generator can optionally log SSE ticks to DB
-- No component library installed — Phase 2 introduces one or builds from scratch
-
-### Integration Points
-- Phase 2 adds React Router (new dependency) — routing must work with Fastify's SPA catch-all already in place
-- Phase 3 replaces mock `ServiceStatus[]` with real adapter data — type contract in `shared/types.ts` must be stable
-- Phase 4 wires the NAS header strip to real Synology DSM API — header component must accept `NasStatus | null` prop
-- Phase 7 links the Logs icon in the top bar to the real log viewer page
-
-</code_context>
 
 <specifics>
 ## Specific Ideas and References
 
-- **Tautulli** is the reference for the Now Playing banner expanded view — user is familiar with that layout (stream rows with user, title, progress, quality/transcode)
-- **Animation intensity setting** — user wants a runtime toggle for grid pulse speed/intensity. Phase 2 creates the setting key in the Settings stub; Phase 3 persists it in SQLite config
-- **NAS in header, not a card** — this is a deliberate departure from the requirements language ("NAS card" in REQUIREMENTS.md). The NAS global status is always-visible in the header strip; the clickable NAS detail card (for per-disk/fan drill-down) will still exist in the grid as part of Phase 4
+- **Reference image:** X-Wing cockpit https://kalspriggs.com/wp-content/uploads/2014/12/b262918263290b76bdaaa35a4511684abe962dd2.jpg — warm amber/green instruments on near-black panels, physical segmented layout, utilitarian stencil labels
+- **Decorative SVG wiring:** Static SVG paths (bundled cable runs / PCB traces) at amber 8% opacity, `pointer-events: none`, fixed position behind cards. Creates visual depth and reinforces the "physical panel" feel.
+- **Service-specific instrument types:** NAS=gauges, Radarr/Sonarr/Lidarr/Bazarr=dot matrix, Plex=signal bars, SABnzbd=download bar, Pi-hole=stat readouts, UniFi=client count+bar. All fed by existing mock data.
+- **Dot-leader readout format** for detail page: `LABEL ........... VALUE` — classic instrument display formatting.
+- **Animation intensity slider** on Settings page still valid — now controls LED pulse speed/intensity rather than grid pulse.
 
 </specifics>
 
 <deferred>
 ## Deferred Ideas
 
-- **Drag-to-reorder cards** — mentioned as a v2 feature in REQUIREMENTS.md (DASH-V2-02). Not Phase 2.
-- **WebGL/Three.js grid upgrade** — CSS-only chosen for Phase 2. If CSS looks flat, upgrade in a later polish phase.
-- **Mobile PWA / home screen install** — v2 feature (DASH-V2-03). Not Phase 2.
-- **Sparkline trend charts on cards** — v2 feature (DASH-V2-01). Cards are metric-slot placeholders in Phase 2.
+- **Drag-to-reorder cards** — v2 (DASH-V2-02). Not Phase 2.
+- **WebGL/Three.js upgrade** — not needed; CSS instrument panel aesthetic doesn't require WebGL.
+- **Mobile PWA** — v2 (DASH-V2-03). Not Phase 2.
+- **Sparkline trend charts** — v2 (DASH-V2-01). Meter bars in Phase 2 are sufficient.
+- **Sound effects** (beeps, chirps) — discussed but deferred. No IP risk but adds complexity.
 
 </deferred>
 
 ---
 
 *Phase: 02-core-ui-shell*
-*Context gathered: 2026-04-02*
+*Context gathered: 2026-04-02 | Updated: 2026-04-03 — full aesthetic rework to Star Wars cockpit*
