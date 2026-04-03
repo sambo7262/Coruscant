@@ -1,5 +1,5 @@
 // Shared types between backend and frontend.
-// Populated in Phase 2.
+// Populated in Phase 2; extended in Phase 3 with configured flag and typed metrics.
 
 export interface ServiceStatus {
   id: string          // e.g. 'radarr'
@@ -7,6 +7,7 @@ export interface ServiceStatus {
   tier: 'status' | 'activity' | 'rich'
   status: 'online' | 'offline' | 'warning' | 'stale'
   lastPollAt: string  // ISO 8601
+  configured?: boolean // false = not yet set up via Settings; omit = legacy/mock
   metrics?: Record<string, unknown> // populated by Phase 3+
 }
 
@@ -39,4 +40,19 @@ export interface DashboardSnapshot {
   nas: NasStatus
   streams: PlexStream[]
   timestamp: string // ISO 8601
+}
+
+export interface SabnzbdMetrics {
+  speedMBs: number
+  queueCount: number
+  progressPercent: number
+  hasFailedItems: boolean
+  sabStatus: string
+}
+
+export interface ArrHealthWarning {
+  source: string
+  type: 'Ok' | 'Notice' | 'Warning' | 'Error'
+  message: string
+  wikiUrl: string
 }
