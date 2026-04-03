@@ -1,16 +1,26 @@
-/* CSS Custom Properties — Tron Design System */
+/* CSS Custom Properties — Star Wars Cockpit Design System */
 :root {
-  --tron-blue: #00c8ff;
-  --tron-red: #ff4444;
-  --tron-amber: #ffaa00;
-  --bg-dominant: #0a0a0f;
-  --bg-secondary: #0d1117;
-  --text-muted: #4a5568;
-  --section-label: rgba(0, 200, 255, 0.45);
-  --grid-line-color: rgba(0, 200, 255, 0.06);
-  --grid-pulse-opacity: 0.18;
-  --grid-size: 48px;
-  --pulse-duration: 8s;
+  /* Color Palette — D-01 through D-07 */
+  --cockpit-amber: #E8A020;
+  --cockpit-green: #4ADE80;
+  --cockpit-red: #FF3B3B;
+  --cockpit-grey: #666666;
+
+  /* Surface colors — D-04 */
+  --bg-panel: #0D0D0D;
+  --bg-seam: #1A1A1A;
+
+  /* Text — D-05 */
+  --text-offwhite: #C8C8C8;
+
+  /* Border states — D-06 */
+  --border-rest: rgba(232, 160, 32, 0.20);
+  --border-hover: rgba(232, 160, 32, 0.60);
+
+  /* Section labels — D-25 */
+  --section-label: #E8A020;
+
+  /* Typography */
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
@@ -24,8 +34,8 @@ html {
   font-family: var(--font-mono);
   font-size: 14px;
   line-height: 1.5;
-  color: var(--tron-blue);
-  background-color: var(--bg-dominant);
+  color: var(--text-offwhite);
+  background-color: #0A0A0A;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -35,64 +45,69 @@ body {
   overflow-x: hidden;
 }
 
-/* Typography roles */
-.text-display { font-size: 20px; font-weight: 700; line-height: 1.2; letter-spacing: 0.08em; }
-.text-heading { font-size: 16px; font-weight: 700; line-height: 1.2; letter-spacing: 0.08em; }
-.text-body { font-size: 14px; font-weight: 400; line-height: 1.5; }
-.text-label { font-size: 12px; font-weight: 400; line-height: 1.4; }
-
-/* Animation keyframes — DASH-08: transform and opacity ONLY */
-
-/* Grid pulse: vertical sweep */
-@keyframes gridPulseVertical {
-  0% { transform: translateY(-200px); opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { transform: translateY(100vh); opacity: 0; }
+/* CRT scanline overlay — D-10 */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 1px,
+    rgba(0, 0, 0, 0.15) 1px,
+    rgba(0, 0, 0, 0.15) 2px
+  );
 }
 
-/* Grid pulse: horizontal sweep */
-@keyframes gridPulseHorizontal {
-  0% { transform: translateX(-200px); opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { transform: translateX(100vw); opacity: 0; }
+/* Typography roles — D-28, D-29, D-30 */
+.text-display { font-size: 20px; font-weight: 600; line-height: 1.2; letter-spacing: 0.08em; }
+.text-heading  { font-size: 16px; font-weight: 600; line-height: 1.2; letter-spacing: 0.08em; }
+.text-body     { font-size: 14px; font-weight: 400; line-height: 1.5; }
+.text-label    { font-size: 12px; font-weight: 400; line-height: 1.4; }
+
+/* Chamfer utility class — D-15 */
+.chamfer-card {
+  clip-path: polygon(
+    8px 0%,
+    calc(100% - 0px) 0%,
+    100% 8px,
+    100% calc(100% - 0px),
+    calc(100% - 8px) 100%,
+    0px 100%,
+    0% calc(100% - 8px),
+    0% 0px
+  );
 }
 
-/* Card border trace via conic gradient angle rotation */
-@property --angle {
-  syntax: '<angle>';
-  inherits: false;
-  initial-value: 0deg;
+/* LED status animations — D-12 */
+
+/* Healthy green LED — slow breathing pulse (3s) */
+@keyframes ledBreathe {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1.0; }
 }
 
-@keyframes borderTrace {
-  to { --angle: 360deg; }
+/* Warning amber LED — faster pulse (1s) */
+@keyframes ledPulseWarn {
+  0%, 100% { opacity: 0.7; }
+  50%       { opacity: 1.0; }
 }
 
-/* Health state glow animations — ONLY animate opacity */
-@keyframes breathe {
+/* Offline/down red LED — rapid flash (0.4s) */
+@keyframes ledFlashDown {
   0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.7; }
-}
-
-@keyframes pulseAmber {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.85; }
-}
-
-@keyframes flashRed {
-  0%, 100% { opacity: 0.2; }
-  50% { opacity: 1.0; }
+  50%       { opacity: 1.0; }
 }
 
 /* Marquee ticker for Now Playing banner */
 @keyframes marquee {
-  0% { transform: translateX(0); }
+  0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
 
-/* Reduced motion preference — DASH-08 accessibility */
+/* Reduced motion preference — D-44 / DASH-08 accessibility */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
