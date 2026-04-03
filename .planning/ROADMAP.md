@@ -48,7 +48,7 @@ Plans:
   3. User taps a service card and navigates to a detail view with dot-leader readout format; back navigation returns to dashboard
   4. The Now Playing banner component renders (with mock data) in utilitarian cockpit style
   5. Dashboard layout shows ~4 cards per row at 800px width; works on both kiosk display and phone
-**Plans:** 10 plans (5 original + 5 gap closure for aesthetic rework)
+**Plans:** 12/13 plans executed
 
 Plans:
 - [x] 02-01-PLAN.md — Shared types (DashboardSnapshot), SSE endpoint with mock data generator, frontend test infrastructure
@@ -145,7 +145,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Infrastructure Foundation | 2/2 | Complete   | 2026-04-03 |
-| 2. Core UI Shell | 5/10 | In Progress (aesthetic rework) |  |
+| 2. Core UI Shell | 12/13 | In Progress|  |
 | 3. Settings + First Service Adapters | 0/? | Not started | - |
 | 4. Rich Service Integrations | 0/? | Not started | - |
 | 5. Network Monitoring | 0/? | Not started | - |

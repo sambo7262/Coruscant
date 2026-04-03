@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-core-ui-shell 02-13-PLAN.md
-last_updated: "2026-04-03T17:18:55.038Z"
+stopped_at: Completed 02-core-ui-shell 02-11-PLAN.md
+last_updated: "2026-04-03T17:21:17.000Z"
 last_activity: 2026-04-03
 progress:
   total_phases: 9
   completed_phases: 1
   total_plans: 15
-  completed_plans: 12
+  completed_plans: 14
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 ## Current Position
 
 Phase: 02 (core-ui-shell) — EXECUTING
-Plan: 6 of 10
+Plan: 8 of 10
 Status: Ready to execute
 Last activity: 2026-04-03
 
@@ -63,6 +63,8 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02-core-ui-shell P08 | 3m | 2 tasks | 4 files |
 | Phase 02-core-ui-shell P09 | 124s | 2 tasks | 4 files |
 | Phase 02-core-ui-shell P13 | 8m | 2 tasks | 2 files |
+| Phase 02-core-ui-shell P12 | 187s | 2 tasks | 4 files |
+| Phase 02-core-ui-shell P11 | 188s | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -100,6 +102,10 @@ Recent decisions affecting current work:
 - [Phase 02-core-ui-shell]: Back button removed from ServiceDetailPage — AppHeader showBack prop handles back navigation on all sub-pages (D-37)
 - [Phase 02-core-ui-shell]: StreamRow restructured to single row (USER > TITLE left, QUAL/DIRECT right) with 1px amber progress line below
 - [Phase 02-core-ui-shell]: Deep-space blue tokens kept at low opacity (0.06-0.15) so amber remains dominant; GridBackground uses two-div layout for seam grid plus nebula overlay; spaceFloat/nebulaBreath are GPU-composited transform+opacity only
+- [Phase 02-core-ui-shell]: ArrInstrument replaces DotMatrixInstrument — status LED + download indicator shows only actionable info on card face
+- [Phase 02-core-ui-shell]: Attention Required section in arr detail page uses amber tint + left border, only rendered when attentionItems exist
+- [Phase 02-core-ui-shell]: AppHeader uses 3-col CSS grid for single-row NAS instrument panel layout at 800px
+- [Phase 02-core-ui-shell]: NasVolume interface exported from shared types with tempF field; mock uses TheRock volume name with realistic 88-100°F temps
 
 ### Roadmap Evolution
 
@@ -118,6 +124,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-03T17:18:55.034Z
-Stopped at: Completed 02-core-ui-shell 02-13-PLAN.md
+Last session: 2026-04-03T17:21:16.995Z
+Stopped at: Completed 02-core-ui-shell 02-11-PLAN.md
 Resume file: None
