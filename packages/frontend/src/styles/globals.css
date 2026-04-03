@@ -1,0 +1,102 @@
+/* CSS Custom Properties — Tron Design System */
+:root {
+  --tron-blue: #00c8ff;
+  --tron-red: #ff4444;
+  --tron-amber: #ffaa00;
+  --bg-dominant: #0a0a0f;
+  --bg-secondary: #0d1117;
+  --text-muted: #4a5568;
+  --section-label: rgba(0, 200, 255, 0.45);
+  --grid-line-color: rgba(0, 200, 255, 0.06);
+  --grid-pulse-opacity: 0.18;
+  --grid-size: 48px;
+  --pulse-duration: 8s;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--tron-blue);
+  background-color: var(--bg-dominant);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Typography roles */
+.text-display { font-size: 20px; font-weight: 700; line-height: 1.2; letter-spacing: 0.08em; }
+.text-heading { font-size: 16px; font-weight: 700; line-height: 1.2; letter-spacing: 0.08em; }
+.text-body { font-size: 14px; font-weight: 400; line-height: 1.5; }
+.text-label { font-size: 12px; font-weight: 400; line-height: 1.4; }
+
+/* Animation keyframes — DASH-08: transform and opacity ONLY */
+
+/* Grid pulse: vertical sweep */
+@keyframes gridPulseVertical {
+  0% { transform: translateY(-200px); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+/* Grid pulse: horizontal sweep */
+@keyframes gridPulseHorizontal {
+  0% { transform: translateX(-200px); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateX(100vw); opacity: 0; }
+}
+
+/* Card border trace via conic gradient angle rotation */
+@property --angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes borderTrace {
+  to { --angle: 360deg; }
+}
+
+/* Health state glow animations — ONLY animate opacity */
+@keyframes breathe {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes pulseAmber {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.85; }
+}
+
+@keyframes flashRed {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1.0; }
+}
+
+/* Marquee ticker for Now Playing banner */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Reduced motion preference — DASH-08 accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

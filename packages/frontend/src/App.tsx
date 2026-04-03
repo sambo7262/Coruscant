@@ -1,10 +1,24 @@
-function App() {
+import { Routes, Route } from 'react-router-dom'
+import { AppHeader } from './components/layout/AppHeader.js'
+import { GridBackground } from './components/layout/GridBackground.js'
+import { DashboardPage } from './pages/DashboardPage.js'
+import { ServiceDetailPage } from './pages/ServiceDetailPage.js'
+import { SettingsPage } from './pages/SettingsPage.js'
+import { LogsPage } from './pages/LogsPage.js'
+
+export default function App() {
   return (
-    <div style={{ fontFamily: 'monospace', padding: '2rem', color: '#00c8ff', background: '#0a0a0f', minHeight: '100vh' }}>
-      <h1>Coruscant</h1>
-      <p>Infrastructure monitoring hub — Phase 1 scaffold</p>
-    </div>
+    <>
+      <GridBackground />
+      <AppHeader nas={null} />
+      <main style={{ position: 'relative', zIndex: 1, paddingTop: '88px', paddingBottom: '64px' }}>
+        <Routes>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/services/:serviceId" element={<ServiceDetailPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/logs" element={<LogsPage />} />
+        </Routes>
+      </main>
+    </>
   )
 }
-
-export default App
