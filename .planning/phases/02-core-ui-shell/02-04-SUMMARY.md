@@ -99,6 +99,15 @@ None — plan executed exactly as written.
 
 None — both tasks compiled and built cleanly on first attempt.
 
+## Self-Check: PASSED
+
+- FOUND: packages/frontend/src/components/layout/NowPlayingBanner.tsx
+- FOUND: packages/frontend/src/components/layout/StreamRow.tsx
+- FOUND: packages/frontend/src/pages/ServiceDetailPage.tsx
+- FOUND: .planning/phases/02-core-ui-shell/02-04-SUMMARY.md
+- FOUND commit: d8d4235 feat(02-04): build NowPlayingBanner with expand/collapse drawer and StreamRow
+- FOUND commit: 778e4b2 feat(02-04): enhance ServiceDetailPage with status dot and mock metric slots
+
 ## Next Phase Readiness
 
 - NowPlayingBanner fully operational — Phase 3 can pass real Plex stream data through the existing SSE snapshot
