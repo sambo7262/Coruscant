@@ -8,6 +8,7 @@ import { healthRoutes } from './routes/health.js'
 import { sseRoutes } from './routes/sse.js'
 import { settingsRoutes } from './routes/settings.js'
 import { testConnectionRoutes } from './routes/test-connection.js'
+import { tautulliWebhookRoutes } from './routes/tautulli-webhook.js'
 import { healthProbe, serviceConfig } from './schema.js'
 import { pollManager } from './poll-manager.js'
 import { decrypt } from './crypto.js'
@@ -30,6 +31,7 @@ await fastify.register(healthRoutes)
 await fastify.register(sseRoutes)
 await fastify.register(settingsRoutes)
 await fastify.register(testConnectionRoutes)
+await fastify.register(tautulliWebhookRoutes)
 
 // Serve compiled Vite bundle in production (D-23)
 const frontendDist = join(__dirname, '../../frontend/dist')
@@ -74,7 +76,11 @@ try {
   for (const cfg of configs) {
     if (cfg.enabled && cfg.baseUrl && cfg.encryptedApiKey) {
       const apiKey = decrypt(cfg.encryptedApiKey, seed)
-      await pollManager.reload(cfg.serviceName, { baseUrl: cfg.baseUrl, apiKey })
+      await pollManager.reload(cfg.serviceName, {
+        baseUrl: cfg.baseUrl,
+        apiKey,
+        username: cfg.username ?? undefined,
+      })
     }
   }
 } catch (err) {
