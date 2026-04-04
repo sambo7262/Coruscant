@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 03-settings-first-service-adapters 03-04-PLAN.md
-last_updated: "2026-04-04T20:28:08.925Z"
+stopped_at: Completed 04-rich-service-integrations-04-01-PLAN.md
+last_updated: "2026-04-04T22:27:14.571Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 11
   completed_phases: 3
-  total_plans: 19
-  completed_plans: 19
+  total_plans: 24
+  completed_plans: 20
   percent: 0
 ---
 
@@ -21,12 +21,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** A single glance from a phone tells you whether your home infrastructure is healthy or needs attention.
-**Current focus:** Phase 02 — core-ui-shell
+**Current focus:** Phase 04 — rich-service-integrations
 
 ## Current Position
 
-Phase: 09
-Plan: Not started
+Phase: 04 (rich-service-integrations) — EXECUTING
+Plan: 2 of 5
 Status: Ready to execute
 Last activity: 2026-04-04
 
@@ -70,6 +70,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03-settings-first-service-adapters P02 | 6m4s | 2 tasks | 6 files |
 | Phase 03-settings-first-service-adapters P04 | 5min | 1 tasks | 1 files |
 | Phase 03-settings-first-service-adapters P04 | 5min | 2 tasks | 1 files |
+| Phase 04-rich-service-integrations P01 | 223s | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -120,6 +121,8 @@ Recent decisions affecting current work:
 - [Phase 03-settings-first-service-adapters]: ServiceCard: StatusDot status='stale' reused for grey LED on unconfigured cards — no new LED state needed
 - [Phase 03-settings-first-service-adapters]: ServiceCard: configured === false strict check — legacy services without flag are not treated as unconfigured
 - [Phase 03-settings-first-service-adapters]: ServiceCard: StatusDot status='stale' reused for grey LED on unconfigured cards — no new LED state needed
+- [Phase 04-rich-service-integrations]: username column stored plaintext on serviceConfig — DSM login name is not a secret, only the password is encrypted
+- [Phase 04-rich-service-integrations]: Pi-hole v6 only: POST /api/auth with password — v5 FTL API not supported
 
 ### Roadmap Evolution
 
@@ -145,6 +148,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T20:22:44.591Z
-Stopped at: Completed 03-settings-first-service-adapters 03-04-PLAN.md
+Last session: 2026-04-04T22:27:14.565Z
+Stopped at: Completed 04-rich-service-integrations-04-01-PLAN.md
 Resume file: None
