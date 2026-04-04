@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
+import { PieChart, Pie, Cell, Tooltip } from 'recharts'
 import type { DashboardSnapshot } from '@coruscant/shared'
 import { StatusDot } from '../components/ui/StatusDot.js'
 
@@ -211,6 +212,170 @@ function ArrDetailView({
   )
 }
 
+// Cockpit amber/green palette for donut slices
+const DONUT_COLORS = [
+  '#E8A020', // cockpit amber
+  '#4CAF50', // cockpit green
+  '#FF6B35', // warm orange
+  '#8B6914', // dark gold
+  '#2E7D32', // deep green
+  '#D4A017', // goldenrod
+  '#6B8E23', // olive
+  '#B8860B', // dark goldenrod
+]
+
+/** Pi-hole detail view: Today's Stats + System + Query Distribution donut chart (D-06) */
+function PiholeDetailView({ service, metrics }: { service: { status: string; configured?: boolean }; metrics: Record<string, unknown> }) {
+  // Empty/error states per UI-SPEC copywriting
+  if (service.configured === false) {
+    return (
+      <p className="text-label" style={{ color: 'var(--text-offwhite)' }}>
+        NO DATA — configure Pi-hole in Settings
+      </p>
+    )
+  }
+  if (service.status === 'offline') {
+    return (
+      <p className="text-label" style={{ color: 'var(--cockpit-red)' }}>
+        CONNECTION ERROR — check URL and password in Settings
+      </p>
+    )
+  }
+
+  const totalQueriesDay = typeof metrics.totalQueriesDay === 'number' ? metrics.totalQueriesDay : 0
+  const totalBlockedDay = typeof metrics.totalBlockedDay === 'number' ? metrics.totalBlockedDay : 0
+  const percentBlocked = typeof metrics.percentBlocked === 'number' ? metrics.percentBlocked : 0
+  const domainsBlocked = typeof metrics.domainsBlocked === 'number' ? metrics.domainsBlocked : 0
+  const queriesPerMinute = typeof metrics.queriesPerMinute === 'number' ? metrics.queriesPerMinute : 0
+  const load1m = typeof metrics.load1m === 'number' ? metrics.load1m : 0
+  const memPercent = typeof metrics.memPercent === 'number' ? metrics.memPercent : 0
+
+  // Build query type distribution data for donut chart
+  const queryTypeData = metrics.queryTypes
+    ? Object.entries(metrics.queryTypes as Record<string, number>)
+        .map(([name, count]) => ({ name, value: count }))
+        .sort((a, b) => b.value - a.value)
+    : []
+
+  const rawWarnings = Array.isArray(metrics.warnings) ? metrics.warnings : []
+  const warnings: string[] = rawWarnings.filter((w): w is string => typeof w === 'string')
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+
+      {/* TODAY'S STATS section */}
+      <div>
+        <div
+          style={{
+            fontSize: '12px',
+            color: 'var(--cockpit-amber)',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            marginBottom: '10px',
+          }}
+        >
+          TODAY'S STATS
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <DotLeaderRow label="QUERIES TODAY" value={totalQueriesDay.toLocaleString()} />
+          <DotLeaderRow label="BLOCKED TODAY" value={totalBlockedDay.toLocaleString()} />
+          <DotLeaderRow label="BLOCK RATE" value={`${percentBlocked.toFixed(1)}%`} />
+        </div>
+      </div>
+
+      {/* SYSTEM section */}
+      <div>
+        <div
+          style={{
+            fontSize: '12px',
+            color: 'var(--cockpit-amber)',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            marginBottom: '10px',
+          }}
+        >
+          SYSTEM
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <DotLeaderRow label="BLOCKLIST SIZE" value={domainsBlocked.toLocaleString()} />
+          <DotLeaderRow label="QUERIES / MIN" value={queriesPerMinute.toFixed(1)} />
+          <DotLeaderRow label="SYSTEM LOAD" value={load1m.toFixed(2)} />
+          <DotLeaderRow label="MEMORY USAGE" value={`${memPercent.toFixed(1)}%`} />
+        </div>
+      </div>
+
+      {/* QUERY DISTRIBUTION donut chart (D-06) */}
+      {queryTypeData.length > 0 && (
+        <div>
+          <div
+            style={{
+              fontSize: '12px',
+              color: 'var(--cockpit-amber)',
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              marginBottom: '8px',
+            }}
+          >
+            QUERY DISTRIBUTION
+          </div>
+          <PieChart width={280} height={200}>
+            <Pie
+              data={queryTypeData}
+              cx={140}
+              cy={100}
+              innerRadius={50}
+              outerRadius={80}
+              dataKey="value"
+              nameKey="name"
+              label={({ name, value }: { name?: string; value?: number }) => `${name ?? ''}: ${value ?? 0}`}
+              labelLine={false}
+            >
+              {queryTypeData.map((_, index) => (
+                <Cell key={index} fill={DONUT_COLORS[index % DONUT_COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip />
+          </PieChart>
+        </div>
+      )}
+
+      {/* WARNINGS section — only shown when warnings exist */}
+      {warnings.length > 0 && (
+        <div
+          style={{
+            borderLeft: '3px solid var(--cockpit-amber)',
+            background: 'rgba(232,160,32,0.08)',
+            padding: '10px 12px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+          }}
+        >
+          <span
+            className="text-label"
+            style={{
+              color: 'var(--cockpit-amber)',
+              textTransform: 'uppercase',
+              fontWeight: 600,
+              fontSize: '11px',
+              borderBottom: '1px solid rgba(232,160,32,0.15)',
+              paddingBottom: '6px',
+              marginBottom: '4px',
+            }}
+          >
+            [!] WARNINGS
+          </span>
+          {warnings.map((w, i) => (
+            <span key={i} className="text-label" style={{ color: 'var(--cockpit-amber)', fontSize: '11px' }}>
+              {w}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function ServiceDetailPage({ snapshot }: ServiceDetailPageProps) {
   const { serviceId } = useParams<{ serviceId: string }>()
 
@@ -223,6 +388,7 @@ export function ServiceDetailPage({ snapshot }: ServiceDetailPageProps) {
   const service = snapshot?.services.find((s) => s.id === serviceId)
   const metrics = service?.metrics as Record<string, unknown> | undefined
   const isArr = serviceId != null && ARR_IDS.has(serviceId)
+  const isPihole = serviceId === 'pihole'
 
   return (
     <div style={{ padding: '0 16px' }}>
@@ -238,9 +404,16 @@ export function ServiceDetailPage({ snapshot }: ServiceDetailPageProps) {
         </h1>
       </div>
 
-      {/* Arr services: rich operational detail view */}
-      {isArr && metrics ? (
-        <ArrDetailView serviceId={serviceId} metrics={metrics} />
+      {/* Pi-hole: rich detail view with donut chart */}
+      {isPihole && service ? (
+        <PiholeDetailView service={service} metrics={metrics ?? {}} />
+      ) : isPihole && !service ? (
+        <p className="text-label" style={{ color: 'var(--text-offwhite)' }}>
+          NO DATA — configure Pi-hole in Settings
+        </p>
+      ) : isArr && metrics ? (
+        /* Arr services: rich operational detail view */
+        <ArrDetailView serviceId={serviceId!} metrics={metrics} />
       ) : (
         /* Generic dot-leader readout for all other services */
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

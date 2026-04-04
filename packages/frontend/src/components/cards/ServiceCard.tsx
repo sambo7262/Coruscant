@@ -217,82 +217,114 @@ function PlexInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   )
 }
 
-// SABnzbd download progress bar
+// SABnzbd natural display: filename, time remaining, speed (D-31)
+// Purple LED semantics per D-30: solid purple = downloading, flashing purple = queued but paused
 function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   const speedMBs = typeof metrics.speedMBs === 'number' ? metrics.speedMBs : 0
   const queueCount = typeof metrics.queueCount === 'number' ? metrics.queueCount : 0
   const progressPercent = typeof metrics.progressPercent === 'number' ? metrics.progressPercent : 0
+  const sabStatus = typeof metrics.sabStatus === 'string' ? metrics.sabStatus : ''
+  const currentFilename = typeof metrics.currentFilename === 'string' ? metrics.currentFilename : ''
+  const timeLeft = typeof metrics.timeLeft === 'string' ? metrics.timeLeft : ''
 
-  // Purple when queue is active; amber when idle
-  const isDownloading = queueCount > 0 || progressPercent > 0
+  const isActivelyDownloading = sabStatus === 'Downloading' || (queueCount > 0 && speedMBs > 0)
+  const isQueuedPaused = (queueCount > 0 || progressPercent > 0) && !isActivelyDownloading
+  const hasActivity = isActivelyDownloading || isQueuedPaused
+
+  if (!hasActivity) {
+    return (
+      <span
+        className="text-label"
+        style={{ color: '#444', fontSize: '9px', textTransform: 'uppercase' }}
+      >
+        IDLE
+      </span>
+    )
+  }
 
   return (
-    <div>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          marginBottom: '4px',
-        }}
-      >
-        <span
-          className="text-label"
-          style={{ color: isDownloading ? 'var(--cockpit-purple)' : 'var(--cockpit-amber)', fontSize: '9px' }}
-        >
-          {speedMBs.toFixed(1)} MB/s
-        </span>
-        <span
-          className="text-label"
-          style={{ color: '#C8C8C8', fontSize: '9px' }}
-        >
-          {queueCount} QUEUED
-        </span>
-      </div>
-      <div
-        style={{
-          height: '6px',
-          background: isDownloading ? 'rgba(139,92,246,0.15)' : 'rgba(232,160,32,0.15)',
-          borderRadius: '3px',
-          overflow: 'hidden',
-        }}
-      >
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+      {/* Filename (truncated) */}
+      {currentFilename ? (
         <div
+          className="text-label"
           style={{
-            height: '100%',
-            width: `${Math.min(Math.max(progressPercent, 0), 100)}%`,
-            background: isDownloading ? 'var(--cockpit-purple)' : 'var(--cockpit-amber)',
-            borderRadius: '3px',
+            color: 'var(--text-offwhite)',
+            fontSize: '9px',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            maxWidth: '100%',
           }}
-        />
+          title={currentFilename}
+        >
+          {currentFilename}
+        </div>
+      ) : null}
+
+      {/* Speed + time remaining row */}
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <span
+          className="text-label"
+          style={{
+            color: isActivelyDownloading ? 'var(--cockpit-purple)' : 'var(--cockpit-amber)',
+            fontSize: '9px',
+            animation: isQueuedPaused ? 'ledFlashPurple 1.5s ease-in-out infinite' : undefined,
+          }}
+        >
+          {isActivelyDownloading ? `${speedMBs.toFixed(1)} MB/s` : 'PAUSED'}
+        </span>
+        {timeLeft ? (
+          <span className="text-label" style={{ color: '#C8C8C8', fontSize: '9px' }}>
+            {timeLeft}
+          </span>
+        ) : (
+          <span className="text-label" style={{ color: '#C8C8C8', fontSize: '9px' }}>
+            {queueCount} QUEUED
+          </span>
+        )}
       </div>
     </div>
   )
 }
 
-// Pi-hole stat readouts
+// Pi-hole 2×2 metric grid instrument body (D-04, per UI-SPEC Pi-hole Card section)
 function PiholeInstrument({ metrics }: { metrics: Record<string, unknown> }) {
-  const blockedPercent =
-    typeof metrics.blockedPercent === 'number' ? metrics.blockedPercent : 0
-  const totalQueries =
-    typeof metrics.totalQueries === 'number' ? metrics.totalQueries : 0
+  const qpm = typeof metrics.queriesPerMinute === 'number'
+    ? metrics.queriesPerMinute.toFixed(1) : '--'
+  const load = typeof metrics.load1m === 'number'
+    ? metrics.load1m.toFixed(2) : '--'
+  const mem = typeof metrics.memPercent === 'number'
+    ? `${Math.round(metrics.memPercent as number)}%` : '--'
+  const blocking = metrics.blockingActive === true ? 'BLOCKING' : 'DISABLED'
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span className="text-label" style={{ color: '#C8C8C8', fontSize: '9px' }}>
-          BLOCKED
-        </span>
-        <span className="text-label" style={{ color: 'var(--cockpit-amber)', fontSize: '9px' }}>
-          {blockedPercent.toFixed(1)}%
-        </span>
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gap: '4px 8px',
+      padding: '4px 0',
+    }}>
+      <div>
+        <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-offwhite)' }}>{qpm}</div>
+        <div style={{ fontSize: '12px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em' }}>QPM</div>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span className="text-label" style={{ color: '#C8C8C8', fontSize: '9px' }}>
-          QUERIES
-        </span>
-        <span className="text-label" style={{ color: 'var(--cockpit-amber)', fontSize: '9px' }}>
-          {totalQueries.toLocaleString()}
-        </span>
+      <div>
+        <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-offwhite)' }}>{load}</div>
+        <div style={{ fontSize: '12px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em' }}>LOAD</div>
+      </div>
+      <div>
+        <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-offwhite)' }}>{mem}</div>
+        <div style={{ fontSize: '12px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em' }}>MEM%</div>
+      </div>
+      <div>
+        <div style={{
+          fontSize: '12px',
+          fontWeight: 600,
+          color: metrics.blockingActive ? 'var(--cockpit-green)' : 'var(--cockpit-amber)',
+          letterSpacing: '0.08em',
+        }}>{blocking}</div>
+        <div style={{ fontSize: '12px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em' }}>STATUS</div>
       </div>
     </div>
   )
@@ -330,6 +362,9 @@ interface ServiceCardProps {
 export function ServiceCard({ service, index }: ServiceCardProps) {
   const navigate = useNavigate()
   const [hovered, setHovered] = useState(false)
+
+  // D-20: Plex and NAS do not render as grid cards
+  if (service.id === 'plex' || service.id === 'nas') return null
 
   // D-15, D-16: unconfigured services deep-link to settings
   const isUnconfigured = service.configured === false
@@ -446,6 +481,121 @@ export function ServiceCard({ service, index }: ServiceCardProps) {
       {instrumentBody && (
         <div style={{ padding: '8px 12px 12px 12px', flex: 1 }}>{instrumentBody}</div>
       )}
+    </motion.div>
+  )
+}
+
+/** Condensed LED + label row for media stack arr services (D-29, D-30).
+ *  Renders a single tight row with a status LED and service label.
+ *  Tappable — navigates to service detail view.
+ */
+export function MediaStackRow({ service, index }: ServiceCardProps) {
+  const navigate = useNavigate()
+
+  const metrics = service.metrics as Record<string, unknown> | undefined
+  const isUnconfigured = service.configured === false
+  const queue = typeof metrics?.queue === 'number' ? metrics.queue : 0
+  const downloading = metrics?.downloading === true
+
+  // D-30 LED color logic for arr services
+  // Purple (solid): healthy, no queue items
+  // Purple (flashing): has queue items
+  // Green: online, no download activity
+  // Amber: warning
+  // Red: offline
+  // Grey: unconfigured / stale
+  const getLedStyle = (): React.CSSProperties => {
+    if (isUnconfigured || service.status === 'stale') {
+      return { background: '#666666', boxShadow: 'none' }
+    }
+    if (service.status === 'offline') {
+      return { background: 'var(--cockpit-red)', boxShadow: '0 0 6px var(--cockpit-red)' }
+    }
+    if (service.status === 'warning') {
+      return { background: 'var(--cockpit-amber)', boxShadow: '0 0 6px rgba(232,160,32,0.6)' }
+    }
+    if (service.status === 'online') {
+      // Purple states per D-30
+      if (queue > 0 || downloading) {
+        // Flashing purple = file queued
+        return {
+          background: 'var(--cockpit-purple)',
+          boxShadow: '0 0 6px var(--cockpit-purple)',
+          animation: 'ledFlashPurple 1.5s ease-in-out infinite',
+        }
+      }
+      // Solid purple = healthy, no queue
+      return {
+        background: 'var(--cockpit-purple)',
+        boxShadow: '0 0 6px var(--cockpit-purple)',
+      }
+    }
+    return { background: '#666666', boxShadow: 'none' }
+  }
+
+  const handleClick = () => {
+    if (isUnconfigured) {
+      navigate(`/settings?service=${service.id}`)
+      return
+    }
+    sessionStorage.setItem('dashboardScrollY', window.scrollY.toString())
+    navigate(`/services/${service.id}`)
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -8 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.2, ease: 'easeOut', delay: index * 0.04 }}
+      whileTap={{ scale: 0.97 }}
+      onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      aria-label={`${service.name}, status: ${isUnconfigured ? 'not configured' : service.status}`}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') handleClick()
+      }}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '6px 8px',
+        cursor: 'pointer',
+        borderRadius: '3px',
+        border: '1px solid transparent',
+        transition: 'border-color 0.15s, background 0.15s',
+      }}
+      onMouseEnter={(e) => {
+        ;(e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(232,160,32,0.30)'
+        ;(e.currentTarget as HTMLDivElement).style.background = 'rgba(232,160,32,0.05)'
+      }}
+      onMouseLeave={(e) => {
+        ;(e.currentTarget as HTMLDivElement).style.borderColor = 'transparent'
+        ;(e.currentTarget as HTMLDivElement).style.background = 'transparent'
+      }}
+    >
+      {/* 8px LED dot */}
+      <div
+        style={{
+          width: '8px',
+          height: '8px',
+          borderRadius: '50%',
+          flexShrink: 0,
+          ...getLedStyle(),
+        }}
+      />
+      {/* Service label */}
+      <span
+        className="text-label"
+        style={{
+          color: isUnconfigured ? '#666' : 'var(--text-offwhite)',
+          fontSize: '12px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.06em',
+        }}
+      >
+        {service.name}
+      </span>
     </motion.div>
   )
 }
