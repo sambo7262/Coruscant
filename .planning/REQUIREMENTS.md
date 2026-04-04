@@ -39,7 +39,7 @@
 
 ### Service Monitoring — Rich Data
 
-- [ ] **SVCRICH-01**: Pi-hole card shows total DNS queries today, block percentage, and blocklist size; handles v5 and v6 API differences
+- [ ] **SVCRICH-01**: Pi-hole card shows total DNS queries today, block percentage, and blocklist size; targets Pi-hole v6 API only; settings tab displays "Pi-hole v6 or higher required"
 - [ ] **SVCRICH-02**: Plex card shows active stream count, currently playing titles, playback state (playing/paused/buffering), and transcode vs direct-play indicators
 - [ ] **SVCRICH-03**: NAS card shows CPU usage %, RAM usage %, and per-volume storage usage bars
 - [ ] **SVCRICH-04**: NAS card shows per-disk temperatures and fan speed readings via Synology DSM API
@@ -170,8 +170,8 @@ These are isolated in their own phase due to complexity, OAuth requirements, and
 - v1 requirements: 43 total
 - Smart Home phase: 4 total
 - Mapped to phases: 47
-- Unmapped: 0 ✓
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-04-02*
-*Last updated: 2026-04-02 after roadmap creation (corrected coverage count: 43 v1, not 40)*
+*Last updated: 2026-04-04 after Phase 4 checker revision (SVCRICH-01: v6 only per D-01)*

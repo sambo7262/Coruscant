@@ -88,29 +88,29 @@ Plans:
 **Depends on**: Phase 3
 **Requirements**: SVCRICH-01, SVCRICH-02, SVCRICH-03, SVCRICH-04, SVCRICH-05
 **Success Criteria** (what must be TRUE):
-  1. Pi-hole card shows live total DNS queries today, block percentage, and blocklist size; handles both v5 and v6 API responses correctly
+  1. Pi-hole card shows live total DNS queries today, block percentage, and blocklist size; targets Pi-hole v6 API only
   2. Plex card shows active stream count, playing titles, and playback state; the Now Playing banner scrolls with live stream data when streams are active
   3. NAS card shows live CPU %, RAM %, and per-volume storage usage bars updated within the poll interval
   4. NAS card shows per-disk temperatures and fan speed readings; surfaces amber stale-data state when DSM session has expired
-  5. User can tap any rich-data card to reach a detail view with all available metrics expanded
+  5. User can tap the NAS header strip to expand the full NAS panel (CPU, RAM, disks, fans, Docker stats), and tap any Pi-hole or Plex card/rail to reach a detail view with all metrics expanded
 **Plans:** 5 plans
 
 Plans:
 - [ ] 04-01-PLAN.md — Types, schema, settings routes, test-connection handlers for Pi-hole/Plex/NAS
-- [ ] 04-02-PLAN.md — Backend adapters (Pi-hole, Plex, NAS) with unit tests + PollManager wiring
+- [ ] 04-02-PLAN.md — Backend adapters (Pi-hole, Tautulli webhook, NAS) with unit tests + PollManager wiring
 - [ ] 04-03-PLAN.md — Frontend: Pi-hole card, Pi-hole detail view, Settings tabs, grid restructure
 - [ ] 04-04-PLAN.md — Frontend: AppHeader NAS live strip + expandable downward panel
 - [ ] 04-05-PLAN.md — Frontend: NowPlayingBanner Plex upgrade + visual verification checkpoint
 **UI hint**: yes
 
 ### Phase 5: UI v2 — Instrument Panel Polish
-**Goal**: The dashboard feels finished — card metrics reflect real service data, layout density is right for the 800×480 kiosk, and interaction details are solid
+**Goal**: The dashboard feels finished — card metrics reflect real service data, layout density is right for the 800x480 kiosk, and interaction details are solid
 **Depends on**: Phase 4
 **Requirements**: DASH-01, DASH-02, DASH-03, DASH-04, DASH-05, DASH-06, DASH-07, DASH-08
 **Success Criteria** (what must be TRUE):
   1. Card instrument bodies show real metrics drawn from live service data (not mock placeholders)
   2. Any metric that was confusing or redundant on mock data has been simplified or removed
-  3. Touch targets and tap areas are comfortable on the physical 800×480 Pi touchscreen
+  3. Touch targets and tap areas are comfortable on the physical 800x480 Pi touchscreen
   4. Any visual bugs deferred from Phase 2 are resolved
   5. Overall aesthetic is cohesive — no obvious rough edges at normal kiosk viewing distance
 **Plans**: TBD

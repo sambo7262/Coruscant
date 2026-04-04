@@ -34,8 +34,8 @@
 - **D-22:** Three new Settings tabs: PI-HOLE, PLEX, NAS.
 - **D-23:** Pi-hole and Plex tabs: 2-field pattern. NAS tab: 3-field pattern. Cockpit instrument panel aesthetic.
 - **D-24:** Pi-hole poll interval: 30–60 seconds.
-- **D-25:** Plex poll interval: 10–15 seconds.
-- **D-26:** NAS poll interval: 10–15 seconds. Image update check: 2x per day (separate timer).
+- **D-25:** Plex: Tautulli webhooks (no polling). User has Plex Pass + Tautulli. Backend exposes POST /api/webhooks/tautulli.
+- **D-26:** NAS: poll every 3 seconds. Image update check: 2x per day (separate timer).
 
 ### Claude's Discretion
 - Exact DSM API endpoints for each metric category
@@ -584,19 +584,18 @@ The NAS settings form requires 3 fields. The `serviceConfig` schema currently on
 ## PollManager Extension
 
 ```typescript
+```typescript
 // New interval constants
-const PIHOLE_INTERVAL_MS = 30_000    // D-24: 30 seconds (within 30–60 range)
-const PLEX_INTERVAL_MS = 10_000      // D-25: 10 seconds (within 10–15 range)
-const NAS_INTERVAL_MS = 10_000       // D-26: 10 seconds (within 10–15 range)
+const PIHOLE_INTERVAL_MS = 60_000    // D-24: 60 seconds
+const NAS_INTERVAL_MS = 3_000        // D-26: 3 seconds
+// No PLEX_INTERVAL_MS — Plex uses Tautulli webhooks (D-25), not polling
 
 // In doPoll():
 } else if (serviceId === 'pihole') {
   result = await pollPihole(baseUrl, password)
 } else if (serviceId === 'plex') {
-  const { streams, serverStats } = await pollPlex(baseUrl, token)
-  this.plexStreams = streams
-  this.plexServerStats = serverStats
-  return  // Plex doesn't produce a ServiceStatus entry
+  // Plex uses Tautulli webhooks — no polling. Skip entirely.
+  return
 } else if (serviceId === 'nas') {
   const nasData = await pollNas(baseUrl, username, password)
   this.nasData = nasData
@@ -604,7 +603,7 @@ const NAS_INTERVAL_MS = 10_000       // D-26: 10 seconds (within 10–15 range)
 }
 ```
 
-Note: Plex and NAS don't produce `ServiceStatus` entries — they produce `nas` and `streams` fields in the snapshot. This means `getSnapshot()` must be updated to use live `this.nasData` and `this.plexStreams` instead of `STUB_NAS` and `STUB_STREAMS`.
+Note: Plex stream state is updated exclusively via Tautulli webhooks (POST /api/webhooks/tautulli). The webhook handler calls `pollManager.updatePlexState(streams, serverStats)` to store data and trigger an SSE push. NAS doesn't produce a `ServiceStatus` entry — it stores `nasData` directly. `getSnapshot()` must return live `this.nasData` and `this.plexStreams` instead of `STUB_NAS` and `STUB_STREAMS`.
 
 **Image update timer (D-18):**
 ```typescript
@@ -635,7 +634,7 @@ this.imageUpdateTimer = setInterval(() => {
 ### Pitfall 3: Pi-hole Session Validity Extension
 **What goes wrong:** Developer assumes 300-second session requires a separate keepalive timer. Adds complexity unnecessarily.
 **Why it happens:** Documentation says `validity: 300` and some readers interpret this as a fixed timeout.
-**How to avoid:** Pi-hole sessions are extended on each authenticated API call. Since we poll every 30 seconds, the session stays alive automatically. Only need to re-auth when a 401 response is received. No separate keepalive timer needed.
+**How to avoid:** Pi-hole sessions are extended on each authenticated API call. Since we poll every 60 seconds, the session stays alive automatically. Only need to re-auth when a 401 response is received. No separate keepalive timer needed.
 
 ### Pitfall 4: NAS Fan/Docker Data Assumed Present
 **What goes wrong:** Frontend renders fan speed section with "N/A" for fanless NAS models, or crashes accessing `fans[0]` when `fans` is undefined.
@@ -739,9 +738,9 @@ If a `username` column is added to `serviceConfig` (recommended), a Drizzle migr
 | SVCRICH-01 | Pi-hole adapter returns `status: 'offline'` on network error | unit | same file | No — Wave 0 |
 | SVCRICH-01 | Pi-hole adapter returns amber (`status: 'warning'`) when blocking disabled | unit | same file | No — Wave 0 |
 | SVCRICH-01 | Pi-hole re-authenticates when 401 received | unit | same file | No — Wave 0 |
-| SVCRICH-02 | Plex adapter maps XML-free JSON to `PlexStream[]` correctly | unit | `npx vitest run packages/backend/src/__tests__/plex-adapter.test.ts` | No — Wave 0 |
-| SVCRICH-02 | Plex adapter detects transcode vs direct-play correctly | unit | same file | No — Wave 0 |
-| SVCRICH-02 | Plex adapter calculates progress from viewOffset/duration | unit | same file | No — Wave 0 |
+| SVCRICH-02 | Tautulli webhook maps payload to `PlexStream[]` correctly | unit | `npx vitest run packages/backend/src/__tests__/tautulli-webhook.test.ts` | No — Wave 0 |
+| SVCRICH-02 | Tautulli webhook detects transcode vs direct-play correctly | unit | same file | No — Wave 0 |
+| SVCRICH-02 | Tautulli webhook extracts progress from payload | unit | same file | No — Wave 0 |
 | SVCRICH-03 | NAS adapter parses CPU/RAM/network from SYNO.Core.System.Utilization | unit | `npx vitest run packages/backend/src/__tests__/nas-adapter.test.ts` | No — Wave 0 |
 | SVCRICH-04 | NAS adapter includes disk temps from SYNO.Core.System info | unit | same file | No — Wave 0 |
 | SVCRICH-04 | NAS adapter omits `fans` field when fan response is empty | unit | same file | No — Wave 0 |
@@ -755,7 +754,7 @@ If a `username` column is added to `serviceConfig` (recommended), a Drizzle migr
 
 ### Wave 0 Gaps
 - [ ] `packages/backend/src/__tests__/pihole-adapter.test.ts` — covers SVCRICH-01 (4 cases)
-- [ ] `packages/backend/src/__tests__/plex-adapter.test.ts` — covers SVCRICH-02 (3 cases)
+- [ ] `packages/backend/src/__tests__/tautulli-webhook.test.ts` — covers SVCRICH-02 (4 cases)
 - [ ] `packages/backend/src/__tests__/nas-adapter.test.ts` — covers SVCRICH-03, SVCRICH-04 (4 cases)
 
 ---

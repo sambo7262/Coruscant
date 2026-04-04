@@ -2,8 +2,8 @@
 phase: 4
 slug: rich-service-integrations
 status: draft
-nyquist_compliant: false
-wave_0_complete: false
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-04-04
 ---
 
@@ -38,24 +38,27 @@ created: 2026-04-04
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 4-01-01 | 01 | 0 | SVCRICH-01 | unit | `npm run test -- src/adapters/pihole` | ❌ W0 | ⬜ pending |
-| 4-01-02 | 01 | 1 | SVCRICH-01 | unit | `npm run test -- src/adapters/pihole` | ✅ | ⬜ pending |
-| 4-02-01 | 02 | 0 | SVCRICH-02 | unit | `npm run test -- src/adapters/plex` | ❌ W0 | ⬜ pending |
-| 4-02-02 | 02 | 1 | SVCRICH-02 | unit | `npm run test -- src/adapters/plex` | ✅ | ⬜ pending |
-| 4-03-01 | 03 | 0 | SVCRICH-03 | unit | `npm run test -- src/adapters/synology` | ❌ W0 | ⬜ pending |
-| 4-03-02 | 03 | 1 | SVCRICH-03 | unit | `npm run test -- src/adapters/synology` | ✅ | ⬜ pending |
-| 4-04-01 | 04 | 1 | SVCRICH-04 | manual | — | — | ⬜ pending |
-| 4-05-01 | 05 | 2 | SVCRICH-05 | manual | — | — | ⬜ pending |
+| 4-02-1a | 02 | 2 | SVCRICH-01 | unit | `npx vitest run packages/backend/src/__tests__/pihole-adapter.test.ts` | TDD inline | pending |
+| 4-02-1b | 02 | 2 | SVCRICH-02, SVCRICH-03, SVCRICH-04 | unit | `npx vitest run packages/backend/src/__tests__/tautulli-webhook.test.ts packages/backend/src/__tests__/nas-adapter.test.ts` | TDD inline | pending |
+| 4-02-02 | 02 | 2 | SVCRICH-01, SVCRICH-03 | integration | `npx tsc --noEmit -p packages/backend/tsconfig.json && npx vitest run packages/backend` | yes | pending |
+| 4-03-01 | 03 | 3 | SVCRICH-01 | compile | `npx tsc --noEmit -p packages/frontend/tsconfig.json` | yes | pending |
+| 4-03-02 | 03 | 3 | SVCRICH-01, SVCRICH-05 | compile | `npx tsc --noEmit -p packages/frontend/tsconfig.json` | yes | pending |
+| 4-04-01 | 04 | 3 | SVCRICH-03, SVCRICH-04, SVCRICH-05 | compile | `npx tsc --noEmit -p packages/frontend/tsconfig.json` | yes | pending |
+| 4-05-01 | 05 | 3 | SVCRICH-02, SVCRICH-05 | compile | `npx tsc --noEmit -p packages/frontend/tsconfig.json` | yes | pending |
+| 4-05-02 | 05 | 3 | ALL | manual+auto | `npx vitest run && npx tsc --noEmit` | yes | pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+*Status: pending · green · red · flaky*
 
 ---
 
 ## Wave 0 Requirements
 
-- [ ] `src/adapters/__tests__/pihole.test.ts` — unit stubs for SVCRICH-01 (v6 auth, summary, blocking state)
-- [ ] `src/adapters/__tests__/plex.test.ts` — unit stubs for SVCRICH-02 (sessions endpoint, JSON header)
-- [ ] `src/adapters/__tests__/synology.test.ts` — unit stubs for SVCRICH-03 (auth sid, utilization, disk temps)
+Tests are created TDD-inline in Plan 04-02 Task 1a and Task 1b — no separate Wave 0 plan. VALIDATION.md tracks the test files created there.
+
+Test files created by Plan 02:
+- [x] `packages/backend/src/__tests__/pihole-adapter.test.ts` — Pi-hole v6 auth, summary, blocking state, re-auth on 401, query types
+- [x] `packages/backend/src/__tests__/tautulli-webhook.test.ts` — Tautulli webhook play/pause/stop/resume events, payload mapping
+- [x] `packages/backend/src/__tests__/nas-adapter.test.ts` — DSM auth sid, utilization, disk temps, fan speeds, image update check
 
 ---
 
@@ -65,17 +68,17 @@ created: 2026-04-04
 |----------|-------------|------------|-------------------|
 | NAS amber stale-data state when DSM session expires | SVCRICH-04 | Requires live DSM session timeout (cannot mock accurately) | Let NAS credentials expire, confirm card shows amber indicator |
 | Now Playing banner scrolls with live stream data | SVCRICH-02 | Visual animation requires live Plex stream | Start a stream in Plex, confirm banner animates and shows title |
-| Detail view shows all expanded metrics on tap | SVCRICH-05 | Visual/interaction test | Tap each rich card, confirm detail panel opens with full metrics |
+| Detail view shows all expanded metrics on tap | SVCRICH-05 | Visual/interaction test | Tap Pi-hole card for detail view, tap NAS header strip for expanded panel |
 
 ---
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 20s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references (folded into Plan 02 TDD tasks)
+- [x] No watch-mode flags
+- [x] Feedback latency < 20s
+- [x] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** pending
