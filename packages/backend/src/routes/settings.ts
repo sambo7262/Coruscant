@@ -7,6 +7,7 @@ import { pollManager } from '../poll-manager.js'
 
 const VALID_SERVICES = [
   'radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 'readarr', 'sabnzbd',
+  'pihole', 'plex', 'nas',
 ] as const
 
 type ValidService = (typeof VALID_SERVICES)[number]
@@ -17,7 +18,7 @@ function isValidService(id: string): id is ValidService {
 
 export async function settingsRoutes(fastify: FastifyInstance) {
   /**
-   * GET /api/settings — list config status for all 7 managed services.
+   * GET /api/settings — list config status for all managed services.
    * Never returns plaintext API keys.
    */
   fastify.get('/api/settings', async (_request, reply) => {
@@ -28,12 +29,13 @@ export async function settingsRoutes(fastify: FastifyInstance) {
     const result = VALID_SERVICES.map((id) => {
       const row = rowMap.get(id)
       if (!row) {
-        return { serviceName: id, baseUrl: '', hasApiKey: false, enabled: false }
+        return { serviceName: id, baseUrl: '', hasApiKey: false, username: '', enabled: false }
       }
       return {
         serviceName: row.serviceName,
         baseUrl: row.baseUrl,
         hasApiKey: row.encryptedApiKey !== '',
+        username: row.username,
         enabled: row.enabled,
       }
     })
@@ -66,6 +68,7 @@ export async function settingsRoutes(fastify: FastifyInstance) {
           serviceName: serviceId,
           baseUrl: '',
           hasApiKey: false,
+          username: '',
           enabled: false,
         })
       }
@@ -75,6 +78,7 @@ export async function settingsRoutes(fastify: FastifyInstance) {
         serviceName: row.serviceName,
         baseUrl: row.baseUrl,
         hasApiKey: row.encryptedApiKey !== '',
+        username: row.username,
         enabled: row.enabled,
       })
     },
@@ -83,10 +87,11 @@ export async function settingsRoutes(fastify: FastifyInstance) {
   /**
    * POST /api/settings/:serviceId — upsert service config.
    * Encrypts API key before storage. Triggers PollManager hot-reload.
+   * username is stored plaintext (DSM login name, not a secret).
    */
   fastify.post<{
     Params: { serviceId: string }
-    Body: { baseUrl?: string; apiKey?: string }
+    Body: { baseUrl?: string; apiKey?: string; username?: string }
   }>('/api/settings/:serviceId', async (request, reply) => {
     const { serviceId } = request.params
 
@@ -101,6 +106,7 @@ export async function settingsRoutes(fastify: FastifyInstance) {
 
     const baseUrl = (request.body.baseUrl ?? '').trim()
     const apiKey = (request.body.apiKey ?? '').trim()
+    const username = (request.body.username ?? '').trim()
 
     // Both empty → disable the service
     if (baseUrl === '' && apiKey === '') {
@@ -110,6 +116,7 @@ export async function settingsRoutes(fastify: FastifyInstance) {
           serviceName: serviceId,
           baseUrl: '',
           encryptedApiKey: '',
+          username: '',
           enabled: false,
           updatedAt: new Date().toISOString(),
         })
@@ -118,6 +125,7 @@ export async function settingsRoutes(fastify: FastifyInstance) {
           set: {
             baseUrl: '',
             encryptedApiKey: '',
+            username: '',
             enabled: false,
             updatedAt: new Date().toISOString(),
           },
@@ -138,6 +146,7 @@ export async function settingsRoutes(fastify: FastifyInstance) {
         serviceName: serviceId,
         baseUrl,
         encryptedApiKey,
+        username,
         enabled: true,
         updatedAt: new Date().toISOString(),
       })
@@ -146,6 +155,7 @@ export async function settingsRoutes(fastify: FastifyInstance) {
         set: {
           baseUrl,
           encryptedApiKey,
+          username,
           enabled: true,
           updatedAt: new Date().toISOString(),
         },
@@ -153,7 +163,7 @@ export async function settingsRoutes(fastify: FastifyInstance) {
       .run()
 
     // Hot-reload polling with the new config (D-06)
-    await pollManager.reload(serviceId, { baseUrl, apiKey })
+    await pollManager.reload(serviceId, { baseUrl, apiKey, username })
 
     return reply.send({ ok: true })
   })

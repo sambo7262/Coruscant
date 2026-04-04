@@ -14,6 +14,8 @@ export function generateMockSnapshot(): DashboardSnapshot {
   const nas: NasStatus = {
     cpu: 10 + Math.random() * 5,
     ram: 40 + Math.random() * 3,
+    networkMbpsUp: Math.random() * 10,
+    networkMbpsDown: Math.random() * 50,
     volumes: [
       {
         name: 'TheRock',
@@ -151,6 +153,7 @@ export function generateMockSnapshot(): DashboardSnapshot {
     {
       user: 'sambo',
       title: 'Succession',
+      deviceName: 'Apple TV',
       season: 4,
       episode: 3,
       progressPercent: 42,
@@ -160,6 +163,7 @@ export function generateMockSnapshot(): DashboardSnapshot {
     {
       user: 'guest',
       title: 'Oppenheimer',
+      deviceName: 'Chrome',
       year: 2023,
       progressPercent: 78,
       quality: '4K',

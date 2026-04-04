@@ -3,6 +3,7 @@ import axios from 'axios'
 
 const VALID_SERVICES = [
   'radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 'readarr', 'sabnzbd',
+  'pihole', 'plex', 'nas',
 ] as const
 
 const ARR_SERVICES = new Set(['radarr', 'sonarr', 'lidarr', 'prowlarr', 'readarr'])
@@ -22,7 +23,7 @@ export async function testConnectionRoutes(fastify: FastifyInstance) {
    */
   fastify.post<{
     Params: { serviceId: string }
-    Body: { baseUrl?: string; apiKey?: string }
+    Body: { baseUrl?: string; apiKey?: string; username?: string }
   }>('/api/test-connection/:serviceId', async (request, reply) => {
     const { serviceId } = request.params
 
@@ -83,6 +84,53 @@ export async function testConnectionRoutes(fastify: FastifyInstance) {
           success: true,
           message: `Connected - queue has ${queueCount} item${queueCount !== 1 ? 's' : ''}`,
         })
+      }
+
+      if (serviceId === 'pihole') {
+        // Pi-hole v6: POST /api/auth with password, check for session sid
+        const response = await axios.post(
+          `${baseUrl}/api/auth`,
+          { password: apiKey },
+          { timeout, headers: { 'Content-Type': 'application/json' } },
+        )
+        const sid = response.data?.session?.sid
+        if (!sid) {
+          return reply.send({ success: false, message: 'Auth failed — no session returned' })
+        }
+        return reply.send({ success: true, message: 'Connected — Pi-hole v6' })
+      }
+
+      if (serviceId === 'plex') {
+        // Plex: GET / with X-Plex-Token header
+        const response = await axios.get(`${baseUrl}/`, {
+          headers: { 'X-Plex-Token': apiKey, 'Accept': 'application/json' },
+          timeout,
+        })
+        const serverName = response.data?.MediaContainer?.friendlyName ?? 'Plex Server'
+        return reply.send({ success: true, message: `Connected — ${serverName}` })
+      }
+
+      if (serviceId === 'nas') {
+        // Synology DSM: GET /webapi/entry.cgi with SYNO.API.Auth login
+        const username = request.body.username ?? ''
+        const response = await axios.get(`${baseUrl}/webapi/entry.cgi`, {
+          params: {
+            api: 'SYNO.API.Auth', version: 6, method: 'login',
+            account: username, passwd: apiKey, format: 'sid',
+          },
+          timeout,
+        })
+        if (!response.data?.success) {
+          const errCode = response.data?.error?.code ?? 'unknown'
+          return reply.send({ success: false, message: `DSM auth failed (code: ${errCode})` })
+        }
+        const sid = response.data.data.sid
+        // Best-effort logout of test session
+        await axios.get(`${baseUrl}/webapi/entry.cgi`, {
+          params: { api: 'SYNO.API.Auth', version: 6, method: 'logout', _sid: sid },
+          timeout: 3000,
+        }).catch(() => {})
+        return reply.send({ success: true, message: 'Connected — DSM authenticated' })
       }
 
       // Should not reach here given the valid service list

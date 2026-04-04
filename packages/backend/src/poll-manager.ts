@@ -26,6 +26,8 @@ const ALL_SERVICE_IDS = [
 const STUB_NAS: NasStatus = {
   cpu: 0,
   ram: 0,
+  networkMbpsUp: 0,
+  networkMbpsDown: 0,
   volumes: [],
 }
 
@@ -78,10 +80,11 @@ export class PollManager {
   /**
    * Start or restart polling for a service.
    * Pass null (or undefined) config to mark the service as unconfigured.
+   * username is optional — used by NAS (DSM login); ignored by other services.
    */
   async reload(
     serviceId: string,
-    config: { baseUrl: string; apiKey: string } | null,
+    config: { baseUrl: string; apiKey: string; username?: string } | null,
   ): Promise<void> {
     // Clear any existing timer
     const existing = this.timers.get(serviceId)
