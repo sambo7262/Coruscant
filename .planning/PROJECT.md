@@ -12,7 +12,19 @@ A single glance from a phone tells you whether your home infrastructure is healt
 
 ### Validated
 
-(None yet — ship to validate)
+**Settings & Configuration** *(Validated in Phase 03)*
+- [x] Settings pages to configure service connection endpoints, credentials, and API keys — encrypted with AES-256-GCM at rest
+
+**Service Monitoring — Status Only** *(Validated in Phase 03)*
+- [x] Radarr — up/down/warning status (live, polling every 45s)
+- [x] Sonarr — up/down/warning status (live, polling every 45s)
+- [x] Lidarr — up/down/warning status (live, polling every 45s)
+- [x] Bazarr — up/down status (live, polling every 45s)
+- [x] Prowlarr — up/down/warning status (live, polling every 45s)
+- [x] Readarr — up/down/warning status (live, polling every 45s)
+
+**Service Monitoring — Activity** *(Validated in Phase 03)*
+- [x] SABnzbd — up/down + active download queue, speed, progress, failed items (live, polling every 10s)
 
 ### Active
 
@@ -111,4 +123,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-02 after initialization*
+*Last updated: 2026-04-04 — Phase 03 complete (settings + media stack adapters live)*
