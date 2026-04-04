@@ -100,7 +100,7 @@ Plans:
 - [x] 04-02-PLAN.md — Backend adapters (Pi-hole, Tautulli webhook, NAS) with unit tests + PollManager wiring
 - [x] 04-03-PLAN.md — Frontend: Pi-hole card, Pi-hole detail view, Settings tabs, grid restructure
 - [x] 04-04-PLAN.md — Frontend: AppHeader NAS live strip + expandable downward panel
-- [ ] 04-05-PLAN.md — Frontend: NowPlayingBanner Plex upgrade + visual verification checkpoint
+- [x] 04-05-PLAN.md — Frontend: NowPlayingBanner Plex upgrade + visual verification checkpoint
 **UI hint**: yes
 
 ### Phase 5: UI v2 — Instrument Panel Polish
