@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-rich-service-integrations-04-01-PLAN.md
-last_updated: "2026-04-04T22:27:14.571Z"
+stopped_at: Completed 04-rich-service-integrations-04-02-PLAN.md
+last_updated: "2026-04-04T22:35:57.629Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 11
   completed_phases: 3
   total_plans: 24
-  completed_plans: 20
+  completed_plans: 21
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 ## Current Position
 
 Phase: 04 (rich-service-integrations) — EXECUTING
-Plan: 2 of 5
+Plan: 3 of 5
 Status: Ready to execute
 Last activity: 2026-04-04
 
@@ -71,6 +71,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03-settings-first-service-adapters P04 | 5min | 1 tasks | 1 files |
 | Phase 03-settings-first-service-adapters P04 | 5min | 2 tasks | 1 files |
 | Phase 04-rich-service-integrations P01 | 223s | 2 tasks | 7 files |
+| Phase 04-rich-service-integrations P02 | 363s | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -123,6 +124,10 @@ Recent decisions affecting current work:
 - [Phase 03-settings-first-service-adapters]: ServiceCard: StatusDot status='stale' reused for grey LED on unconfigured cards — no new LED state needed
 - [Phase 04-rich-service-integrations]: username column stored plaintext on serviceConfig — DSM login name is not a secret, only the password is encrypted
 - [Phase 04-rich-service-integrations]: Pi-hole v6 only: POST /api/auth with password — v5 FTL API not supported
+- [Phase 04-rich-service-integrations]: Pi-hole session cached in module-level Map, invalidated on 401
+- [Phase 04-rich-service-integrations]: Plex has no poll timer — Tautulli webhook is the ONLY data source for Plex streams (D-25)
+- [Phase 04-rich-service-integrations]: ARR_INTERVAL_MS changed from 45_000 to 5_000 (D-27); PIHOLE=60s; NAS=3s
+- [Phase 04-rich-service-integrations]: NAS fans field is undefined (not []) when empty (D-19)
 
 ### Roadmap Evolution
 
@@ -148,6 +153,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T22:27:14.565Z
-Stopped at: Completed 04-rich-service-integrations-04-01-PLAN.md
+Last session: 2026-04-04T22:35:57.624Z
+Stopped at: Completed 04-rich-service-integrations-04-02-PLAN.md
 Resume file: None
