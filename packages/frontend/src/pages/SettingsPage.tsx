@@ -11,6 +11,9 @@ const SERVICES = [
   { id: 'prowlarr', label: 'PROWLARR' },
   { id: 'readarr', label: 'READARR [RETIRED]' },
   { id: 'sabnzbd', label: 'SABNZBD' },
+  { id: 'pihole', label: 'PI-HOLE' },
+  { id: 'plex', label: 'PLEX' },
+  { id: 'nas', label: 'NAS' },
 ] as const
 
 type ServiceId = (typeof SERVICES)[number]['id']
@@ -77,6 +80,14 @@ const disabledBtnStyle: React.CSSProperties = {
   cursor: 'not-allowed',
 }
 
+/** Returns the credential field label for each service */
+function getCredentialLabel(serviceId: ServiceId): string {
+  if (serviceId === 'pihole') return 'Password'
+  if (serviceId === 'plex') return 'Plex Token'
+  if (serviceId === 'nas') return 'DSM Password'
+  return 'API KEY'
+}
+
 export function SettingsPage({ snapshot }: SettingsPageProps) {
   const [searchParams, setSearchParams] = useSearchParams()
   const rawService = searchParams.get('service') ?? 'radarr'
@@ -86,29 +97,34 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
 
   const [url, setUrl] = useState('')
   const [apiKey, setApiKey] = useState('')
+  const [username, setUsername] = useState('')
   const [showKey, setShowKey] = useState(false)
   const [hasExistingKey, setHasExistingKey] = useState(false)
   const [testResult, setTestResult] = useState<TestResult | null>(null)
   const [testing, setTesting] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [webhookCopied, setWebhookCopied] = useState(false)
 
   const loadTabConfig = useCallback(async (serviceId: string) => {
     try {
       const res = await fetch(`/api/settings/${serviceId}`)
       if (res.ok) {
-        const data = await res.json() as { baseUrl: string; hasApiKey: boolean; enabled: boolean }
+        const data = await res.json() as { baseUrl: string; hasApiKey: boolean; enabled: boolean; username?: string }
         setUrl(data.baseUrl ?? '')
         setApiKey('')
+        setUsername(data.username ?? '')
         setHasExistingKey(data.hasApiKey ?? false)
       } else {
         setUrl('')
         setApiKey('')
+        setUsername('')
         setHasExistingKey(false)
       }
     } catch {
       setUrl('')
       setApiKey('')
+      setUsername('')
       setHasExistingKey(false)
     }
     setTestResult(null)
@@ -134,6 +150,11 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
     setTestResult(null)
   }
 
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUsername(e.target.value)
+    setTestResult(null)
+  }
+
   const handleTest = async () => {
     setTesting(true)
     setTestResult(null)
@@ -141,7 +162,7 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
       const res = await fetch(`/api/test-connection/${activeTab}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ baseUrl: url, apiKey }),
+        body: JSON.stringify({ baseUrl: url, apiKey, username }),
       })
       const data = await res.json() as TestResult
       setTestResult(data)
@@ -158,7 +179,7 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
       await fetch(`/api/settings/${activeTab}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ baseUrl: url, apiKey }),
+        body: JSON.stringify({ baseUrl: url, apiKey, username }),
       })
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
@@ -172,6 +193,20 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
       setSaving(false)
     }
   }
+
+  const webhookUrl = `http://${window.location.hostname}:1688/api/webhooks/tautulli`
+
+  const handleCopyWebhook = async () => {
+    try {
+      await navigator.clipboard.writeText(webhookUrl)
+      setWebhookCopied(true)
+      setTimeout(() => setWebhookCopied(false), 2000)
+    } catch {
+      // clipboard write failed — silently ignore
+    }
+  }
+
+  const credLabel = getCredentialLabel(activeTab)
 
   return (
     <div style={{ padding: '0 16px', maxWidth: '640px', margin: '0 auto' }}>
@@ -268,6 +303,32 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
           />
         </div>
 
+        {/* NAS-only: DSM Username field (between URL and password) */}
+        {activeTab === 'nas' && (
+          <div>
+            <label
+              className="text-label"
+              style={{
+                display: 'block',
+                color: 'var(--text-offwhite)',
+                marginBottom: '6px',
+                fontSize: '12px',
+                letterSpacing: '0.06em',
+              }}
+            >
+              DSM Username
+            </label>
+            <input
+              type="text"
+              value={username}
+              onChange={handleUsernameChange}
+              placeholder="admin"
+              style={inputStyle}
+              autoComplete="username"
+            />
+          </div>
+        )}
+
         <div>
           <label
             className="text-label"
@@ -279,21 +340,21 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
               letterSpacing: '0.06em',
             }}
           >
-            API KEY
+            {credLabel.toUpperCase()}
           </label>
           <div style={{ position: 'relative' }}>
             <input
               type={showKey ? 'text' : 'password'}
               value={apiKey}
               onChange={handleApiKeyChange}
-              placeholder={hasExistingKey ? '(key saved — enter new key to change)' : 'API Key'}
+              placeholder={hasExistingKey ? '(saved — enter new value to change)' : credLabel}
               style={{ ...inputStyle, paddingRight: '42px' }}
               autoComplete="new-password"
             />
             <button
               type="button"
               onClick={() => setShowKey((v) => !v)}
-              aria-label={showKey ? 'Hide API key' : 'Show API key'}
+              aria-label={showKey ? `Hide ${credLabel}` : `Show ${credLabel}`}
               style={{
                 position: 'absolute',
                 right: '8px',
@@ -312,6 +373,64 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
             </button>
           </div>
         </div>
+
+        {/* Plex-only: read-only Webhook URL with copy button (D-32) */}
+        {activeTab === 'plex' && (
+          <div>
+            <label
+              className="text-label"
+              style={{
+                display: 'block',
+                color: 'var(--text-offwhite)',
+                marginBottom: '6px',
+                fontSize: '12px',
+                letterSpacing: '0.06em',
+              }}
+            >
+              Webhook URL
+            </label>
+            <div style={{ position: 'relative' }}>
+              <input
+                type="text"
+                value={webhookUrl}
+                readOnly
+                style={{
+                  ...inputStyle,
+                  paddingRight: '80px',
+                  cursor: 'default',
+                  opacity: 0.8,
+                  background: 'rgba(255,255,255,0.03)',
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => void handleCopyWebhook()}
+                style={{
+                  position: 'absolute',
+                  right: '8px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: webhookCopied ? 'rgba(74,222,128,0.2)' : 'rgba(232,160,32,0.15)',
+                  border: `1px solid ${webhookCopied ? 'var(--cockpit-green)' : 'var(--cockpit-amber)'}`,
+                  cursor: 'pointer',
+                  color: webhookCopied ? 'var(--cockpit-green)' : 'var(--cockpit-amber)',
+                  fontSize: '11px',
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontWeight: 600,
+                  letterSpacing: '0.06em',
+                  padding: '3px 8px',
+                  borderRadius: '3px',
+                }}
+                aria-label="Copy webhook URL to clipboard"
+              >
+                {webhookCopied ? 'COPIED!' : 'COPY'}
+              </button>
+            </div>
+            <p style={{ fontSize: '12px', color: '#666', fontStyle: 'italic', marginTop: '4px' }}>
+              In Tautulli &gt; Settings &gt; Notification Agents &gt; Add &gt; Webhook &gt; paste URL above. Enable: Playback Start, Playback Stop, Playback Pause, Playback Resume.
+            </p>
+          </div>
+        )}
 
         {/* Action buttons */}
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -365,6 +484,20 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
               {testResult.success ? `CONNECTED  ${testResult.message}` : `FAILED: ${testResult.message}`}
             </span>
           </div>
+        )}
+
+        {/* Pi-hole note */}
+        {activeTab === 'pihole' && (
+          <p style={{ fontSize: '12px', color: '#666', fontStyle: 'italic', marginTop: '8px' }}>
+            Pi-hole v6 or higher required.
+          </p>
+        )}
+
+        {/* NAS note */}
+        {activeTab === 'nas' && (
+          <p style={{ fontSize: '12px', color: '#666', fontStyle: 'italic', marginTop: '8px' }}>
+            Requires an admin-level DSM account.
+          </p>
         )}
       </div>
     </div>
