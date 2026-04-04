@@ -1,7 +1,8 @@
 ---
 phase: 4
 slug: rich-service-integrations
-status: draft
+status: approved
+reviewed_at: 2026-04-04
 shadcn_initialized: false
 preset: none
 created: 2026-04-04
@@ -333,7 +334,7 @@ Each warning shown as a left-bordered amber text block (same pattern as arr Atte
 | Empty state — Pi-hole detail | "NO DATA — configure Pi-hole in Settings" |
 | Error state — Pi-hole detail | "CONNECTION ERROR — check URL and password in Settings" |
 | Error state — NAS panel | "DSM UNREACHABLE — check NAS URL in Settings" |
-| Error state — Plex rail | "PLEX UNAVAILABLE" |
+| Error state — Plex rail | "PLEX UNAVAILABLE — check Plex URL and token in Settings" |
 
 Destructive actions in Phase 4: none.
 
