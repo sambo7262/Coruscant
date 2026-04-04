@@ -1,5 +1,6 @@
 // Shared types between backend and frontend.
 // Populated in Phase 2; extended in Phase 3 with configured flag and typed metrics.
+// Extended in Phase 4 with rich service types (NasDisk, NasFan, NasDockerStats, PlexServerStats).
 
 export interface ServiceStatus {
   id: string          // e.g. 'radarr'
@@ -18,27 +19,62 @@ export interface NasVolume {
   tempF?: number
 }
 
+export interface NasDisk {
+  id: string
+  name: string
+  tempC: number
+  readBytesPerSec?: number
+  writeBytesPerSec?: number
+}
+
+export interface NasFan {
+  id: string
+  rpm: number
+}
+
+export interface NasDockerStats {
+  cpuPercent: number
+  ramPercent: number
+  networkMbpsUp: number
+  networkMbpsDown: number
+}
+
 export interface NasStatus {
-  cpu: number    // percent
-  ram: number    // percent
+  cpu: number             // percent (user + system + other)
+  ram: number             // percent
+  networkMbpsUp: number   // megabits per second upload
+  networkMbpsDown: number // megabits per second download
+  cpuTempC?: number       // optional — from system temperature field
   volumes: NasVolume[]
+  disks?: NasDisk[]       // optional — only if DSM returns data
+  fans?: NasFan[]         // optional — only if DSM returns fan data
+  docker?: NasDockerStats // optional — only if DSM returns docker stats
+  imageUpdateAvailable?: boolean // optional — from 2x/day check
 }
 
 export interface PlexStream {
   user: string
   title: string
+  deviceName: string        // device/player name (e.g., "Apple TV", "Chrome")
   year?: number
   season?: number
   episode?: number
   progressPercent: number
-  quality: string       // e.g. '1080p'
-  transcode: boolean    // true = transcoding, false = direct play
+  quality: string           // e.g. '1080p'
+  transcode: boolean        // true = transcoding, false = direct play
+}
+
+export interface PlexServerStats {
+  processCpuPercent: number
+  processRamPercent: number
+  bandwidthMbps: number
 }
 
 export interface DashboardSnapshot {
   services: ServiceStatus[]
   nas: NasStatus
   streams: PlexStream[]
+  plexServerStats?: PlexServerStats  // optional — populated when Plex is configured
   timestamp: string // ISO 8601
 }
 
