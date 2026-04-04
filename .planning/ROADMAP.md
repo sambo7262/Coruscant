@@ -93,12 +93,12 @@ Plans:
   3. NAS card shows live CPU %, RAM %, and per-volume storage usage bars updated within the poll interval
   4. NAS card shows per-disk temperatures and fan speed readings; surfaces amber stale-data state when DSM session has expired
   5. User can tap the NAS header strip to expand the full NAS panel (CPU, RAM, disks, fans, Docker stats), and tap any Pi-hole or Plex card/rail to reach a detail view with all metrics expanded
-**Plans:** 2/5 plans executed
+**Plans:** 3/5 plans executed
 
 Plans:
 - [x] 04-01-PLAN.md — Types, schema, settings routes, test-connection handlers for Pi-hole/Plex/NAS
 - [x] 04-02-PLAN.md — Backend adapters (Pi-hole, Tautulli webhook, NAS) with unit tests + PollManager wiring
-- [ ] 04-03-PLAN.md — Frontend: Pi-hole card, Pi-hole detail view, Settings tabs, grid restructure
+- [x] 04-03-PLAN.md — Frontend: Pi-hole card, Pi-hole detail view, Settings tabs, grid restructure
 - [ ] 04-04-PLAN.md — Frontend: AppHeader NAS live strip + expandable downward panel
 - [ ] 04-05-PLAN.md — Frontend: NowPlayingBanner Plex upgrade + visual verification checkpoint
 **UI hint**: yes
@@ -173,7 +173,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 1. Infrastructure Foundation | 2/2 | Complete | 2026-04-03 |
 | 2. Core UI Shell | 13/13 | Complete | 2026-04-03 |
 | 3. Settings + First Service Adapters | 4/4 | Complete   | 2026-04-04 |
-| 4. Rich Service Integrations | 2/5 | In Progress|  |
+| 4. Rich Service Integrations | 3/5 | In Progress|  |
 | 5. UI v2 — Instrument Panel Polish | 0/? | Not started | - |
 | 6. Network Monitoring | 0/? | Not started | - |
 | 7. Notifications | 0/? | Not started | - |

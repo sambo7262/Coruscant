@@ -43,7 +43,7 @@
 - [x] **SVCRICH-02**: Plex card shows active stream count, currently playing titles, playback state (playing/paused/buffering), and transcode vs direct-play indicators
 - [x] **SVCRICH-03**: NAS card shows CPU usage %, RAM usage %, and per-volume storage usage bars
 - [x] **SVCRICH-04**: NAS card shows per-disk temperatures and fan speed readings via Synology DSM API
-- [ ] **SVCRICH-05**: Each rich-data service has a detail view with all available metrics expanded
+- [x] **SVCRICH-05**: Each rich-data service has a detail view with all available metrics expanded
 
 ### Network Monitoring
 
@@ -145,7 +145,7 @@ These are isolated in their own phase due to complexity, OAuth requirements, and
 | SVCRICH-02 | Phase 4 | Complete |
 | SVCRICH-03 | Phase 4 | Complete |
 | SVCRICH-04 | Phase 4 | Complete |
-| SVCRICH-05 | Phase 4 | Pending |
+| SVCRICH-05 | Phase 4 | Complete |
 | NET-01 | Phase 5 | Pending |
 | NET-02 | Phase 5 | Pending |
 | NET-03 | Phase 5 | Pending |
