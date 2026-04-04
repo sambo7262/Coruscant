@@ -33,7 +33,7 @@ No UniFi, no notifications, no logging — those are Phase 6+.
   - Memory usage %
 - **D-05:** Active/inactive blocking state maps to color semantics: blocking active = green LED, blocking disabled = amber LED (user action required — Pi-hole is up but not doing its job), offline = red LED.
 - **D-06:** **Pi-hole detail view** shows:
-  - Query distribution (query type breakdown)
+  - Query distribution — **donut chart** of query type breakdown (A, AAAA, HTTPS, etc.) from `/api/stats/query_types`
   - Day totals: total queries today, total blocked today
   - Any warning/error messages from the Pi-hole API
 
@@ -77,9 +77,26 @@ No UniFi, no notifications, no logging — those are Phase 6+.
 
 ### Poll Intervals
 
-- **D-24:** Pi-hole: 30–60 second interval (same as arr services — Claude's discretion on exact value).
-- **D-25:** Plex: 10–15 second interval to keep stream progress current (Claude's discretion on exact value).
-- **D-26:** NAS: 10–15 second interval for live hardware stats (Claude's discretion). Image update check: 2× per day (separate timer, not the main poll cycle).
+- **D-24:** Pi-hole: **60 second** interval.
+- **D-25:** Plex: **Tautulli webhooks** (user has Plex Pass + Tautulli). Backend exposes a POST endpoint that Tautulli calls on play/pause/stop/resume events — stream state updates instantly, no polling. No fallback poll needed.
+- **D-26:** NAS: **3 second** interval for live hardware stats. Image update check: 2× per day (separate timer, not the main poll cycle).
+- **D-27:** Media stack (Radarr, Sonarr, etc.): **5 second** interval.
+- **D-28:** SABnzbd: **10 second** interval.
+
+### Media Stack UI Simplification
+
+- **D-29:** The media stack area shows a **condensed list: one LED + label row per service** (Radarr, Sonarr, SABnzbd, etc.) — no expanded card UI, just tight rows. Each service label row remains tappable to navigate to that service's detail view. Condensed for dashboard space, full drill-down still accessible.
+- **D-30:** Purple LED semantics — each service is independent:
+  - **Media stack LED (Radarr/Sonarr/etc.):**
+    - Solid purple — actively monitored (healthy, no pending queue)
+    - Flashing purple — a file is queued in the arr service (waiting to be sent or already sent to SABnzbd)
+  - **SABnzbd LED:**
+    - Solid purple — actively downloading
+    - Flashing purple — files are in the SABnzbd queue but downloading is paused or not yet started (downloader is up, has work, but not running — distinct from the arr service state)
+  - These states are independent: arr service can be flashing (has a queue entry) while SABnzbd is also flashing (paused). Both tell a different story about where in the pipeline the hold-up is.
+  - Standard green/red/amber apply when no download activity is present.
+- **D-31:** SABnzbd display shows the current job naturally: **filename**, **time remaining**, **speed**. No app-attribution needed — the download client only runs one job at a time, so the active file in SABnzbd implicitly maps to whoever queued it.
+- **D-32:** Tautulli webhook setup must be self-contained in the Plex settings tab. The tab shows a read-only **Webhook URL** field (e.g. `http://<host>:1688/api/webhooks/tautulli`) with a one-click **Copy** button. Below it, inline setup instructions: *"In Tautulli → Settings → Notification Agents → Add → Webhook → paste URL above. Enable: Playback Start, Playback Stop, Playback Pause, Playback Resume."* No external docs needed — the tab is self-guiding.
 
 ### Claude's Discretion
 
