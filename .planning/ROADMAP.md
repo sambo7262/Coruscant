@@ -99,7 +99,7 @@ Plans:
 - [x] 04-01-PLAN.md — Types, schema, settings routes, test-connection handlers for Pi-hole/Plex/NAS
 - [x] 04-02-PLAN.md — Backend adapters (Pi-hole, Tautulli webhook, NAS) with unit tests + PollManager wiring
 - [x] 04-03-PLAN.md — Frontend: Pi-hole card, Pi-hole detail view, Settings tabs, grid restructure
-- [ ] 04-04-PLAN.md — Frontend: AppHeader NAS live strip + expandable downward panel
+- [x] 04-04-PLAN.md — Frontend: AppHeader NAS live strip + expandable downward panel
 - [ ] 04-05-PLAN.md — Frontend: NowPlayingBanner Plex upgrade + visual verification checkpoint
 **UI hint**: yes
 

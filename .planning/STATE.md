@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 04-rich-service-integrations-04-03-PLAN.md
-last_updated: "2026-04-04T22:43:44.698Z"
+stopped_at: Completed 04-rich-service-integrations-04-04-PLAN.md
+last_updated: "2026-04-04T22:47:28.178Z"
 last_activity: 2026-04-04
 progress:
   total_phases: 11
   completed_phases: 3
   total_plans: 24
-  completed_plans: 22
+  completed_plans: 23
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 ## Current Position
 
 Phase: 04 (rich-service-integrations) — EXECUTING
-Plan: 4 of 5
+Plan: 5 of 5
 Status: Ready to execute
 Last activity: 2026-04-04
 
@@ -73,6 +73,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 04-rich-service-integrations P01 | 223s | 2 tasks | 7 files |
 | Phase 04-rich-service-integrations P02 | 363s | 3 tasks | 8 files |
 | Phase 04-rich-service-integrations P03 | 314s | 2 tasks | 4 files |
+| Phase 04-rich-service-integrations P04 | 116s | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -132,6 +133,8 @@ Recent decisions affecting current work:
 - [Phase 04-rich-service-integrations]: recharts installed for PieChart donut chart — missing dependency auto-fixed (Rule 3)
 - [Phase 04-rich-service-integrations]: MediaStackRow exported from ServiceCard.tsx — condensed LED+label rows for arr services (D-29)
 - [Phase 04-rich-service-integrations]: CardGrid two-column layout: MEDIA STACK panel (arr LED rows) left, full cards right
+- [Phase 04-rich-service-integrations]: AppHeader expandable panel IS the NAS detail view (SVCRICH-05) — no separate route needed
+- [Phase 04-rich-service-integrations]: nasConfigured uses strict !== false check — legacy/mock services without configured flag are not treated as unconfigured
 
 ### Roadmap Evolution
 
@@ -157,6 +160,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T22:43:44.693Z
-Stopped at: Completed 04-rich-service-integrations-04-03-PLAN.md
+Last session: 2026-04-04T22:47:28.173Z
+Stopped at: Completed 04-rich-service-integrations-04-04-PLAN.md
 Resume file: None
