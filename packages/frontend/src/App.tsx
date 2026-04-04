@@ -18,6 +18,10 @@ export default function App() {
   // Uses strict !== false check so legacy/mock services without the flag are not treated as unconfigured
   const nasConfigured = snapshot?.services.find(s => s.id === 'nas')?.configured !== false
 
+  // D-11: Plex rail only shows when Plex is configured
+  // Uses strict !== false check so legacy/mock services without the flag are not treated as unconfigured
+  const plexConfigured = snapshot?.services.find(s => s.id === 'plex')?.configured !== false
+
   return (
     <>
       <GridBackground />
@@ -31,7 +35,11 @@ export default function App() {
           <Route path="/logs" element={<LogsPage />} />
         </Routes>
       </main>
-      <NowPlayingBanner streams={snapshot?.streams ?? []} />
+      <NowPlayingBanner
+        streams={snapshot?.streams ?? []}
+        plexServerStats={snapshot?.plexServerStats}
+        plexConfigured={plexConfigured}
+      />
     </>
   )
 }

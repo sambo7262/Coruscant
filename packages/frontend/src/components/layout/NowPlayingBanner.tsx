@@ -1,13 +1,15 @@
 import { useState, useRef, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import type { PlexStream } from '@coruscant/shared'
+import type { PlexStream, PlexServerStats } from '@coruscant/shared'
 import { StreamRow } from './StreamRow.js'
 
 interface NowPlayingBannerProps {
   streams: PlexStream[]
+  plexServerStats?: PlexServerStats
+  plexConfigured?: boolean
 }
 
-export function NowPlayingBanner({ streams }: NowPlayingBannerProps) {
+export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: NowPlayingBannerProps) {
   const [expanded, setExpanded] = useState(false)
   const tickerRef = useRef<HTMLSpanElement>(null)
   const [shouldScroll, setShouldScroll] = useState(false)
@@ -19,14 +21,57 @@ export function NowPlayingBanner({ streams }: NowPlayingBannerProps) {
     }
   }, [streams])
 
-  if (streams.length === 0) return null // D-14: hidden completely when no streams
+  // D-11: When Plex is not configured at all, hide the rail entirely
+  if (!plexConfigured) return null
+
+  // When configured but no streams, show idle rail (NOT null)
+  const hasStreams = streams.length > 0
+
+  // Idle state: Plex configured but no streams active
+  if (!hasStreams) {
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '40px',
+          zIndex: 30,
+          background: 'var(--bg-panel)',
+          borderTop: '1px solid rgba(232,160,32,0.2)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <span
+          style={{
+            fontSize: '12px',
+            color: '#666666',
+            fontFamily: 'var(--font-mono)',
+            letterSpacing: '0.08em',
+          }}
+        >
+          NO ACTIVE STREAMS
+        </span>
+      </div>
+    )
+  }
 
   const firstStream = streams[0]
-  const tickerText =
-    firstStream.season != null && firstStream.episode != null
-      ? `${firstStream.title} S${firstStream.season}E${firstStream.episode} \u2022 ${firstStream.user}`
-      : `${firstStream.title} \u2022 ${firstStream.user}`
 
+  // D-09: Collapsed rail ticker shows title, deviceName, and transcode indicator per stream
+  const buildTickerSegment = (stream: PlexStream) => {
+    const titleText =
+      stream.season != null && stream.episode != null
+        ? `${stream.title} S${stream.season}E${stream.episode}`
+        : stream.title
+    const playMode = stream.transcode ? 'Transcode' : 'Direct Play'
+    return `${titleText} \u2022 ${stream.deviceName} \u2022 ${playMode}`
+  }
+
+  const tickerText = buildTickerSegment(firstStream)
   const pluralS = streams.length === 1 ? '' : 's'
 
   return (
@@ -135,6 +180,43 @@ export function NowPlayingBanner({ streams }: NowPlayingBannerProps) {
               {streams.map((stream, i) => (
                 <StreamRow key={`${stream.user}-${stream.title}-${i}`} stream={stream} />
               ))}
+
+              {/* Plex Server Stats — only in expanded state, only if stats available (D-10) */}
+              {plexServerStats && (
+                <div
+                  style={{
+                    borderTop: '1px solid rgba(232,160,32,0.2)',
+                    paddingTop: '8px',
+                    marginTop: '8px',
+                    paddingBottom: '12px',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: '12px',
+                      color: 'var(--cockpit-amber)',
+                      letterSpacing: '0.08em',
+                      marginBottom: '4px',
+                      fontFamily: 'var(--font-mono)',
+                    }}
+                  >
+                    PLEX SERVER
+                  </div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '16px',
+                      fontSize: '14px',
+                      color: 'var(--text-offwhite)',
+                      fontFamily: 'var(--font-mono)',
+                    }}
+                  >
+                    <span>CPU {plexServerStats.processCpuPercent.toFixed(1)}%</span>
+                    <span>RAM {plexServerStats.processRamPercent.toFixed(1)}%</span>
+                    <span>BW {plexServerStats.bandwidthMbps.toFixed(1)} Mbps</span>
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
