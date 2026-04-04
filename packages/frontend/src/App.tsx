@@ -14,11 +14,15 @@ export default function App() {
   const location = useLocation()
   const showBack = location.pathname !== '/'
 
+  // Derive whether NAS has been configured in Settings
+  // Uses strict !== false check so legacy/mock services without the flag are not treated as unconfigured
+  const nasConfigured = snapshot?.services.find(s => s.id === 'nas')?.configured !== false
+
   return (
     <>
       <GridBackground />
       <WiringOverlay />
-      <AppHeader nas={snapshot?.nas ?? null} connected={connected} showBack={showBack} />
+      <AppHeader nas={snapshot?.nas ?? null} connected={connected} showBack={showBack} nasConfigured={nasConfigured} />
       <main style={{ position: 'relative', zIndex: 1, paddingTop: '88px', paddingBottom: '64px' }}>
         <Routes>
           <Route path="/" element={<DashboardPage snapshot={snapshot} />} />
