@@ -363,9 +363,11 @@ export function ServiceDetailPage({ snapshot }: ServiceDetailPageProps) {
   const isPihole = serviceId === 'pihole'
   const isSabnzbd = serviceId === 'sabnzbd'
 
-  // Pi-hole header shows NETWORK (D-15)
+  // Pi-hole header shows NETWORK (D-15); SABnzbd header shows DOWNLOADS
   const displayName = isPihole
     ? 'NETWORK'
+    : isSabnzbd
+    ? 'DOWNLOADS'
     : (service?.name ?? serviceId)
 
   return (

@@ -7,6 +7,9 @@ const ARR_IDS = new Set(['radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 're
 const LEFT_COL_IDS = ['radarr', 'sonarr', 'lidarr']
 const RIGHT_COL_IDS = ['prowlarr', 'bazarr', 'readarr']
 
+// SABnzbd is a download service — rendered below media and network tiles
+const DOWNLOAD_IDS = new Set(['sabnzbd'])
+
 interface CardGridProps {
   snapshot: DashboardSnapshot | null
 }
@@ -36,7 +39,11 @@ export function CardGrid({ snapshot }: CardGridProps) {
     (s) => s.id !== 'nas-detail' && s.id !== 'plex' && s.id !== 'nas',
   )
   const arrServices = allServices.filter((s) => ARR_IDS.has(s.id))
-  const cardServices = allServices.filter((s) => !ARR_IDS.has(s.id))
+  const nonArrServices = allServices.filter((s) => !ARR_IDS.has(s.id))
+
+  // Split non-arr cards: network/infrastructure first, downloads (SABnzbd) below
+  const networkServices = nonArrServices.filter((s) => !DOWNLOAD_IDS.has(s.id))
+  const downloadServices = nonArrServices.filter((s) => DOWNLOAD_IDS.has(s.id))
 
   // Build ordered columns — only include services that exist in the snapshot
   const leftColArr = LEFT_COL_IDS
@@ -50,7 +57,7 @@ export function CardGrid({ snapshot }: CardGridProps) {
 
   return (
     <div style={{ padding: '0 8px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px', alignItems: 'start' }}>
-      {/* Arr services tile — chamfered card with amber header strip (D-09, D-12) */}
+      {/* 1. Arr services tile — chamfered card with MEDIA label in amber header (D-09, D-12) */}
       {arrServices.length > 0 && (
         <div
           className="chamfer-card"
@@ -62,8 +69,10 @@ export function CardGrid({ snapshot }: CardGridProps) {
             overflow: 'hidden',
           }}
         >
-          {/* 6px amber header strip — same as all other instrument cards */}
-          <div style={{ height: '6px', background: 'var(--cockpit-amber)', flexShrink: 0 }} />
+          {/* 20px amber header strip with MEDIA label */}
+          <div style={{ height: '20px', background: 'var(--cockpit-amber)', flexShrink: 0, display: 'flex', alignItems: 'center', paddingLeft: '6px' }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: '#1a1a1a', letterSpacing: '0.08em', fontWeight: 600 }}>MEDIA</span>
+          </div>
           {/* Two-column layout: L = Radarr/Sonarr/Lidarr, R = Prowlarr/Bazarr/Readarr */}
           <div style={{ display: 'flex', padding: '6px 4px', gap: '0' }}>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1px' }}>
@@ -80,8 +89,13 @@ export function CardGrid({ snapshot }: CardGridProps) {
         </div>
       )}
 
-      {/* Individual service cards (SABnzbd, Pi-hole, etc.) — no tier section labels */}
-      {cardServices.map((service) => (
+      {/* 2. Network/infrastructure cards (Pi-hole, etc.) */}
+      {networkServices.map((service) => (
+        <ServiceCard key={service.id} service={service} index={globalIndex++} />
+      ))}
+
+      {/* 3. Download cards (SABnzbd) — always below media and network */}
+      {downloadServices.map((service) => (
         <ServiceCard key={service.id} service={service} index={globalIndex++} />
       ))}
     </div>

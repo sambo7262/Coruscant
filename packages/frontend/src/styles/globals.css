@@ -52,10 +52,10 @@ body {
   overflow-x: hidden;
 }
 
-/* Kiosk viewport: prevent body scroll at 800x480 (D-01) */
+/* Kiosk viewport: constrain body height at 800x480 (D-01) */
+/* overflow:hidden is NOT set here — controlled per-route in App.tsx <main> so detail pages can scroll */
 @media (max-height: 480px) {
   body {
-    overflow: hidden;
     height: 100vh;
     max-height: 480px;
   }

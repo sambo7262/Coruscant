@@ -331,6 +331,39 @@ function renderInstrumentBody(service: ServiceStatus): React.ReactNode {
   return null
 }
 
+/** Reactive LED for SABnzbd card: amber when actively downloading or queue > 0, green when idle */
+function SabnzbdLed({ service }: { service: ServiceStatus }) {
+  if (service.status === 'offline') {
+    return <StatusDot status="offline" />
+  }
+  if (service.status === 'warning') {
+    return <StatusDot status="warning" />
+  }
+  if (service.status === 'stale') {
+    return <StatusDot status="stale" />
+  }
+  // Online — check for active download activity
+  const metrics = service.metrics as Record<string, unknown> | undefined
+  const speedMBs = typeof metrics?.speedMBs === 'number' ? metrics.speedMBs : 0
+  const queueCount = typeof metrics?.queueCount === 'number' ? metrics.queueCount : 0
+  const isActive = speedMBs > 0 || queueCount > 0
+  if (isActive) {
+    return (
+      <div
+        style={{
+          width: '8px',
+          height: '8px',
+          borderRadius: '50%',
+          background: 'var(--cockpit-amber)',
+          boxShadow: '0 0 6px var(--cockpit-amber)',
+          flexShrink: 0,
+        }}
+      />
+    )
+  }
+  return <StatusDot status="online" />
+}
+
 interface ServiceCardProps {
   service: ServiceStatus
   index: number
@@ -437,10 +470,14 @@ export function ServiceCard({ service, index }: ServiceCardProps) {
             fontSize: '11px',
           }}
         >
-          {service.id === 'pihole' ? 'NETWORK' : service.name}
+          {service.id === 'pihole' ? 'NETWORK' : service.id === 'sabnzbd' ? 'DOWNLOADS' : service.name}
         </span>
         {/* Grey LED for unconfigured services — stale maps to grey in StatusDot */}
-        <StatusDot status={isUnconfigured ? 'stale' : service.status} />
+        {/* SABnzbd: custom LED that goes amber when actively downloading or queued */}
+        {service.id === 'sabnzbd' && !isUnconfigured
+          ? <SabnzbdLed service={service} />
+          : <StatusDot status={isUnconfigured ? 'stale' : service.status} />
+        }
       </div>
 
       {/* Stale indicator row */}

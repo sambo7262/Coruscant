@@ -13,6 +13,7 @@ export default function App() {
   const { snapshot, connected } = useDashboardSSE()
   const location = useLocation()
   const showBack = location.pathname !== '/'
+  const isDashboard = location.pathname === '/'
 
   // Derive whether NAS has been configured in Settings
   // Uses strict !== false check so legacy/mock services without the flag are not treated as unconfigured
@@ -27,7 +28,7 @@ export default function App() {
       <GridBackground />
       <WiringOverlay />
       <AppHeader nas={snapshot?.nas ?? null} connected={connected} showBack={showBack} nasConfigured={nasConfigured} />
-      <main style={{ position: 'relative', zIndex: 1, paddingTop: '128px', paddingBottom: '40px' }}>
+      <main style={{ position: 'relative', zIndex: 1, paddingTop: '128px', paddingBottom: '40px', overflowY: isDashboard ? 'hidden' : 'auto' }}>
         <Routes>
           <Route path="/" element={<DashboardPage snapshot={snapshot} />} />
           <Route path="/services/:serviceId" element={<ServiceDetailPage snapshot={snapshot} />} />
