@@ -35,8 +35,6 @@ export interface NasFan {
 export interface NasDockerStats {
   cpuPercent: number
   ramPercent: number
-  networkMbpsUp: number
-  networkMbpsDown: number
 }
 
 export interface NasStatus {

@@ -258,19 +258,20 @@ describe('NAS adapter', () => {
   })
 
   describe('fetchNasDockerStats', () => {
-    it('aggregates cpu and ram across running containers', async () => {
+    it('aggregates cpu and memoryPercent across all resources from SYNO.Docker.Container.Resource', async () => {
       mockAxios.get = vi.fn()
         .mockImplementationOnce(() => Promise.resolve({
           data: { success: true, data: { sid: 'dsm-sid-docker' } },
         }))
         .mockImplementationOnce(() => Promise.resolve({
+          // SYNO.Docker.Container.Resource with name=any
           data: {
             success: true,
             data: {
-              containers: [
-                { status: 'running', cpu_usage: 12.5, memory_usage: 512_000_000, memory_limit: 2_000_000_000, up_bytes: 0, down_bytes: 0 },
-                { status: 'running', cpu_usage: 7.0, memory_usage: 256_000_000, memory_limit: 2_000_000_000, up_bytes: 0, down_bytes: 0 },
-                { status: 'stopped', cpu_usage: 0, memory_usage: 0, memory_limit: 0, up_bytes: 0, down_bytes: 0 },
+              resources: [
+                { container: 'plex', cpu: 12.5, memoryPercent: 8.4 },
+                { container: 'sonarr', cpu: 7.0, memoryPercent: 3.2 },
+                { container: 'radarr', cpu: 2.3, memoryPercent: 2.1 },
               ],
             },
           },
@@ -280,19 +281,20 @@ describe('NAS adapter', () => {
       const result = await fetchNasDockerStats('http://nas.local:5000', 'admin', 'pass')
 
       expect(result).toBeDefined()
-      expect(result!.cpuPercent).toBe(19.5) // 12.5 + 7.0
-      // RAM: (512M + 256M) / (2G + 2G) * 100 = 768M / 4G * 100 = 19.2%
-      expect(result!.ramPercent).toBeCloseTo(19.2, 0)
+      expect(result!.cpuPercent).toBe(21.8) // 12.5 + 7.0 + 2.3
+      expect(result!.ramPercent).toBeCloseTo(13.7, 0) // 8.4 + 3.2 + 2.1
     })
 
-    it('returns undefined when Docker API fails', async () => {
+    it('returns undefined when both Docker.Container.Resource and ContainerManager.Container.Resource fail', async () => {
       mockAxios.get = vi.fn()
         .mockImplementationOnce(() => Promise.resolve({
           data: { success: true, data: { sid: 'dsm-sid-docker2' } },
         }))
+        // SYNO.Docker.Container.Resource fails
         .mockImplementationOnce(() => Promise.resolve({
           data: { success: false, error: { code: 103 } },
         }))
+        // SYNO.ContainerManager.Container.Resource fails
         .mockImplementationOnce(() => Promise.resolve({
           data: { success: false, error: { code: 103 } },
         }))
@@ -301,6 +303,35 @@ describe('NAS adapter', () => {
       const result = await fetchNasDockerStats('http://nas.local:5000', 'admin', 'pass')
 
       expect(result).toBeUndefined()
+    })
+
+    it('falls back to ContainerManager.Container.Resource when Docker.Container.Resource fails', async () => {
+      mockAxios.get = vi.fn()
+        .mockImplementationOnce(() => Promise.resolve({
+          data: { success: true, data: { sid: 'dsm-sid-docker3' } },
+        }))
+        // SYNO.Docker.Container.Resource fails
+        .mockImplementationOnce(() => Promise.resolve({
+          data: { success: false, error: { code: 103 } },
+        }))
+        // SYNO.ContainerManager.Container.Resource succeeds
+        .mockImplementationOnce(() => Promise.resolve({
+          data: {
+            success: true,
+            data: {
+              resources: [
+                { container: 'nginx', cpu: 0.5, memoryPercent: 1.2 },
+              ],
+            },
+          },
+        }))
+
+      const { fetchNasDockerStats } = await import('../adapters/nas.js')
+      const result = await fetchNasDockerStats('http://nas.local:5000', 'admin', 'pass')
+
+      expect(result).toBeDefined()
+      expect(result!.cpuPercent).toBe(0.5)
+      expect(result!.ramPercent).toBe(1.2)
     })
   })
 })
