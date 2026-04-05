@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import type { ServiceStatus } from '@coruscant/shared'
+import type { ServiceStatus, UnifiMetrics } from '@coruscant/shared'
 import { StatusDot } from '../ui/StatusDot.js'
 import { StaleIndicator } from '../ui/StaleIndicator.js'
 
@@ -288,8 +288,27 @@ function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   )
 }
 
-// NETWORK card: Pi-hole section + Ubiquiti placeholder (D-15, D-16)
-function NetworkInstrument({ metrics }: { metrics: Record<string, unknown> }) {
+// Throughput bar for TX/RX display in NETWORK card UBIQUITI section (D-02, D-03)
+function ThroughputBar({ label, value, peak, color }: { label: string; value: number | null; peak: number; color: string }) {
+  const pct = value !== null && peak > 0 ? Math.min((value / peak) * 100, 100) : 0
+  const display = value !== null ? `${value >= 1 ? Math.round(value) : value.toFixed(1)}M` : '—'
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+      <span style={{ fontSize: '8px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)', width: '14px' }}>
+        {label}
+      </span>
+      <div style={{ flex: 1, height: '4px', background: '#222', borderRadius: '2px' }}>
+        <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: '2px', transition: 'width 0.3s ease' }} />
+      </div>
+      <span style={{ fontSize: '8px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)', width: '32px', textAlign: 'right' }}>
+        {display}
+      </span>
+    </div>
+  )
+}
+
+// NETWORK card: Pi-hole section + Ubiquiti section (D-15, D-16)
+function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, unknown>; unifiService?: ServiceStatus }) {
   const qpm = typeof metrics.queriesPerMinute === 'number'
     ? metrics.queriesPerMinute.toFixed(1) : '--'
   const load = typeof metrics.load1m === 'number'
@@ -297,6 +316,15 @@ function NetworkInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   const mem = typeof metrics.memPercent === 'number'
     ? `${Math.round(metrics.memPercent as number)}%` : '--'
   const blocking = metrics.blockingActive === true ? 'BLOCKING' : 'DISABLED'
+
+  const unifiConfigured = unifiService?.configured !== false && unifiService?.metrics != null
+  const um = unifiService?.metrics as unknown as UnifiMetrics | undefined
+  const healthToLed = um?.healthStatus === 'online' ? 'online' as const
+    : um?.healthStatus === 'warning' ? 'warning' as const
+    : 'offline' as const
+  const healthLabel = um?.healthStatus === 'online' ? 'ONLINE'
+    : um?.healthStatus === 'warning' ? 'DEGRADED'
+    : 'OFFLINE'
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 8px' }}>
@@ -318,13 +346,34 @@ function NetworkInstrument({ metrics }: { metrics: Record<string, unknown> }) {
           MEM {mem}
         </span>
       </div>
-      {/* RIGHT — Ubiquiti placeholder */}
+      {/* RIGHT — Ubiquiti */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-        <div style={{ fontSize: '8px', color: '#555', letterSpacing: '0.08em',
-          textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>UBIQUITI</div>
-        <span style={{ fontSize: '9px', color: '#444', fontFamily: 'var(--font-mono)' }}>
-          NOT CONFIGURED
-        </span>
+        <div style={{ fontSize: '8px', color: unifiConfigured ? 'var(--cockpit-amber)' : '#555',
+          letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
+          UBIQUITI
+        </div>
+        {!unifiConfigured ? (
+          <span style={{ fontSize: '9px', color: '#444', fontFamily: 'var(--font-mono)' }}>
+            NOT CONFIGURED
+          </span>
+        ) : (
+          <>
+            {/* Row 1: Health LED + status label + client count (D-04) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <StatusDot status={healthToLed} />
+              <span style={{ fontSize: '9px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)' }}>
+                {healthLabel}
+              </span>
+              <span style={{ fontSize: '9px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)', marginLeft: 'auto' }}>
+                {um!.clientCount} cl
+              </span>
+            </div>
+            {/* Row 2: TX bar — red per D-02 */}
+            <ThroughputBar label="TX" value={um!.wanTxMbps} peak={um!.peakTxMbps} color="#FF4444" />
+            {/* Row 3: RX bar — blue per D-02 */}
+            <ThroughputBar label="RX" value={um!.wanRxMbps} peak={um!.peakRxMbps} color="#00c8ff" />
+          </>
+        )}
       </div>
     </div>
   )
@@ -332,7 +381,7 @@ function NetworkInstrument({ metrics }: { metrics: Record<string, unknown> }) {
 
 const ARR_IDS = new Set(['radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 'readarr'])
 
-function renderInstrumentBody(service: ServiceStatus): React.ReactNode {
+function renderInstrumentBody(service: ServiceStatus, allServices?: ServiceStatus[]): React.ReactNode {
   const metrics = service.metrics as Record<string, unknown> | undefined
   if (!metrics) return null
 
@@ -349,7 +398,8 @@ function renderInstrumentBody(service: ServiceStatus): React.ReactNode {
     return <SabnzbdInstrument metrics={metrics} />
   }
   if (service.id === 'pihole') {
-    return <NetworkInstrument metrics={metrics} />
+    const unifiService = allServices?.find((s) => s.id === 'unifi')
+    return <NetworkInstrument metrics={metrics} unifiService={unifiService} />
   }
   return null
 }
@@ -390,9 +440,10 @@ function SabnzbdLed({ service }: { service: ServiceStatus }) {
 interface ServiceCardProps {
   service: ServiceStatus
   index: number
+  allServices?: ServiceStatus[]
 }
 
-export function ServiceCard({ service, index }: ServiceCardProps) {
+export function ServiceCard({ service, index, allServices }: ServiceCardProps) {
   const navigate = useNavigate()
   const [hovered, setHovered] = useState(false)
 
@@ -435,7 +486,7 @@ export function ServiceCard({ service, index }: ServiceCardProps) {
         NOT CONFIGURED
       </span>
     </div>
-  ) : renderInstrumentBody(service)
+  ) : renderInstrumentBody(service, allServices)
 
   return (
     <motion.div

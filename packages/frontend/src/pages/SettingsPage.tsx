@@ -14,6 +14,7 @@ const SERVICES = [
   { id: 'pihole', label: 'PI-HOLE' },
   { id: 'plex', label: 'PLEX' },
   { id: 'nas', label: 'NAS' },
+  { id: 'unifi', label: 'UBIQUITI' },
 ] as const
 
 type ServiceId = (typeof SERVICES)[number]['id']
@@ -85,6 +86,7 @@ function getCredentialLabel(serviceId: ServiceId): string {
   if (serviceId === 'pihole') return 'Password'
   if (serviceId === 'plex') return 'Plex Token'
   if (serviceId === 'nas') return 'DSM Password'
+  if (serviceId === 'unifi') return 'API Token'
   return 'API KEY'
 }
 

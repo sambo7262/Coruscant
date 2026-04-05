@@ -91,7 +91,7 @@ export function CardGrid({ snapshot }: CardGridProps) {
 
       {/* 2. Network/infrastructure cards (Pi-hole, etc.) */}
       {networkServices.map((service) => (
-        <ServiceCard key={service.id} service={service} index={globalIndex++} />
+        <ServiceCard key={service.id} service={service} index={globalIndex++} allServices={snapshot.services} />
       ))}
 
       {/* 3. Download cards (SABnzbd) — always on its own row below media and network */}
