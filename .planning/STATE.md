@@ -128,7 +128,7 @@ Recent decisions affecting current work:
 - [Phase 04-rich-service-integrations]: username column stored plaintext on serviceConfig — DSM login name is not a secret, only the password is encrypted
 - [Phase 04-rich-service-integrations]: Pi-hole v6 only: POST /api/auth with password — v5 FTL API not supported
 - [Phase 04-rich-service-integrations]: Pi-hole session cached in module-level Map, invalidated on 401
-- [Phase 04-rich-service-integrations]: Plex has no poll timer — Tautulli webhook is the ONLY data source for Plex streams (D-25)
+- [Phase 04-rich-service-integrations]: Plex has no poll timer — Tautulli webhook is the ONLY data source for Plex streams (D-25) [SUPERSEDED by quick task 260404-rxw: Plex now uses direct 5s PMS poll; Tautulli webhook kept as backward-compat override]
 - [Phase 04-rich-service-integrations]: ARR_INTERVAL_MS changed from 45_000 to 5_000 (D-27); PIHOLE=60s; NAS=3s
 - [Phase 04-rich-service-integrations]: NAS fans field is undefined (not []) when empty (D-19)
 - [Phase 04-rich-service-integrations]: recharts installed for PieChart donut chart — missing dependency auto-fixed (Rule 3)
@@ -152,6 +152,7 @@ None yet.
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260403-eh1 | arr+SABnzbd status color semantics: green=up, red=down, yellow=error, purple=downloading | 2026-04-03 | b4a0398 | [260403-eh1-arr-sabnzbd-status-color-semantics-green](./quick/260403-eh1-arr-sabnzbd-status-color-semantics-green/) |
+| 260404-rxw | Switch Plex data source from Tautulli webhook to direct 5-second PMS poll | 2026-04-05 | 0db78f8 | [260404-rxw-switch-plex-data-source-from-tautulli-we](./quick/260404-rxw-switch-plex-data-source-from-tautulli-we/) |
 
 ### Blockers/Concerns
 
