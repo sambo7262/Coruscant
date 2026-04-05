@@ -215,10 +215,10 @@ export async function debugRoutes(fastify: FastifyInstance) {
       const res = await axios.get(`${baseUrl}/proxy/network/integration/v1/sites`, opts)
       const sites = res.data?.data ?? []
       result['step1_sites'] = { status: res.status, siteCount: sites.length, sites, raw: res.data }
-      const defaultSite = sites.find((s: Record<string, unknown>) => s.internalId === 'default')
+      const defaultSite = sites.find((s: Record<string, unknown>) => s.internalReference === 'default')
         ?? sites.find((s: Record<string, unknown>) => String(s.name ?? '').toLowerCase() === 'default')
         ?? sites[0]
-      siteId = defaultSite?.siteId ?? null
+      siteId = defaultSite?.id ?? null
       result['resolvedSiteId'] = siteId
     } catch (e: unknown) {
       result['step1_sites'] = { error: String(e) }

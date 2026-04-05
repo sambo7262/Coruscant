@@ -94,18 +94,19 @@ async function resolveSiteId(baseUrl: string, apiKey: string): Promise<string> {
     httpsAgent,
   })
 
-  const sites: Array<{ siteId: string; internalId: string; name: string }> =
+  // API returns { id, internalReference, name } — not siteId/internalId as originally assumed
+  const sites: Array<{ id: string; internalReference: string; name: string }> =
     response.data?.data ?? []
 
   if (sites.length === 0) {
     throw new Error('UniFi API returned no sites')
   }
 
-  const defaultById = sites.find(s => s.internalId === 'default')
+  const defaultByRef = sites.find(s => s.internalReference === 'default')
   const defaultByName = sites.find(s => s.name.toLowerCase() === 'default')
-  const site = defaultById ?? defaultByName ?? sites[0]
+  const site = defaultByRef ?? defaultByName ?? sites[0]
 
-  cachedSiteId = site.siteId
+  cachedSiteId = site.id
   return cachedSiteId
 }
 
