@@ -145,7 +145,7 @@ export async function fetchPlexServerStats(
 ): Promise<PlexServerStats | undefined> {
   try {
     const response = await axios.get<PlexStatisticsResponse>(
-      `${baseUrl}/statistics/resources?timespan=6&X-Plex-Token=${token}`,
+      `${baseUrl}/statistics/resources?timespan=1&X-Plex-Token=${token}`,
       {
         headers: { Accept: 'application/json' },
         httpsAgent,
@@ -163,8 +163,8 @@ export async function fetchPlexServerStats(
       return { processCpuPercent: 0, processRamPercent: 0, bandwidthMbps }
     }
 
-    // Take the first entry — PMS returns most recent first
-    const entry = entries[0]!
+    // PMS returns entries ascending by timeAt — take the LAST entry (most recent)
+    const entry = entries[entries.length - 1]!
 
     const processCpuPercent = Math.round(entry.cpuPercentage * 10) / 10
     const processRamPercent = Math.round((entry.physMemMB / entry.totalPhysMemMB) * 1000) / 10
