@@ -1,6 +1,6 @@
 import axios from 'axios'
 import https from 'node:https'
-import type { PlexStream } from '@coruscant/shared'
+import type { PlexStream, PlexServerStats } from '@coruscant/shared'
 
 const TIMEOUT_MS = 5_000
 
@@ -24,11 +24,23 @@ interface PlexMetadataItem {
     audioCodec?: string   // e.g. 'flac', 'aac', 'mp3'
     bitrate?: number      // Kbps
   }>
+  Session?: { bandwidth?: number }  // kbps — present when session is active
 }
 
 interface PlexSessionsResponse {
   MediaContainer: {
     Metadata?: PlexMetadataItem[]
+  }
+}
+
+interface PlexStatisticsResponse {
+  MediaContainer: {
+    StatisticsResources?: Array<{
+      timeAt: number
+      cpuPercentage: number    // 0-100 float — Plex process CPU
+      physMemMB: number        // Plex process RAM usage in MB
+      totalPhysMemMB: number   // Total system RAM in MB
+    }>
   }
 }
 
@@ -45,10 +57,14 @@ function deriveTitle(item: PlexMetadataItem): string {
  * GET /status/sessions?X-Plex-Token=<token>
  * Headers: Accept: application/json
  *
- * Maps each session to a PlexStream. Returns [] on any error or when no streams
+ * Maps each session to a PlexStream and computes total session bandwidth (kbps).
+ * Returns { streams: [], totalBandwidthKbps: 0 } on any error or when no streams
  * are active. Never throws.
  */
-export async function fetchPlexSessions(baseUrl: string, token: string): Promise<PlexStream[]> {
+export async function fetchPlexSessions(
+  baseUrl: string,
+  token: string,
+): Promise<{ streams: PlexStream[]; totalBandwidthKbps: number }> {
   try {
     const response = await axios.get<PlexSessionsResponse>(
       `${baseUrl}/status/sessions?X-Plex-Token=${token}`,
@@ -61,10 +77,10 @@ export async function fetchPlexSessions(baseUrl: string, token: string): Promise
 
     const metadata = response.data.MediaContainer?.Metadata
     if (!metadata || metadata.length === 0) {
-      return []
+      return { streams: [], totalBandwidthKbps: 0 }
     }
 
-    return metadata.map((item): PlexStream => {
+    const streams = metadata.map((item): PlexStream => {
       const isAudio = item.type === 'track'
       const mediaType: PlexStream['mediaType'] = isAudio ? 'audio' : 'video'
 
@@ -95,8 +111,63 @@ export async function fetchPlexSessions(baseUrl: string, token: string): Promise
           : undefined,
       }
     })
+
+    const totalBandwidthKbps = metadata.reduce(
+      (sum, item) => sum + (item.Session?.bandwidth ?? 0),
+      0,
+    )
+
+    return { streams, totalBandwidthKbps }
   } catch {
     // Network error, parse error, non-200 — return empty (idle state)
-    return []
+    return { streams: [], totalBandwidthKbps: 0 }
+  }
+}
+
+/**
+ * Fetches Plex server resource stats from the PMS /statistics/resources endpoint.
+ *
+ * GET /statistics/resources?timespan=6&X-Plex-Token=<token>
+ * Headers: Accept: application/json
+ *
+ * Combines the CPU/RAM data from the most recent StatisticsResources entry with
+ * the pre-computed session bandwidth (kbps) from fetchPlexSessions.
+ *
+ * Returns undefined when:
+ * - /statistics/resources returns no entries
+ * - Network error or non-200 response
+ * Never throws.
+ */
+export async function fetchPlexServerStats(
+  baseUrl: string,
+  token: string,
+  sessionBandwidthKbps: number,
+): Promise<PlexServerStats | undefined> {
+  try {
+    const response = await axios.get<PlexStatisticsResponse>(
+      `${baseUrl}/statistics/resources?timespan=6&X-Plex-Token=${token}`,
+      {
+        headers: { Accept: 'application/json' },
+        httpsAgent,
+        timeout: TIMEOUT_MS,
+      },
+    )
+
+    const entries = response.data.MediaContainer?.StatisticsResources
+    if (!entries || entries.length === 0) {
+      return undefined
+    }
+
+    // Take the first entry — PMS returns most recent first
+    const entry = entries[0]!
+
+    const processCpuPercent = Math.round(entry.cpuPercentage * 10) / 10
+    const processRamPercent = Math.round((entry.physMemMB / entry.totalPhysMemMB) * 1000) / 10
+    const bandwidthMbps = Math.round((sessionBandwidthKbps / 1000) * 10) / 10
+
+    return { processCpuPercent, processRamPercent, bandwidthMbps }
+  } catch {
+    // Network error, parse error, non-200 — return undefined (graceful degradation)
+    return undefined
   }
 }
