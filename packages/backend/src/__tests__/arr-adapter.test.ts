@@ -113,4 +113,62 @@ describe('pollArr', () => {
     expect(result.metrics).toBeDefined()
     expect((result.metrics as Record<string, unknown>)?.healthWarnings).toHaveLength(1)
   })
+
+  // --- Queue metric tests ---
+
+  it('populates queue metrics when queue endpoint returns active downloads', async () => {
+    mockAxios.get = vi.fn().mockImplementation((url: string) => {
+      if (url.includes('/health')) {
+        return Promise.resolve({ status: 200, data: [] })
+      }
+      return Promise.resolve({
+        status: 200,
+        data: { totalRecords: 5, records: [{ status: 'downloading' }] },
+      })
+    })
+
+    const result = await pollArr('radarr', 'Radarr', 'http://localhost:7878', 'key')
+
+    expect(result.status).toBe('online')
+    const metrics = result.metrics as Record<string, unknown>
+    expect(metrics?.queue).toBe(5)
+    expect(metrics?.downloading).toBe(true)
+    expect(metrics?.activeDownloads).toBe(1)
+  })
+
+  it('sets downloading to false when queue records are not actively downloading', async () => {
+    mockAxios.get = vi.fn().mockImplementation((url: string) => {
+      if (url.includes('/health')) {
+        return Promise.resolve({ status: 200, data: [] })
+      }
+      return Promise.resolve({
+        status: 200,
+        data: { totalRecords: 3, records: [{ status: 'queued' }] },
+      })
+    })
+
+    const result = await pollArr('sonarr', 'Sonarr', 'http://localhost:8989', 'key')
+
+    expect(result.status).toBe('online')
+    const metrics = result.metrics as Record<string, unknown>
+    expect(metrics?.queue).toBe(3)
+    expect(metrics?.downloading).toBe(false)
+  })
+
+  it('falls back to zero queue metrics when queue endpoint fails but health check succeeds', async () => {
+    mockAxios.get = vi.fn().mockImplementation((url: string) => {
+      if (url.includes('/health')) {
+        return Promise.resolve({ status: 200, data: [] })
+      }
+      return Promise.reject(new Error('Internal Server Error'))
+    })
+
+    const result = await pollArr('radarr', 'Radarr', 'http://localhost:7878', 'key')
+
+    expect(result.status).toBe('online')
+    const metrics = result.metrics as Record<string, unknown>
+    expect(metrics?.queue).toBe(0)
+    expect(metrics?.downloading).toBe(false)
+    expect(metrics?.activeDownloads).toBe(0)
+  })
 })
