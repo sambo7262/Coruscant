@@ -31,7 +31,7 @@ describe('tautulliWebhookRoutes', () => {
     const { pollManager } = await import('../poll-manager.js')
 
     const payload = {
-      event: 'playback.started',
+      event: 'play',
       session_key: 'session-001',
       user: 'alice',
       title: 'Inception',
@@ -72,7 +72,7 @@ describe('tautulliWebhookRoutes', () => {
       method: 'POST',
       url: '/api/webhooks/tautulli',
       payload: {
-        event: 'playback.started',
+        event: 'play',
         session_key: 'session-002',
         user: 'bob',
         title: 'The Matrix',
@@ -91,7 +91,7 @@ describe('tautulliWebhookRoutes', () => {
       method: 'POST',
       url: '/api/webhooks/tautulli',
       payload: {
-        event: 'playback.stopped',
+        event: 'stop',
         session_key: 'session-002',
         user: 'bob',
         title: 'The Matrix',
@@ -121,7 +121,7 @@ describe('tautulliWebhookRoutes', () => {
       method: 'POST',
       url: '/api/webhooks/tautulli',
       payload: {
-        event: 'playback.started',
+        event: 'play',
         session_key: 'session-003',
         user: 'charlie',
         title: 'Breaking Bad',
@@ -141,7 +141,7 @@ describe('tautulliWebhookRoutes', () => {
       method: 'POST',
       url: '/api/webhooks/tautulli',
       payload: {
-        event: 'playback.paused',
+        event: 'pause',
         session_key: 'session-003',
         user: 'charlie',
         title: 'Breaking Bad',
@@ -165,21 +165,21 @@ describe('tautulliWebhookRoutes', () => {
     expect(lastCall[0][0].progressPercent).toBe(45)
   })
 
-  it('returns 400 for invalid/empty body (missing event)', async () => {
+  it('returns 200 for empty body (no JSON template configured in Tautulli)', async () => {
     const response = await app.inject({
       method: 'POST',
       url: '/api/webhooks/tautulli',
       payload: {},
     })
 
-    expect(response.statusCode).toBe(400)
+    expect(response.statusCode).toBe(200)
   })
 
   it('correctly maps Tautulli payload fields to PlexStream type including deviceName from player', async () => {
     const { pollManager } = await import('../poll-manager.js')
 
     const payload = {
-      event: 'playback.started',
+      event: 'play',
       session_key: 'session-tv-001',
       user: 'diana',
       title: 'Pilot',
