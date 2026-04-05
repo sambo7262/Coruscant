@@ -36,10 +36,12 @@ interface PlexSessionsResponse {
 interface PlexStatisticsResponse {
   MediaContainer: {
     StatisticsResources?: Array<{
-      timeAt: number
-      cpuPercentage: number    // 0-100 float — Plex process CPU
-      physMemMB: number        // Plex process RAM usage in MB
-      totalPhysMemMB: number   // Total system RAM in MB
+      at: number
+      timespan: number
+      processCpuUtilization: number    // 0-100 float — Plex process CPU %
+      processMemoryUtilization: number // 0-100 float — Plex process RAM %
+      hostCpuUtilization: number       // 0-100 float — host CPU %
+      hostMemoryUtilization: number    // 0-100 float — host RAM %
     }>
   }
 }
@@ -145,7 +147,7 @@ export async function fetchPlexServerStats(
 ): Promise<PlexServerStats | undefined> {
   try {
     const response = await axios.get<PlexStatisticsResponse>(
-      `${baseUrl}/statistics/resources?timespan=1&X-Plex-Token=${token}`,
+      `${baseUrl}/statistics/resources?timespan=6&X-Plex-Token=${token}`,
       {
         headers: { Accept: 'application/json' },
         httpsAgent,
@@ -166,8 +168,8 @@ export async function fetchPlexServerStats(
     // PMS returns entries ascending by timeAt — take the LAST entry (most recent)
     const entry = entries[entries.length - 1]!
 
-    const processCpuPercent = Math.round(entry.cpuPercentage * 10) / 10
-    const processRamPercent = Math.round((entry.physMemMB / entry.totalPhysMemMB) * 1000) / 10
+    const processCpuPercent = Math.round(entry.processCpuUtilization * 10) / 10
+    const processRamPercent = Math.round(entry.processMemoryUtilization * 10) / 10
 
     return { processCpuPercent, processRamPercent, bandwidthMbps }
   } catch {
