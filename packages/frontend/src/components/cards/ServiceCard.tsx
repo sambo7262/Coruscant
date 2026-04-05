@@ -217,21 +217,19 @@ function PlexInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   )
 }
 
-// SABnzbd natural display: filename, time remaining, speed (D-31)
-// Purple LED semantics per D-30: solid purple = downloading, flashing purple = queued but paused
+// SABnzbd natural display: filename, speed, ETA (D-04)
+// Text is always amber — only the StatusDot LED handles purple states (D-05)
 function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
-  const speedMBs = typeof metrics.speedMBs === 'number' ? metrics.speedMBs : 0
+  const speed = typeof metrics.speedMBs === 'number' ? metrics.speedMBs.toFixed(1) : '--'
+  const filename = typeof metrics.currentFilename === 'string' && metrics.currentFilename
+    ? metrics.currentFilename : ''
+  const eta = typeof metrics.timeLeft === 'string' && metrics.timeLeft
+    ? metrics.timeLeft : ''
   const queueCount = typeof metrics.queueCount === 'number' ? metrics.queueCount : 0
-  const progressPercent = typeof metrics.progressPercent === 'number' ? metrics.progressPercent : 0
-  const sabStatus = typeof metrics.sabStatus === 'string' ? metrics.sabStatus : ''
-  const currentFilename = typeof metrics.currentFilename === 'string' ? metrics.currentFilename : ''
-  const timeLeft = typeof metrics.timeLeft === 'string' ? metrics.timeLeft : ''
+  const speedMBs = typeof metrics.speedMBs === 'number' ? metrics.speedMBs : 0
+  const hasActivity = queueCount > 0 || speedMBs > 0
 
-  const isActivelyDownloading = sabStatus === 'Downloading' || (queueCount > 0 && speedMBs > 0)
-  const isQueuedPaused = (queueCount > 0 || progressPercent > 0) && !isActivelyDownloading
-  const hasActivity = isActivelyDownloading || isQueuedPaused
-
-  if (!hasActivity) {
+  if (!hasActivity && !filename) {
     return (
       <span
         className="text-label"
@@ -243,44 +241,28 @@ function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-      {/* Filename (truncated) */}
-      {currentFilename ? (
-        <div
-          className="text-label"
-          style={{
-            color: 'var(--text-offwhite)',
-            fontSize: '9px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            maxWidth: '100%',
-          }}
-          title={currentFilename}
-        >
-          {currentFilename}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontFamily: 'var(--font-mono)' }}>
+      {/* Filename — truncated, always amber (D-04) */}
+      {filename && (
+        <div style={{
+          fontSize: '9px',
+          color: 'var(--cockpit-amber)',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          maxWidth: '100%',
+        }}>
+          {filename}
         </div>
-      ) : null}
-
-      {/* Speed + time remaining row */}
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span
-          className="text-label"
-          style={{
-            color: isActivelyDownloading ? 'var(--cockpit-purple)' : 'var(--cockpit-amber)',
-            fontSize: '9px',
-            animation: isQueuedPaused ? 'ledFlashPurple 1.5s ease-in-out infinite' : undefined,
-          }}
-        >
-          {isActivelyDownloading ? `${speedMBs.toFixed(1)} MB/s` : 'PAUSED'}
+      )}
+      {/* Speed + ETA row — text always amber (D-05) */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <span style={{ fontSize: '14px', color: 'var(--cockpit-amber)', fontWeight: 600 }}>
+          {speed} MB/s
         </span>
-        {timeLeft ? (
-          <span className="text-label" style={{ color: '#C8C8C8', fontSize: '9px' }}>
-            {timeLeft}
-          </span>
-        ) : (
-          <span className="text-label" style={{ color: '#C8C8C8', fontSize: '9px' }}>
-            {queueCount} QUEUED
+        {eta && (
+          <span style={{ fontSize: '9px', color: 'var(--text-offwhite)' }}>
+            ETA {eta}
           </span>
         )}
       </div>
@@ -288,8 +270,8 @@ function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   )
 }
 
-// Pi-hole 2×2 metric grid instrument body (D-04, per UI-SPEC Pi-hole Card section)
-function PiholeInstrument({ metrics }: { metrics: Record<string, unknown> }) {
+// NETWORK card: Pi-hole section + Ubiquiti placeholder (D-15, D-16)
+function NetworkInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   const qpm = typeof metrics.queriesPerMinute === 'number'
     ? metrics.queriesPerMinute.toFixed(1) : '--'
   const load = typeof metrics.load1m === 'number'
@@ -299,33 +281,28 @@ function PiholeInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   const blocking = metrics.blockingActive === true ? 'BLOCKING' : 'DISABLED'
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
-      gap: '4px 8px',
-      padding: '4px 0',
-    }}>
-      <div>
-        <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-offwhite)' }}>{qpm}</div>
-        <div style={{ fontSize: '12px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em' }}>QPM</div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+      {/* PI-HOLE section */}
+      <div style={{ fontSize: '8px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
+        PI-HOLE
       </div>
-      <div>
-        <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-offwhite)' }}>{load}</div>
-        <div style={{ fontSize: '12px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em' }}>LOAD</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 8px', fontSize: '9px', fontFamily: 'var(--font-mono)' }}>
+        <span style={{ color: blocking === 'BLOCKING' ? 'var(--cockpit-green)' : 'var(--cockpit-red)' }}>{blocking}</span>
+        <span style={{ color: 'var(--text-offwhite)' }}>QPM {qpm}</span>
+        <span style={{ color: 'var(--text-offwhite)' }}>LOAD {load}</span>
+        <span style={{ color: 'var(--text-offwhite)' }}>MEM {mem}</span>
       </div>
-      <div>
-        <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-offwhite)' }}>{mem}</div>
-        <div style={{ fontSize: '12px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em' }}>MEM%</div>
+
+      {/* 1px amber divider */}
+      <div style={{ height: '1px', background: 'rgba(232,160,32,0.2)', margin: '2px 0' }} />
+
+      {/* UBIQUITI placeholder section (D-16) */}
+      <div style={{ fontSize: '8px', color: '#555', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
+        UBIQUITI
       </div>
-      <div>
-        <div style={{
-          fontSize: '12px',
-          fontWeight: 600,
-          color: metrics.blockingActive ? 'var(--cockpit-green)' : 'var(--cockpit-amber)',
-          letterSpacing: '0.08em',
-        }}>{blocking}</div>
-        <div style={{ fontSize: '12px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em' }}>STATUS</div>
-      </div>
+      <span style={{ fontSize: '9px', color: '#444', fontFamily: 'var(--font-mono)' }}>
+        NOT CONFIGURED
+      </span>
     </div>
   )
 }
@@ -349,7 +326,7 @@ function renderInstrumentBody(service: ServiceStatus): React.ReactNode {
     return <SabnzbdInstrument metrics={metrics} />
   }
   if (service.id === 'pihole') {
-    return <PiholeInstrument metrics={metrics} />
+    return <NetworkInstrument metrics={metrics} />
   }
   return null
 }
@@ -460,7 +437,7 @@ export function ServiceCard({ service, index }: ServiceCardProps) {
             fontSize: '11px',
           }}
         >
-          {service.name}
+          {service.id === 'pihole' ? 'NETWORK' : service.name}
         </span>
         {/* Grey LED for unconfigured services — stale maps to grey in StatusDot */}
         <StatusDot status={isUnconfigured ? 'stale' : service.status} />
@@ -497,10 +474,10 @@ export function MediaStackRow({ service, index }: ServiceCardProps) {
   const queue = typeof metrics?.queue === 'number' ? metrics.queue : 0
   const downloading = metrics?.downloading === true
 
-  // D-30 LED color logic for arr services
-  // Purple (solid): healthy, no queue items
-  // Purple (flashing): has queue items
+  // D-11 LED color logic for arr services
   // Green: online, no download activity
+  // Solid purple: actively downloading (file sent to SABnzbd, in progress)
+  // Flashing purple: queued (in arr queue, not yet active)
   // Amber: warning
   // Red: offline
   // Grey: unconfigured / stale
@@ -515,20 +492,20 @@ export function MediaStackRow({ service, index }: ServiceCardProps) {
       return { background: 'var(--cockpit-amber)', boxShadow: '0 0 6px rgba(232,160,32,0.6)' }
     }
     if (service.status === 'online') {
-      // Purple states per D-30
-      if (queue > 0 || downloading) {
-        // Flashing purple = file queued
+      if (downloading) {
+        // D-11: Solid purple = actively downloading (file sent to SABnzbd, in progress)
+        return { background: 'var(--cockpit-purple)', boxShadow: '0 0 6px var(--cockpit-purple)' }
+      }
+      if (queue > 0) {
+        // D-11: Flashing purple = queued (in arr queue, not yet active in SABnzbd)
         return {
           background: 'var(--cockpit-purple)',
           boxShadow: '0 0 6px var(--cockpit-purple)',
           animation: 'ledFlashPurple 1.5s ease-in-out infinite',
         }
       }
-      // Solid purple = healthy, no queue
-      return {
-        background: 'var(--cockpit-purple)',
-        boxShadow: '0 0 6px var(--cockpit-purple)',
-      }
+      // D-11: GREEN = online, no download activity (was incorrectly purple)
+      return { background: 'var(--cockpit-green, #4ADE80)', boxShadow: '0 0 6px rgba(74,222,128,0.6)' }
     }
     return { background: '#666666', boxShadow: 'none' }
   }
