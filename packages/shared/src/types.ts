@@ -65,6 +65,7 @@ export interface PlexStream {
   mediaType?: 'audio' | 'video'  // derived from Plex item.type
   albumName?: string             // for audio: item.parentTitle (album name)
   trackTitle?: string            // for audio: item.title (track title)
+  state?: 'playing' | 'paused' | 'buffering'  // from Plex session attribute
 }
 
 export interface PlexServerStats {

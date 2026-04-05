@@ -58,7 +58,7 @@ export function StreamRow({ stream }: StreamRowProps) {
         </span>
         <span
           className="text-label"
-          style={{ flexShrink: 0, marginLeft: '8px' }}
+          style={{ flexShrink: 0, marginLeft: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}
         >
           <span style={{ color: 'var(--text-offwhite)' }}>{stream.quality}</span>
           {' / '}
@@ -70,6 +70,16 @@ export function StreamRow({ stream }: StreamRowProps) {
           >
             {stream.transcode ? 'TRANSCODE' : 'DIRECT'}
           </span>
+          {stream.state && stream.state !== 'buffering' && (
+            <span style={{
+              fontSize: '10px',
+              color: stream.state === 'paused' ? '#666' : 'var(--cockpit-amber)',
+              marginLeft: '4px',
+              flexShrink: 0,
+            }}>
+              {stream.state === 'playing' ? '▶' : '⏸'}
+            </span>
+          )}
         </span>
       </div>
 

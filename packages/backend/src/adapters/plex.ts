@@ -15,6 +15,7 @@ interface PlexMetadataItem {
   year?: number
   parentIndex?: number    // season number
   index?: number          // episode number
+  state?: string          // 'playing' | 'paused' | 'buffering'
   User: { title: string }
   Player: { title: string }
   TranscodeSession?: { videoDecision?: string }
@@ -89,6 +90,9 @@ export async function fetchPlexSessions(baseUrl: string, token: string): Promise
         mediaType,
         albumName: isAudio ? (item.parentTitle ?? undefined) : undefined,
         trackTitle: isAudio ? item.title : undefined,
+        state: (item.state === 'playing' || item.state === 'paused' || item.state === 'buffering')
+          ? item.state
+          : undefined,
       }
     })
   } catch {

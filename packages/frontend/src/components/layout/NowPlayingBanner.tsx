@@ -158,6 +158,9 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
                   position: 'absolute',
                   left: 0,
                   right: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
                 }}
               >
                 {(() => {
@@ -165,10 +168,29 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
                   if (!s) return ''
                   // For audio: title already contains artist/track info from backend
                   // For video with season/episode: "Title S1E5"
-                  if (s.season != null && s.episode != null) {
-                    return `${s.title} S${s.season}E${s.episode}`
-                  }
-                  return s.title
+                  const titleText = (s.season != null && s.episode != null)
+                    ? `${s.title} S${s.season}E${s.episode}`
+                    : s.title
+                  return (
+                    <>
+                      {s.state && s.state !== 'buffering' && (
+                        <span style={{
+                          fontSize: '9px',
+                          color: s.state === 'paused' ? '#666' : 'var(--cockpit-amber)',
+                          flexShrink: 0,
+                        }}>
+                          {s.state === 'playing' ? '▶' : '⏸'}
+                        </span>
+                      )}
+                      <span style={{
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {titleText}
+                      </span>
+                    </>
+                  )
                 })()}
               </motion.span>
             </AnimatePresence>
