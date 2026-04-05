@@ -5,6 +5,7 @@ import { pollSabnzbd } from './adapters/sabnzbd.js'
 import { pollPihole } from './adapters/pihole.js'
 import { pollNas, checkNasImageUpdates } from './adapters/nas.js'
 import { fetchPlexSessions, fetchPlexServerStats } from './adapters/plex.js'
+import { pollUnifi, resetUnifiCache } from './adapters/unifi.js'
 
 // Poll intervals (ms) — per D-27, D-28, D-24, D-26
 const ARR_INTERVAL_MS = 5_000       // D-27: 5 seconds (was 45_000)
@@ -12,6 +13,7 @@ const SABNZBD_INTERVAL_MS = 10_000  // D-28: 10 seconds (unchanged)
 const PIHOLE_INTERVAL_MS = 60_000   // D-24: 60 seconds
 const NAS_INTERVAL_MS = 3_000       // D-26: 3 seconds
 const PLEX_INTERVAL_MS = 5_000      // 5 second direct poll of PMS /status/sessions
+const UNIFI_INTERVAL_MS = 30_000    // D-14: 30 seconds
 const IMAGE_UPDATE_INTERVAL_MS = 12 * 60 * 60 * 1000 // D-18: 2x per day (12 hours)
 
 // Arr service metadata
@@ -26,7 +28,7 @@ const ARR_SERVICES: Record<string, { name: string }> = {
 // All managed service IDs
 const ALL_SERVICE_IDS = [
   'radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 'readarr', 'sabnzbd',
-  'pihole', 'plex', 'nas',
+  'pihole', 'plex', 'nas', 'unifi',
 ]
 
 function makeUnconfigured(id: string): ServiceStatus {
@@ -52,13 +54,14 @@ function idToName(id: string): string {
     pihole: 'Pi-hole',
     plex: 'Plex',
     nas: 'NAS',
+    unifi: 'UniFi',
   }
   return names[id] ?? id
 }
 
 function idToTier(id: string): 'status' | 'activity' | 'rich' {
   if (id === 'sabnzbd') return 'activity'
-  if (id === 'plex' || id === 'nas') return 'rich'
+  if (id === 'plex' || id === 'nas' || id === 'unifi') return 'rich'
   // pihole is 'status' tier so it co-renders with the arr media stack
   // in the two-column layout (media stack left, Pi-hole right)
   return 'status'
@@ -149,6 +152,11 @@ export class PollManager {
       this.timers.delete(serviceId)
     }
 
+    // Reset cached UniFi state (site ID, peaks) on any reconfiguration
+    if (serviceId === 'unifi') {
+      resetUnifiCache()
+    }
+
     // No config → mark unconfigured
     if (!config || !config.baseUrl) {
       this.state.set(serviceId, makeUnconfigured(serviceId))
@@ -235,6 +243,8 @@ export class PollManager {
           // waiting for the 5-second SSE interval.
           this.broadcastSnapshot()
           return
+        } else if (serviceId === 'unifi') {
+          result = await pollUnifi(baseUrl, apiKey)
         } else if (ARR_SERVICES[serviceId]) {
           const meta = ARR_SERVICES[serviceId]!
           result = await pollArr(serviceId, meta.name, baseUrl, apiKey)
@@ -257,6 +267,7 @@ export class PollManager {
     if (serviceId === 'sabnzbd') intervalMs = SABNZBD_INTERVAL_MS
     else if (serviceId === 'pihole') intervalMs = PIHOLE_INTERVAL_MS
     else if (serviceId === 'nas') intervalMs = NAS_INTERVAL_MS
+    else if (serviceId === 'unifi') intervalMs = UNIFI_INTERVAL_MS
     else intervalMs = ARR_INTERVAL_MS
 
     const timer = setInterval(doPoll, intervalMs)
