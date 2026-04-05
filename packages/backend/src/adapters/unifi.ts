@@ -206,7 +206,8 @@ export async function pollUnifi(baseUrl: string, apiKey: string): Promise<Servic
       lastPollAt,
       metrics: metrics as unknown as Record<string, unknown>,
     }
-  } catch {
+  } catch (err) {
+    console.error('[unifi] poll failed:', err instanceof Error ? err.message : String(err))
     return {
       id: 'unifi',
       name: 'UniFi',

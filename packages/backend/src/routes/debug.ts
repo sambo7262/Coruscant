@@ -1,9 +1,12 @@
 import type { FastifyInstance } from 'fastify'
 import axios from 'axios'
+import https from 'node:https'
 import { eq } from 'drizzle-orm'
 import { getDb } from '../db.js'
 import { serviceConfig } from '../schema.js'
 import { decrypt } from '../crypto.js'
+
+const unifiAgent = new https.Agent({ rejectUnauthorized: false })
 
 const SEED = process.env.ENCRYPTION_KEY_SEED
 
@@ -183,5 +186,73 @@ export async function debugRoutes(fastify: FastifyInstance) {
     }
 
     return reply.send(results)
+  })
+
+  /**
+   * GET /debug/unifi
+   * Walks through each UniFi API call step-by-step and returns raw responses.
+   * Use this to diagnose auth, siteId, and endpoint availability issues.
+   */
+  fastify.get('/debug/unifi', async (_request, reply) => {
+    const db = getDb()
+    const row = db.select().from(serviceConfig).where(eq(serviceConfig.serviceName, 'unifi')).get()
+
+    if (!SEED) return reply.status(500).send({ error: 'ENCRYPTION_KEY_SEED not configured' })
+    if (!row?.baseUrl) return reply.status(404).send({ error: 'UniFi not configured' })
+
+    let apiKey = ''
+    if (row.encryptedApiKey) {
+      try { apiKey = decrypt(row.encryptedApiKey, SEED) } catch { return reply.status(500).send({ error: 'Failed to decrypt UniFi API key' }) }
+    }
+
+    const baseUrl = row.baseUrl.replace(/\/$/, '')
+    const opts = { headers: { 'X-API-KEY': apiKey }, timeout: 10_000, httpsAgent: unifiAgent }
+    const result: Record<string, unknown> = { baseUrl, hasApiKey: apiKey !== '' }
+
+    // Step 1: GET /sites
+    let siteId: string | null = null
+    try {
+      const res = await axios.get(`${baseUrl}/proxy/network/integration/v1/sites`, opts)
+      const sites = res.data?.data ?? []
+      result['step1_sites'] = { status: res.status, siteCount: sites.length, sites, raw: res.data }
+      const defaultSite = sites.find((s: Record<string, unknown>) => s.internalId === 'default')
+        ?? sites.find((s: Record<string, unknown>) => String(s.name ?? '').toLowerCase() === 'default')
+        ?? sites[0]
+      siteId = defaultSite?.siteId ?? null
+      result['resolvedSiteId'] = siteId
+    } catch (e: unknown) {
+      result['step1_sites'] = { error: String(e) }
+    }
+
+    // Step 2: GET /sites/{siteId}/devices
+    if (siteId) {
+      try {
+        const res = await axios.get(`${baseUrl}/proxy/network/integration/v1/sites/${siteId}/devices`, opts)
+        const devices = res.data?.data ?? []
+        result['step2_devices'] = { status: res.status, deviceCount: devices.length, firstDevice: devices[0] ?? null }
+      } catch (e: unknown) {
+        result['step2_devices'] = { error: String(e) }
+      }
+
+      // Step 3: GET /sites/{siteId}/clients
+      try {
+        const res = await axios.get(`${baseUrl}/proxy/network/integration/v1/sites/${siteId}/clients`, opts)
+        result['step3_clients'] = { status: res.status, totalCount: res.data?.totalCount, raw: res.data }
+      } catch (e: unknown) {
+        result['step3_clients'] = { error: String(e) }
+      }
+    }
+
+    // Step 4: GET /proxy/network/api/s/default/stat/health (WAN throughput)
+    try {
+      const res = await axios.get(`${baseUrl}/proxy/network/api/s/default/stat/health`, opts)
+      const data = res.data?.data ?? []
+      const wan = data.find((s: Record<string, unknown>) => s.subsystem === 'wan')
+      result['step4_stat_health'] = { status: res.status, subsystems: data.map((s: Record<string, unknown>) => s.subsystem), wan }
+    } catch (e: unknown) {
+      result['step4_stat_health'] = { error: String(e) }
+    }
+
+    return reply.send(result)
   })
 }
