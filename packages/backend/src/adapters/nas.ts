@@ -190,60 +190,132 @@ export async function pollNas(baseUrl: string, username: string, password: strin
  * Fetch Docker container stats from SYNO.Docker.Container or SYNO.ContainerManager.Container.
  * Aggregates CPU %, RAM %, and network bytes across all running containers.
  * Returns undefined if neither API is available.
+ *
+ * Handles two known response shapes across DSM versions:
+ *   - DSM 6 / Docker package: data.data.containers[]
+ *   - DSM 7.x / Container Manager: data.data.containers[] or data.data.items[]
+ * Container status may be 'running' or 'Up' (Docker daemon passthrough).
+ * CPU/memory field names vary — tries both snake_case and alternate names.
  */
 export async function fetchNasDockerStats(
   baseUrl: string,
   username: string,
   password: string,
 ): Promise<NasDockerStats | undefined> {
+  type RawContainer = Record<string, unknown>
+
+  /** Resolve the container array from whichever key the API used. */
+  function extractContainers(data: Record<string, unknown>): RawContainer[] | null {
+    // Most common: data.data.containers (DSM 6 Docker package, Container Manager)
+    if (Array.isArray(data?.containers)) return data.containers as RawContainer[]
+    // Alternate key seen in some DSM 7.x Container Manager responses
+    if (Array.isArray(data?.items)) return data.items as RawContainer[]
+    // Singular fallback (unlikely but defensive)
+    if (Array.isArray(data?.container)) return data.container as RawContainer[]
+    return null
+  }
+
+  /** Return true if the container's status indicates it is running. */
+  function isRunning(c: RawContainer): boolean {
+    const s = typeof c.status === 'string' ? c.status.toLowerCase() : ''
+    // 'running' is the canonical Docker daemon value; 'up' appears in some wrappers
+    return s === 'running' || s.startsWith('up')
+  }
+
+  /** Read a numeric field by trying multiple candidate key names. */
+  function numField(c: RawContainer, ...keys: string[]): number {
+    for (const k of keys) {
+      const v = c[k]
+      if (typeof v === 'number' && isFinite(v)) return v
+    }
+    return 0
+  }
+
   try {
     const sid = await ensureSession(baseUrl, username, password)
 
-    for (const api of ['SYNO.Docker.Container', 'SYNO.ContainerManager.Container']) {
-      const params = new URLSearchParams({
-        api,
-        version: '1',
-        method: 'list',
-        _sid: sid,
-      })
+    for (const [api, version] of [
+      ['SYNO.Docker.Container', '1'],
+      ['SYNO.ContainerManager.Container', '1'],
+      ['SYNO.ContainerManager.Container', '2'],
+    ] as [string, string][]) {
+      const params = new URLSearchParams({ api, version, method: 'list', _sid: sid })
 
-      const response = await axios.get(`${baseUrl}/webapi/entry.cgi?${params.toString()}`, {
-        timeout: TIMEOUT_MS,
-      })
+      // Fetch, catching per-request errors so we can log and continue to the next namespace
+      const responseData = await axios
+        .get(`${baseUrl}/webapi/entry.cgi?${params.toString()}`, { timeout: TIMEOUT_MS })
+        .then((r) => r.data as Record<string, unknown>)
+        .catch((reqErr: unknown) => {
+          console.warn(`[nas] fetchNasDockerStats ${api} v${version} request failed:`, reqErr)
+          return null
+        })
 
-      if (response.data?.success && response.data?.data?.containers) {
-        const containers: Array<{
-          cpu_usage?: number
-          memory_usage?: number
-          memory_limit?: number
-          up_bytes?: number
-          down_bytes?: number
-          status?: string
-        }> = response.data.data.containers
+      if (responseData === null) continue
 
-        const running = containers.filter((c) => c.status === 'running')
-        if (running.length === 0) {
-          return { cpuPercent: 0, ramPercent: 0, networkMbpsUp: 0, networkMbpsDown: 0 }
-        }
+      if (!responseData.success) {
+        console.warn(
+          `[nas] fetchNasDockerStats ${api} v${version} returned success=false:`,
+          JSON.stringify((responseData.error as unknown) ?? responseData),
+        )
+        continue
+      }
 
-        const cpuPercent = running.reduce((sum, c) => sum + (c.cpu_usage ?? 0), 0)
-        const totalMemUsage = running.reduce((sum, c) => sum + (c.memory_usage ?? 0), 0)
-        const totalMemLimit = running.reduce((sum, c) => sum + (c.memory_limit ?? 0), 0)
-        const ramPercent = totalMemLimit > 0 ? (totalMemUsage / totalMemLimit) * 100 : 0
-        const networkUp = running.reduce((sum, c) => sum + (c.up_bytes ?? 0), 0)
-        const networkDown = running.reduce((sum, c) => sum + (c.down_bytes ?? 0), 0)
+      const innerData: Record<string, unknown> = (responseData.data as Record<string, unknown>) ?? {}
+      const containers = extractContainers(innerData)
 
-        return {
-          cpuPercent: Math.round(cpuPercent * 10) / 10,
-          ramPercent: Math.round(ramPercent * 10) / 10,
-          networkMbpsUp: Math.round((networkUp / 1_048_576) * 10) / 10,
-          networkMbpsDown: Math.round((networkDown / 1_048_576) * 10) / 10,
-        }
+      if (!containers) {
+        // Log the actual keys so we can diagnose the real response shape
+        console.warn(
+          `[nas] fetchNasDockerStats ${api} v${version}: no container array found. ` +
+          `data keys: [${Object.keys(innerData).join(', ')}]`,
+        )
+        continue
+      }
+
+      const running = containers.filter(isRunning)
+      if (running.length === 0) {
+        return { cpuPercent: 0, ramPercent: 0, networkMbpsUp: 0, networkMbpsDown: 0 }
+      }
+
+      // CPU: try cpu_usage (Docker package) then cpu_percent (alternate)
+      const cpuPercent = running.reduce(
+        (sum, c) => sum + numField(c, 'cpu_usage', 'cpu_percent', 'cpuPercent'),
+        0,
+      )
+
+      // Memory: try memory_usage/memory_limit then mem_usage/mem_limit
+      const totalMemUsage = running.reduce(
+        (sum, c) => sum + numField(c, 'memory_usage', 'mem_usage', 'memoryUsage'),
+        0,
+      )
+      const totalMemLimit = running.reduce(
+        (sum, c) => sum + numField(c, 'memory_limit', 'mem_limit', 'memoryLimit'),
+        0,
+      )
+      const ramPercent = totalMemLimit > 0 ? (totalMemUsage / totalMemLimit) * 100 : 0
+
+      // Network: try up_bytes/down_bytes then tx/rx
+      const networkUp = running.reduce(
+        (sum, c) => sum + numField(c, 'up_bytes', 'tx', 'network_tx'),
+        0,
+      )
+      const networkDown = running.reduce(
+        (sum, c) => sum + numField(c, 'down_bytes', 'rx', 'network_rx'),
+        0,
+      )
+
+      return {
+        cpuPercent: Math.round(cpuPercent * 10) / 10,
+        ramPercent: Math.round(ramPercent * 10) / 10,
+        networkMbpsUp: Math.round((networkUp / 1_048_576) * 10) / 10,
+        networkMbpsDown: Math.round((networkDown / 1_048_576) * 10) / 10,
       }
     }
 
+    console.warn('[nas] fetchNasDockerStats: all API namespaces exhausted, returning undefined')
     return undefined
-  } catch {
+  } catch (err) {
+    console.warn('[nas] fetchNasDockerStats: unexpected error:', err)
     return undefined
   }
 }
