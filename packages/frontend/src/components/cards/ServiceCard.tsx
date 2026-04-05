@@ -354,8 +354,8 @@ function SabnzbdLed({ service }: { service: ServiceStatus }) {
           width: '8px',
           height: '8px',
           borderRadius: '50%',
-          background: 'var(--cockpit-amber)',
-          boxShadow: '0 0 6px var(--cockpit-amber)',
+          background: 'var(--cockpit-purple)',
+          boxShadow: '0 0 6px var(--cockpit-purple)',
           flexShrink: 0,
         }}
       />
@@ -443,42 +443,68 @@ export function ServiceCard({ service, index }: ServiceCardProps) {
         boxShadow: getCardGlow(isUnconfigured ? 'stale' : service.status),
       }}
     >
-      {/* 6px amber header strip (D-17) */}
-      <div
-        style={{
-          height: '6px',
+      {/* Banner header: 20px strip for pihole and sabnzbd (with LED inside), or 6px strip for all others */}
+      {(service.id === 'pihole' || service.id === 'sabnzbd') ? (
+        <div style={{
+          height: '20px',
           background: 'var(--cockpit-amber)',
           flexShrink: 0,
-        }}
-      />
-
-      {/* Header row: service name + status LED */}
-      <div
-        style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '8px 12px 0 12px',
-        }}
-      >
-        <span
-          className="text-label"
-          style={{
-            color: 'var(--cockpit-amber)',
-            textTransform: 'uppercase',
+          paddingLeft: '6px',
+          paddingRight: '8px',
+        }}>
+          <span style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '9px',
+            color: '#1a1a1a',
+            letterSpacing: '0.08em',
             fontWeight: 600,
-            fontSize: '11px',
-          }}
-        >
-          {service.id === 'pihole' ? 'NETWORK' : service.id === 'sabnzbd' ? 'DOWNLOADS' : service.name}
-        </span>
-        {/* Grey LED for unconfigured services — stale maps to grey in StatusDot */}
-        {/* SABnzbd: custom LED that goes amber when actively downloading or queued */}
-        {service.id === 'sabnzbd' && !isUnconfigured
-          ? <SabnzbdLed service={service} />
-          : <StatusDot status={isUnconfigured ? 'stale' : service.status} />
-        }
-      </div>
+          }}>
+            {service.id === 'pihole' ? 'NETWORK' : 'DOWNLOADS'}
+          </span>
+          {/* LED dot inside banner strip */}
+          {service.id === 'sabnzbd' && !isUnconfigured
+            ? <SabnzbdLed service={service} />
+            : <StatusDot status={isUnconfigured ? 'stale' : service.status} />
+          }
+        </div>
+      ) : (
+        <>
+          {/* 6px amber header strip (D-17) */}
+          <div
+            style={{
+              height: '6px',
+              background: 'var(--cockpit-amber)',
+              flexShrink: 0,
+            }}
+          />
+
+          {/* Header row: service name + status LED */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '8px 12px 0 12px',
+            }}
+          >
+            <span
+              className="text-label"
+              style={{
+                color: 'var(--cockpit-amber)',
+                textTransform: 'uppercase',
+                fontWeight: 600,
+                fontSize: '11px',
+              }}
+            >
+              {service.name}
+            </span>
+            <StatusDot status={isUnconfigured ? 'stale' : service.status} />
+          </div>
+        </>
+      )}
 
       {/* Stale indicator row */}
       <div
