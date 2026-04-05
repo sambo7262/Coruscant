@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed quick task 260405-b24 (wire-syno-docker-container-resource-into)
-last_updated: "2026-04-05T15:02:28Z"
+stopped_at: Completed quick task 260405-byq (extend-plex-adapter-to-populate-plexserv)
+last_updated: "2026-04-05T16:20:11Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 11
@@ -164,6 +164,7 @@ None yet.
 | 260405-1ai | Phase 5 visual fixes: AppHeader 3-col grid, tile height reduction, NETWORK left/right split, guarded decrypt() | 2026-04-05 | 798747a | [260405-1ai-phase5-visual-fixes-and-crypto-error](./quick/260405-1ai-phase5-visual-fixes-and-crypto-error/) |
 | 260405-1of | Add SYNO.API.Info discovery + type=all retry to /debug/docker-stats | 2026-04-05 | 64e3559 | [260405-1of-debug-docker-stats-api-discovery](./quick/260405-1of-debug-docker-stats-api-discovery/) |
 | 260405-b24 | Wire SYNO.Docker.Container.Resource into fetchNasDockerStats; remove network fields | 2026-04-05 | c2aace8 | [260405-b24-wire-syno-docker-container-resource-into](./quick/260405-b24-wire-syno-docker-container-resource-into/) |
+| 260405-byq | Extend Plex adapter with fetchPlexServerStats (CPU/RAM/bandwidth from /statistics/resources) | 2026-04-05 | 90bd9a5 | [260405-byq-extend-plex-adapter-to-populate-plexserv](./quick/260405-byq-extend-plex-adapter-to-populate-plexserv/) |
 
 ### Blockers/Concerns
 
@@ -174,6 +175,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T15:02:28Z
-Stopped at: Completed quick task 260405-b24 (wire-syno-docker-container-resource-into)
+Last session: 2026-04-05T16:20:11Z
+Stopped at: Completed quick task 260405-byq (extend-plex-adapter-to-populate-plexserv)
 Resume file: None
