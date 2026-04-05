@@ -96,3 +96,22 @@ export interface ArrHealthWarning {
   message: string
   wikiUrl: string
 }
+
+export interface UnifiDevice {
+  macAddress: string
+  model: string
+  name: string
+  state: string          // 'online' | 'offline' | 'pendingAdoption' | etc.
+  uptime: number         // seconds (integer)
+  clientCount: number    // from features.access_point.num_sta or 0
+}
+
+export interface UnifiMetrics {
+  clientCount: number         // from /clients totalCount
+  wanTxMbps: number | null    // null if stat/health unavailable
+  wanRxMbps: number | null
+  peakTxMbps: number          // rolling 6h peak for bar scaling
+  peakRxMbps: number
+  devices: UnifiDevice[]
+  healthStatus: 'online' | 'warning' | 'offline'  // derived from D-05 rollup
+}
