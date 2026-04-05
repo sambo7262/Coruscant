@@ -313,8 +313,9 @@ export function AppHeader({ nas, connected, showBack = false, nasConfigured }: A
               }}>DISKS</span>
               {nas.disks.map(disk => {
                 const tempF = Math.round(disk.tempC * 9 / 5 + 32)
-                // Truncate disk name to 6 chars max for space
-                const label = disk.name.length > 6 ? disk.name.slice(0, 6) : disk.name
+                // Truncate disk name to 6 chars max for space; guard against missing name
+                const name = disk.name ?? ''
+                const label = name.length > 6 ? name.slice(0, 6) : name
                 return (
                   <GaugeColumn
                     key={disk.id}
