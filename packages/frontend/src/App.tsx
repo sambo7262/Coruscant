@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Routes, Route, useLocation } from 'react-router-dom'
 import { AppHeader } from './components/layout/AppHeader.js'
 import { GridBackground } from './components/layout/GridBackground.js'
@@ -15,6 +16,14 @@ export default function App() {
   const showBack = location.pathname !== '/'
   const isDashboard = location.pathname === '/'
 
+  // Lock body scroll on dashboard route to prevent viewport overflow on kiosk (800x480)
+  useEffect(() => {
+    document.body.style.overflow = isDashboard ? 'hidden' : ''
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isDashboard])
+
   // Derive whether NAS has been configured in Settings
   // Uses strict !== false check so legacy/mock services without the flag are not treated as unconfigured
   const nasConfigured = snapshot?.services.find(s => s.id === 'nas')?.configured !== false
@@ -28,7 +37,7 @@ export default function App() {
       <GridBackground />
       <WiringOverlay />
       <AppHeader nas={snapshot?.nas ?? null} connected={connected} showBack={showBack} nasConfigured={nasConfigured} />
-      <main style={{ position: 'relative', zIndex: 1, paddingTop: '128px', paddingBottom: '40px', overflowY: isDashboard ? 'hidden' : 'auto' }}>
+      <main style={{ position: 'relative', zIndex: 1, paddingTop: '128px', paddingBottom: '40px' }}>
         <Routes>
           <Route path="/" element={<DashboardPage snapshot={snapshot} />} />
           <Route path="/services/:serviceId" element={<ServiceDetailPage snapshot={snapshot} />} />

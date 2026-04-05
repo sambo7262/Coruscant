@@ -257,8 +257,8 @@ function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
       )}
       {/* Speed + ETA row — text always amber (D-05) */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-        <span style={{ fontSize: '14px', color: 'var(--cockpit-amber)', fontWeight: 600 }}>
-          {speed} MB/s
+        <span style={{ fontSize: '20px', color: 'var(--cockpit-amber)', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
+          {speed} <span style={{ fontSize: '11px', fontWeight: 400 }}>MB/s</span>
         </span>
         {eta && (
           <span style={{ fontSize: '9px', color: 'var(--text-offwhite)' }}>
@@ -266,6 +266,24 @@ function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
           </span>
         )}
       </div>
+      {/* Progress bar — only when actively downloading */}
+      {hasActivity && (
+        <div style={{
+          margin: '4px 0 2px',
+          height: '3px',
+          background: 'rgba(232,160,32,0.15)',
+          borderRadius: '2px',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            height: '100%',
+            width: `${typeof metrics.progressPercent === 'number' ? metrics.progressPercent : 0}%`,
+            background: 'var(--cockpit-amber)',
+            borderRadius: '2px',
+            transition: 'width 1s ease',
+          }} />
+        </div>
+      )}
     </div>
   )
 }

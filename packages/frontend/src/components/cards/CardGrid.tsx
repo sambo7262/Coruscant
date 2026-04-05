@@ -18,7 +18,7 @@ export function CardGrid({ snapshot }: CardGridProps) {
   if (!snapshot) {
     // Skeleton state: two placeholder cards
     return (
-      <div style={{ padding: '0 8px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px', alignItems: 'start' }}>
+      <div style={{ padding: '0 8px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', alignItems: 'start' }}>
         {[0, 1].map((i) => (
           <div
             key={i}
@@ -56,7 +56,7 @@ export function CardGrid({ snapshot }: CardGridProps) {
   let globalIndex = 0
 
   return (
-    <div style={{ padding: '0 8px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px', alignItems: 'stretch' }}>
+    <div style={{ padding: '0 8px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', alignItems: 'stretch' }}>
       {/* 1. Arr services tile — chamfered card with MEDIA label in amber header (D-09, D-12) */}
       {arrServices.length > 0 && (
         <div
