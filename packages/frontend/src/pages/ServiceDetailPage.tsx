@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { PieChart, Pie, Cell } from 'recharts'
-import type { DashboardSnapshot } from '@coruscant/shared'
+import type { DashboardSnapshot, UnifiDevice, UnifiMetrics } from '@coruscant/shared'
 import { StatusDot } from '../components/ui/StatusDot.js'
 
 interface ServiceDetailPageProps {
@@ -165,6 +165,78 @@ function ArrDetailView({
           No health warnings
         </div>
       )}
+    </div>
+  )
+}
+
+/** Single device row: LED + model + uptime + client count (D-11) */
+function DeviceRow({ device }: { device: UnifiDevice }) {
+  const isOnline = device.state === 'online'
+  const days = Math.floor(device.uptime / 86_400)
+  const hours = Math.floor((device.uptime % 86_400) / 3_600)
+  const uptimeStr = days > 0 ? `${days}d ${hours}h` : `${hours}h`
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '3px 0',
+      borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: '10px',
+      fontFamily: 'var(--font-mono)', color: 'var(--text-offwhite)' }}>
+      <span style={{ color: isOnline ? 'var(--cockpit-green, #4ADE80)' : 'var(--cockpit-red)', fontSize: '10px' }}>
+        {isOnline ? '●' : '✕'}
+      </span>
+      <span style={{ flex: 1 }}>{device.model}</span>
+      {isOnline && <span style={{ color: '#666' }}>up {uptimeStr}</span>}
+      {isOnline && device.clientCount > 0 && (
+        <span style={{ color: 'var(--cockpit-amber)', marginLeft: 'auto' }}>{device.clientCount} cl</span>
+      )}
+    </div>
+  )
+}
+
+/** Device group section with amber ribbon label (D-10) */
+function DeviceSection({ label, devices }: { label: string; devices: UnifiDevice[] }) {
+  return (
+    <div style={{ marginBottom: '10px' }}>
+      <div style={{ fontSize: '9px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em',
+        textTransform: 'uppercase', fontFamily: 'var(--font-mono)',
+        marginBottom: '4px', borderBottom: '1px solid rgba(232,160,32,0.2)', paddingBottom: '2px' }}>
+        {label}
+      </div>
+      {devices.map(d => <DeviceRow key={d.macAddress} device={d} />)}
+    </div>
+  )
+}
+
+/** UniFi device list grouped by type — shown below Pi-hole stats in NETWORK detail (D-10, D-11, D-13) */
+function UnifiDetailView({ metrics }: { metrics: Record<string, unknown> }) {
+  const um = metrics as unknown as UnifiMetrics
+  const devices = um?.devices ?? []
+
+  const classify = (m: string) => {
+    const u = m.toUpperCase()
+    if (u.startsWith('UDM') || u.startsWith('UDMP') || u.startsWith('UDR')) return 'gateway'
+    if (u.startsWith('USW')) return 'switch'
+    if (u.startsWith('U6') || u.startsWith('UAP') || u.startsWith('UAL') || u.startsWith('UAE')) return 'ap'
+    return 'other'
+  }
+
+  const gateways = devices.filter(d => classify(d.model) === 'gateway')
+  const switches = devices.filter(d => classify(d.model) === 'switch')
+  const aps = devices.filter(d => classify(d.model) === 'ap')
+  const knownMacs = new Set([...gateways, ...switches, ...aps].map(d => d.macAddress))
+  const other = devices.filter(d => !knownMacs.has(d.macAddress))
+
+  return (
+    <div style={{ overflowY: 'auto' }}>
+      {/* Summary row */}
+      <div style={{ display: 'flex', gap: '12px', fontSize: '10px', fontFamily: 'var(--font-mono)',
+        color: 'var(--text-offwhite)', marginBottom: '10px' }}>
+        <span>{um?.clientCount ?? 0} clients</span>
+        <span>TX {um?.wanTxMbps !== null && um?.wanTxMbps !== undefined ? `${Math.round(um.wanTxMbps)}M` : '—'}</span>
+        <span>RX {um?.wanRxMbps !== null && um?.wanRxMbps !== undefined ? `${Math.round(um.wanRxMbps)}M` : '—'}</span>
+      </div>
+      {gateways.length > 0 && <DeviceSection label="GATEWAYS" devices={gateways} />}
+      {switches.length > 0 && <DeviceSection label="SWITCHES" devices={switches} />}
+      {aps.length > 0 && <DeviceSection label="ACCESS POINTS" devices={aps} />}
+      {other.length > 0 && <DeviceSection label="OTHER" devices={other} />}
     </div>
   )
 }
@@ -384,9 +456,23 @@ export function ServiceDetailPage({ snapshot }: ServiceDetailPageProps) {
         </h1>
       </div>
 
-      {/* Pi-hole: rich detail view with donut chart */}
+      {/* Pi-hole: rich detail view with donut chart + UniFi device list below */}
       {isPihole && service ? (
-        <PiholeDetailView service={service} metrics={metrics ?? {}} />
+        <>
+          <PiholeDetailView service={service} metrics={metrics ?? {}} />
+          {(() => {
+            const unifiService = snapshot?.services.find(s => s.id === 'unifi')
+            return unifiService?.metrics ? (
+              <div style={{ marginTop: '24px', borderTop: '1px solid rgba(232,160,32,0.15)', paddingTop: '16px' }}>
+                <div style={{ fontSize: '12px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em',
+                  textTransform: 'uppercase', marginBottom: '10px', fontFamily: 'var(--font-mono)' }}>
+                  UBIQUITI DEVICES
+                </div>
+                <UnifiDetailView metrics={unifiService.metrics as Record<string, unknown>} />
+              </div>
+            ) : null
+          })()}
+        </>
       ) : isPihole && !service ? (
         <p className="text-label" style={{ color: 'var(--text-offwhite)' }}>
           NO DATA — configure Pi-hole in Settings
