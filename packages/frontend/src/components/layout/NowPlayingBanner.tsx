@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { PlexStream, PlexServerStats } from '@coruscant/shared'
 import { StreamRow } from './StreamRow.js'
@@ -11,15 +11,17 @@ interface NowPlayingBannerProps {
 
 export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: NowPlayingBannerProps) {
   const [expanded, setExpanded] = useState(false)
-  const tickerRef = useRef<HTMLSpanElement>(null)
-  const [shouldScroll, setShouldScroll] = useState(false)
+  const [activeIdx, setActiveIdx] = useState(0)
 
-  // Check if ticker text overflows and needs marquee (UI-SPEC Animation Contract)
+  // Cycle through stream titles every ~4 seconds when multiple streams active (D-24)
   useEffect(() => {
-    if (tickerRef.current) {
-      setShouldScroll(tickerRef.current.scrollWidth > tickerRef.current.clientWidth)
+    if (streams.length <= 1) {
+      setActiveIdx(0)
+      return
     }
-  }, [streams])
+    const id = setInterval(() => setActiveIdx(i => (i + 1) % streams.length), 4000)
+    return () => clearInterval(id)
+  }, [streams.length])
 
   // D-11: When Plex is not configured at all, hide the rail entirely
   if (!plexConfigured) return null
@@ -59,21 +61,6 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
     )
   }
 
-  const firstStream = streams[0]
-
-  // D-09: Collapsed rail ticker shows title, deviceName, and transcode indicator per stream
-  const buildTickerSegment = (stream: PlexStream) => {
-    const titleText =
-      stream.season != null && stream.episode != null
-        ? `${stream.title} S${stream.season}E${stream.episode}`
-        : stream.title
-    const playMode = stream.transcode ? 'Transcode' : 'Direct Play'
-    return `${titleText} \u2022 ${stream.deviceName} \u2022 ${playMode}`
-  }
-
-  const tickerText = buildTickerSegment(firstStream)
-  const pluralS = streams.length === 1 ? '' : 's'
-
   return (
     <AnimatePresence>
       {/* Backdrop when expanded — tap outside to collapse (D-17) */}
@@ -96,9 +83,9 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
 
       <motion.div
         key="banner"
-        initial={{ y: 48, opacity: 0 }}
+        initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 48, opacity: 0 }}
+        exit={{ y: 40, opacity: 0 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
         aria-live="polite"
         style={{
@@ -112,7 +99,7 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
           borderTop: '1px solid rgba(232, 160, 32, 0.30)',
         }}
       >
-        {/* Collapsed strip — 48px (UI-SPEC Spacing) */}
+        {/* Collapsed strip — 40px (D-02 viewport budget) */}
         <div
           onClick={() => setExpanded(!expanded)}
           role="button"
@@ -122,43 +109,86 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
             if (e.key === 'Enter' || e.key === ' ') setExpanded(!expanded)
           }}
           style={{
-            height: '48px',
+            height: '40px',
             display: 'flex',
             alignItems: 'center',
-            padding: '0 16px',
+            padding: '0 12px',
             gap: '8px',
             cursor: 'pointer',
             overflow: 'hidden',
           }}
         >
-          <span className="text-body" style={{ color: 'var(--cockpit-amber)', flexShrink: 0 }}>
-            &#9654; {streams.length} stream{pluralS}
+          {/* Left: PLEX label — always visible (D-29) */}
+          <span style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: '11px',
+            color: 'var(--cockpit-amber)',
+            letterSpacing: '0.08em',
+            flexShrink: 0,
+            fontWeight: 600,
+          }}>
+            PLEX
           </span>
-          <span
-            ref={tickerRef}
-            className="text-body"
-            style={{
-              color: 'var(--text-offwhite)',
-              overflow: 'hidden',
-              whiteSpace: 'nowrap',
-              flex: 1,
-              position: 'relative',
-            }}
-          >
-            {shouldScroll && !expanded ? (
-              <span
+
+          {/* Center: cycling stream title (D-24) */}
+          <div style={{
+            flex: 1,
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+            textOverflow: 'ellipsis',
+            position: 'relative',
+            height: '20px',
+            display: 'flex',
+            alignItems: 'center',
+          }}>
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={activeIdx}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.3 }}
+                className="text-body"
                 style={{
-                  display: 'inline-block',
-                  animation: 'marquee 12s linear infinite',
-                  paddingRight: '50%',
+                  color: 'var(--text-offwhite)',
+                  fontSize: '11px',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
                 }}
               >
-                {tickerText}&nbsp;&nbsp;&nbsp;{tickerText}
-              </span>
-            ) : (
-              tickerText
-            )}
-          </span>
+                {(() => {
+                  const s = streams[activeIdx] ?? streams[0]
+                  if (!s) return ''
+                  // For audio: title already contains artist/track info from backend
+                  // For video with season/episode: "Title S1E5"
+                  if (s.season != null && s.episode != null) {
+                    return `${s.title} S${s.season}E${s.episode}`
+                  }
+                  return s.title
+                })()}
+              </motion.span>
+            </AnimatePresence>
+          </div>
+
+          {/* Right: Plex server stats (D-24) — always visible in collapsed state */}
+          {plexServerStats && (
+            <div style={{
+              display: 'flex',
+              gap: '8px',
+              flexShrink: 0,
+              fontSize: '10px',
+              fontFamily: 'var(--font-mono)',
+              color: 'var(--text-offwhite)',
+            }}>
+              <span>CPU {plexServerStats.processCpuPercent.toFixed(0)}%</span>
+              <span>RAM {plexServerStats.processRamPercent.toFixed(0)}%</span>
+              <span>{plexServerStats.bandwidthMbps.toFixed(1)} Mbps</span>
+            </div>
+          )}
         </div>
 
         {/* Expanded drawer (D-16) */}
@@ -181,7 +211,7 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
                 <StreamRow key={`${stream.user}-${stream.title}-${i}`} stream={stream} />
               ))}
 
-              {/* Plex Server Stats — only in expanded state, only if stats available (D-10) */}
+              {/* Plex Server Stats — also in expanded state for detail (D-10) */}
               {plexServerStats && (
                 <div
                   style={{
