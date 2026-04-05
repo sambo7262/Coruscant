@@ -181,7 +181,22 @@ export async function settingsRoutes(fastify: FastifyInstance) {
     // Use the resolved plaintext key — not the raw form value, which may be '' when the
     // user saves without re-entering credentials. The DB already preserves the stored key;
     // here we decrypt it so the adapter always receives a real credential.
-    const resolvedApiKey = apiKey !== '' ? apiKey : decrypt(encryptedApiKey, seed)
+    let resolvedApiKey: string
+    if (apiKey !== '') {
+      resolvedApiKey = apiKey
+    } else {
+      try {
+        resolvedApiKey = decrypt(encryptedApiKey, seed)
+      } catch (decryptErr) {
+        fastify.log.error(
+          { service: serviceId, err: decryptErr },
+          'crypto: failed to decrypt stored API key — ENCRYPTION_KEY_SEED may have changed. Re-enter credentials.',
+        )
+        return reply.code(422).send({
+          error: 'Stored API key could not be decrypted. The encryption seed may have changed — please re-enter the API key.',
+        })
+      }
+    }
     await pollManager.reload(serviceId, { baseUrl, apiKey: resolvedApiKey, username })
 
     return reply.send({ ok: true })

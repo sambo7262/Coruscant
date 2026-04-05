@@ -28,7 +28,15 @@ export async function debugRoutes(fastify: FastifyInstance) {
 
     const baseUrl = row.baseUrl.replace(/\/$/, '')
     const username = row.username ?? ''
-    const password = row.encryptedApiKey ? decrypt(row.encryptedApiKey, SEED) : ''
+    let password = ''
+    if (row.encryptedApiKey) {
+      try {
+        password = decrypt(row.encryptedApiKey, SEED)
+      } catch (decryptErr) {
+        fastify.log.error({ err: decryptErr }, 'debug/docker-stats: failed to decrypt NAS password — ENCRYPTION_KEY_SEED may have changed')
+        return reply.status(500).send({ error: 'Failed to decrypt NAS credentials — ENCRYPTION_KEY_SEED may have changed' })
+      }
+    }
 
     // Step 1: authenticate
     let sid: string
