@@ -5,13 +5,24 @@ interface StreamRowProps {
 }
 
 export function StreamRow({ stream }: StreamRowProps) {
-  // Format title: "Title" or "Title S1E5"
-  const titleText =
-    stream.season != null && stream.episode != null
-      ? `${stream.title} S${stream.season}E${stream.episode}`
-      : stream.year
-        ? `${stream.title} (${stream.year})`
-        : stream.title
+  const isAudio = stream.mediaType === 'audio'
+
+  // Format title based on media type (D-26)
+  let titleText: string
+  if (isAudio) {
+    // Audio: "Track Title — Album Name"
+    titleText = stream.albumName
+      ? `${stream.title} — ${stream.albumName}`
+      : stream.title
+  } else if (stream.season != null && stream.episode != null) {
+    // TV: "Title S1E5"
+    titleText = `${stream.title} S${stream.season}E${stream.episode}`
+  } else if (stream.year) {
+    // Movie: "Title (2024)"
+    titleText = `${stream.title} (${stream.year})`
+  } else {
+    titleText = stream.title
+  }
 
   return (
     <div
@@ -23,12 +34,27 @@ export function StreamRow({ stream }: StreamRowProps) {
         borderBottom: '1px solid rgba(232, 160, 32, 0.08)',
       }}
     >
-      {/* Row 1: USER > TITLE on left, QUAL / DIRECT on right */}
+      {/* Row 1: USER > [BADGE] TITLE on left, QUAL / DIRECT on right */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
         <span className="text-body">
           <span style={{ color: 'var(--cockpit-amber)' }}>{stream.user}</span>
           {' '}
-          <span style={{ color: 'var(--text-offwhite)' }}>&gt; {titleText}</span>
+          <span style={{ color: 'var(--text-offwhite)' }}>&gt; </span>
+          {/* Media type badge (D-25) */}
+          <span style={{
+            fontSize: '9px',
+            fontFamily: 'var(--font-mono)',
+            letterSpacing: '0.04em',
+            padding: '1px 4px',
+            borderRadius: '2px',
+            marginRight: '4px',
+            background: isAudio ? 'rgba(155, 89, 182, 0.25)' : 'rgba(232, 160, 32, 0.2)',
+            color: isAudio ? '#BB86FC' : 'var(--cockpit-amber)',
+            border: `1px solid ${isAudio ? 'rgba(155, 89, 182, 0.4)' : 'rgba(232, 160, 32, 0.3)'}`,
+          }}>
+            {isAudio ? 'AUDIO' : 'VIDEO'}
+          </span>
+          <span style={{ color: 'var(--text-offwhite)' }}>{titleText}</span>
         </span>
         <span
           className="text-label"
@@ -38,7 +64,7 @@ export function StreamRow({ stream }: StreamRowProps) {
           {' / '}
           <span
             style={{
-              color: stream.transcode ? 'var(--cockpit-amber)' : 'var(--cockpit-green)',
+              color: stream.transcode ? 'var(--cockpit-amber)' : 'var(--cockpit-green, #4ADE80)',
               textTransform: 'uppercase',
             }}
           >
