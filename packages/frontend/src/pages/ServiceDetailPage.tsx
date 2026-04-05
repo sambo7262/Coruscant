@@ -174,7 +174,7 @@ function DeviceRow({ device }: { device: UnifiDevice }) {
   const isOnline = device.state === 'online'
   const days = Math.floor(device.uptime / 86_400)
   const hours = Math.floor((device.uptime % 86_400) / 3_600)
-  const uptimeStr = days > 0 ? `${days}d ${hours}h` : `${hours}h`
+  const uptimeStr = device.uptime > 0 ? (days > 0 ? `${days}d ${hours}h` : `${hours}h`) : null
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '3px 0',
       borderBottom: '1px solid rgba(255,255,255,0.04)', fontSize: '10px',
@@ -183,7 +183,7 @@ function DeviceRow({ device }: { device: UnifiDevice }) {
         {isOnline ? '●' : '✕'}
       </span>
       <span style={{ flex: 1 }}>{device.model}</span>
-      {isOnline && <span style={{ color: '#666' }}>up {uptimeStr}</span>}
+      {isOnline && uptimeStr && <span style={{ color: '#666' }}>up {uptimeStr}</span>}
       {isOnline && device.clientCount > 0 && (
         <span style={{ color: 'var(--cockpit-amber)', marginLeft: 'auto' }}>{device.clientCount} cl</span>
       )}

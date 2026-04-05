@@ -34,9 +34,9 @@ export function CardGrid({ snapshot }: CardGridProps) {
     )
   }
 
-  // Exclude NAS (in AppHeader), Plex (in NowPlayingBanner)
+  // Exclude NAS (in AppHeader), Plex (in NowPlayingBanner), UniFi (embedded in NETWORK card)
   const allServices = snapshot.services.filter(
-    (s) => s.id !== 'nas-detail' && s.id !== 'plex' && s.id !== 'nas',
+    (s) => s.id !== 'nas-detail' && s.id !== 'plex' && s.id !== 'nas' && s.id !== 'unifi',
   )
   const arrServices = allServices.filter((s) => ARR_IDS.has(s.id))
   const nonArrServices = allServices.filter((s) => !ARR_IDS.has(s.id))

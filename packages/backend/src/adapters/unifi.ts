@@ -45,10 +45,13 @@ export function resetUnifiCache(): void {
  * Per D-06 device type classification.
  */
 export function classifyModel(model: string): 'gateway' | 'switch' | 'ap' | 'unknown' {
-  const m = model.toUpperCase()
-  if (m.startsWith('UDM') || m.startsWith('UDMP') || m.startsWith('UDR')) return 'gateway'
-  if (m.startsWith('USW')) return 'switch'
-  if (m.startsWith('U6') || m.startsWith('UAP') || m.startsWith('UAL') || m.startsWith('UAE')) return 'ap'
+  // Remove spaces and hyphens for prefix matching (e.g. "UCG Ultra" → "UCGULTRA")
+  const m = model.toUpperCase().replace(/[\s-]/g, '')
+  if (m.startsWith('UDM') || m.startsWith('UDMP') || m.startsWith('UDR')
+    || m.startsWith('UCG') || m.startsWith('UXG') || m.startsWith('UNVR')) return 'gateway'
+  if (m.startsWith('USW') || m.startsWith('USS')) return 'switch'
+  if (m.startsWith('U6') || m.startsWith('UAP') || m.startsWith('UAL') || m.startsWith('UAE')
+    || m.startsWith('UAC') || m.startsWith('UMA')) return 'ap'
   return 'unknown'
 }
 
@@ -145,23 +148,25 @@ export async function pollUnifi(baseUrl: string, apiKey: string): Promise<Servic
         .catch(() => null),
     ])
 
-    // Parse devices
+    // Parse devices — Integration API uses uppercase state ('ONLINE') and features as string array
     const rawDevices: Array<{
       macAddress: string
       model: string
       name: string
       state: string
       uptime?: number
-      features?: { access_point?: { num_sta?: number } }
+      features?: string[] | { access_point?: { num_sta?: number } }
     }> = devicesRes.data?.data ?? []
 
     const devices: UnifiDevice[] = rawDevices.map(d => ({
       macAddress: d.macAddress,
       model: d.model,
       name: d.name,
-      state: d.state,
+      // Normalize to lowercase — Integration API returns 'ONLINE'/'OFFLINE', legacy returns 'online'/'offline'
+      state: d.state.toLowerCase(),
       uptime: d.uptime ?? 0,
-      clientCount: d.features?.access_point?.num_sta ?? 0,
+      // Integration API features is a string array — per-device client count not available
+      clientCount: Array.isArray(d.features) ? 0 : (d.features as { access_point?: { num_sta?: number } })?.access_point?.num_sta ?? 0,
     }))
 
     // Parse client count
