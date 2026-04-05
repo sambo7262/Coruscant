@@ -2,7 +2,7 @@
 
 ## Overview
 
-Coruscant is built in nine phases that follow the natural dependency order of a monitoring dashboard: infrastructure before application code, architecture proven with one service before building ten, UI built against real data, and the two hardest integrations saved for last. Phases 1-2 are the critical path — everything after Phase 2 can be planned in parallel. Phase 9 (Smart Home) is research-gated and isolated from all other phases.
+Coruscant is built in eleven phases that follow the natural dependency order of a monitoring dashboard: infrastructure before application code, architecture proven with one service before building ten, UI built against real data. Phases 1-2 are the critical path — everything after Phase 2 can be planned in parallel. Phase 11 (Raspberry Pi Kiosk) is already complete.
 
 ## Phases
 
@@ -17,10 +17,12 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Settings + First Service Adapters** - Settings page, then Radarr/Sonarr/Lidarr/Bazarr status cards and SABnzbd activity card (completed 2026-04-03)
 - [ ] **Phase 4: Rich Service Integrations** - Pi-hole, Plex (Now Playing banner), and Synology NAS CPU/RAM/storage/disk/fans
 - [ ] **Phase 5: UI v2 — Instrument Panel Polish** - Second UI pass with real data: refine card metrics, layout density, interaction details, and visual hierarchy now that actual service data is flowing
-- [ ] **Phase 6: Network Monitoring** - UniFi device cards, client counts, WAN throughput, cookie session management
-- [ ] **Phase 7: Notifications** - Pushover alert engine, per-service threshold config, debouncing/cooldown
-- [ ] **Phase 8: Logging + Polish** - In-app log viewer, purge/export, SQLite WAL pruning, operational quality
-- [ ] **Phase 9: Smart Home** - Google Nest OAuth wizard, Ring unofficial API integration — isolated, best-effort
+- [ ] **Phase 6: Network Monitoring** - UniFi device cards, client counts, WAN throughput, API token auth (UniFi OS 5.x)
+- [ ] **Phase 7: Notifications (Pushover Inbox)** - Coruscant as a Pushover receiver — display arr/service alerts in a dashboard inbox
+- [ ] **Phase 8: Logging, Polish + Performance** - Log viewer, SQLite pruning, poll interval tuning for real-time media feel
+- [ ] **Phase 9: Local Weather** - Current conditions in AppHeader nav bar via self-hosted/no-key weather API
+- [ ] **Phase 10: Production Deploy + Hardening** - v1.0 tag, registry migration, final bug pass, git cleanup
+- [x] **Phase 11: Raspberry Pi Kiosk** - Complete (set up manually)
 
 ## Phase Details
 
@@ -124,86 +126,104 @@ Plans:
 **UI hint**: yes
 
 ### Phase 6: Network Monitoring
-**Goal**: UniFi network equipment is visible on the dashboard with device status, client counts, and throughput — and the backend manages session auth automatically
+**Goal**: UniFi network equipment is visible on the dashboard with device status, client counts, and throughput — authenticated via a static API token generated from the UniFi control panel
 **Depends on**: Phase 5
 **Requirements**: NET-01, NET-02, NET-03, NET-04
+**Notes**:
+- Controller version: UniFi OS 5.x
+- Auth: static API token (generated from UniFi control panel settings) — NOT cookie/session auth
 **Success Criteria** (what must be TRUE):
   1. UniFi card shows live active client count, WAN rx/tx throughput, and an overall network health state dot
   2. UniFi card lists per-device status (APs, switches, gateways) with online/offline indication
   3. User taps the UniFi card and reaches a detail view listing all monitored devices with uptime, model, and client count
-  4. After the UniFi session cookie expires, the backend re-authenticates automatically and data continues updating without user intervention
+  4. Backend authenticates via static API token header — no session management or re-auth logic needed
 **Plans**: TBD
 **UI hint**: yes
 
-### Phase 7: Notifications
-**Goal**: User receives Pushover alerts when services go down or configured thresholds are breached, with no duplicate-alert spam
+### Phase 7: Notifications (Pushover Inbox)
+**Goal**: Coruscant acts as a Pushover *receiver* — displaying incoming notifications from the existing arr/service stack in a dashboard inbox panel, so alerts from all apps appear in one place alongside service health
 **Depends on**: Phase 6
-**Requirements**: NOTIF-01, NOTIF-02, NOTIF-03, NOTIF-04, NOTIF-05, NOTIF-06, CFG-02
+**Requirements**: NOTIF-01, NOTIF-02, NOTIF-03, CFG-02
+**Notes**:
+- Direction: Coruscant RECEIVES Pushover messages (inbox/client), does not send them
+- User already has a Pushover setup pushing arr notifications to their phone — Coruscant taps into that same stream
+- Approach TBD (discuss before planning): two options:
+  1. Poll Pushover API frequently for latest messages and render them in a notification feed
+  2. Leverage existing arr notification pipeline — arr services POST to a Coruscant webhook endpoint that stores and surfaces alerts internally (no Pushover API polling needed)
+- Option 2 (local webhook receiver) is likely simpler: no external API dependency, no polling rate limits, reuses the existing arr → Pushover notification config by adding Coruscant as a second destination
 **Success Criteria** (what must be TRUE):
-  1. User enters their Pushover application token and user key in Settings and receives a test notification confirming the credentials are valid
-  2. When any monitored service transitions to offline/critical state, a Pushover notification arrives on the user's phone within one poll interval
-  3. User configures a per-service numeric threshold (e.g., NAS storage > 85%) and receives a Pushover notification when the condition is breached
-  4. A breached threshold does not generate repeated notifications — the same condition during the configured cooldown period produces at most one alert
-  5. Pushover messages include the service name, condition, current value, and a deep-link URL to the Coruscant dashboard
-**Plans**: TBD
+  1. Dashboard shows a notification feed/inbox with recent alerts received from the arr stack and other configured services
+  2. Unread/new alerts are visually distinct; user can dismiss/clear them
+  3. Notifications persist across page reloads (stored in SQLite)
+  4. User configures which notification sources feed the inbox in Settings
+**Plans**: TBD — run /gsd:discuss-phase 7 before planning
 
-### Phase 8: Logging + Polish
-**Goal**: The user can inspect, filter, purge, and export application logs from within the dashboard, and the app operates cleanly over time without unbounded SQLite growth
+### Phase 8: Logging, Polish + Performance
+**Goal**: The user can inspect and manage application logs, the app is visually polished end-to-end, and polling intervals are tuned for real-time feel — especially for media (Plex streams, SABnzbd active downloads)
 **Depends on**: Phase 7
-**Requirements**: LOG-01, LOG-02, LOG-03, LOG-04
+**Requirements**: LOG-01, LOG-02, LOG-03, LOG-04, PERF-01, PERF-02
+**Notes**:
+- Performance focus: discuss before planning — current intervals (NAS 3s, Plex 5s, arr 5s, Pi-hole 60s) may need tuning; explore whether SSE push-on-change vs fixed polling can reduce lag for media
+- Goal: Plex stream state and SABnzbd progress feel real-time (sub-3s); NAS and arr can be slightly more relaxed
 **Success Criteria** (what must be TRUE):
-  1. User navigates to the log viewer and sees structured log entries covering poll events, errors, service state changes, and alert dispatches — filterable by service and level
+  1. User navigates to the log viewer and sees structured log entries covering poll events, errors, service state changes — filterable by service and level
   2. User selects an age threshold and purges logs older than that value; the log viewer reflects the change immediately
-  3. User clicks Export and receives a downloadable log file
-  4. SQLite file size remains bounded over weeks of operation — WAL mode is verified and nightly pruning runs without user action
-**Plans**: TBD
+  3. SQLite file size remains bounded over weeks of operation — WAL mode verified, nightly pruning runs without user action
+  4. Plex stream state updates feel immediate (≤3s lag from stream start to banner appearance)
+  5. SABnzbd download progress updates smoothly in near-real-time during active downloads
+  6. No visible polling artifacts (flicker, stale-data flash) at normal kiosk viewing distance
+**Plans**: TBD — run /gsd:discuss-phase 8 before planning (poll interval discussion needed)
 **UI hint**: yes
 
-### Phase 9: Smart Home
-**Goal**: Google Nest thermostat state and Amazon Ring device/event status are visible on the dashboard — both integrations are isolated and their absence does not affect any other phase
+### Phase 9: Local Weather
+**Goal**: Current local weather conditions appear in the AppHeader top nav bar — pulled from a local or self-hosted weather source with no external cloud dependency
 **Depends on**: Phase 8
-**Requirements**: SMRTH-01, SMRTH-02, SMRTH-03, SMRTH-04
+**Requirements**: WTHR-01, WTHR-02
+**Notes**:
+- Google Nest and Amazon Ring integrations removed from scope
+- Weather source TBD: options include Open-Meteo (free, no API key), local weather station, or NWS API — all avoid cloud account dependencies
+- Location configured once in Settings (lat/lon or zip) and cached; updates on a slow interval (10–30 min)
+- Display: compact — current temp + condition icon in the header strip; no full weather card needed
 **Success Criteria** (what must be TRUE):
-  1. User completes the one-time Nest OAuth wizard in the dashboard and the Nest card shows current temperature, humidity, and HVAC state without requiring manual token entry
-  2. After Nest OAuth is complete, the Nest card updates from live SDM API data and shows connectivity status
-  3. User completes Ring one-time 2FA setup and the Ring card shows each device (doorbells, cameras) with online/offline status and last-event indicators
-  4. Cards for unconfigured smart home integrations show a "Not configured" placeholder with setup instructions rather than an error state
+  1. AppHeader top nav bar shows current temperature and a weather condition indicator (icon or abbreviated label)
+  2. Weather updates automatically on a configured interval without user interaction
+  3. User sets location (lat/lon) once in Settings; weather persists across restarts
+  4. If weather fetch fails, header shows last-known value with a stale indicator rather than crashing
 **Plans**: TBD
 **UI hint**: yes
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 (11 already done)
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Infrastructure Foundation | 2/2 | Complete | 2026-04-03 |
 | 2. Core UI Shell | 13/13 | Complete | 2026-04-03 |
-| 3. Settings + First Service Adapters | 4/4 | Complete   | 2026-04-04 |
-| 4. Rich Service Integrations | 3/5 | In Progress|  |
-| 5. UI v2 — Instrument Panel Polish | 3/5 | In Progress|  |
+| 3. Settings + First Service Adapters | 4/4 | Complete | 2026-04-04 |
+| 4. Rich Service Integrations | 5/5 | Complete | 2026-04-05 |
+| 5. UI v2 — Instrument Panel Polish | 5/5 | In Progress (Plex bug) | - |
 | 6. Network Monitoring | 0/? | Not started | - |
-| 7. Notifications | 0/? | Not started | - |
-| 8. Logging + Polish | 0/? | Not started | - |
-| 9. Smart Home | 0/? | Not started | - |
+| 7. Notifications (Pushover Inbox) | 0/? | Not started | - |
+| 8. Logging, Polish + Performance | 0/? | Not started | - |
+| 9. Local Weather | 0/? | Not started | - |
+| 10. Production Deploy + Hardening | 0/? | Not started | - |
+| 11. Raspberry Pi Kiosk | — | Complete (manual) | 2026-04-05 |
 
 ### Phase 10: Production Deploy and Hardening
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal**: App is deployed cleanly to the Synology NAS from the self-hosted registry, v1.0 is tagged, final bugs are resolved, and the codebase is clean for long-term maintenance
+**Requirements**: PROD-01, PROD-02, PROD-03
 **Depends on:** Phase 9
-**Plans:** 0 plans
+**Notes**:
+- Final bug pass before v1.0 tag
+- Self-hosted registry migration verified
+- Git history cleanup (squash debug commits, remove stale branches)
+**Plans**: TBD — run /gsd:plan-phase 10 when ready
 
-Plans:
-- [ ] TBD (run /gsd:plan-phase 9 to break down)
+### Phase 11: Raspberry Pi Kiosk ✅
 
-### Phase 11: Raspberry Pi kiosk deployment — SSH-driven setup of Coruscant as a fullscreen browser kiosk on a Raspberry Pi on the local LAN
-
-**Goal:** [To be planned]
-**Requirements**: TBD
-**Depends on:** Phase 10
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd:plan-phase 11 to break down)
+**Goal:** Coruscant running as a fullscreen browser kiosk on a Raspberry Pi on the local LAN
+**Status:** COMPLETE — set up manually by user outside GSD workflow
+**Depends on:** Phase 1
