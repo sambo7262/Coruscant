@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { PieChart, Pie, Cell, Tooltip } from 'recharts'
+import { PieChart, Pie, Cell } from 'recharts'
 import type { DashboardSnapshot } from '@coruscant/shared'
 import { StatusDot } from '../components/ui/StatusDot.js'
 
@@ -8,7 +8,7 @@ interface ServiceDetailPageProps {
   snapshot: DashboardSnapshot | null
 }
 
-const ARR_IDS = new Set(['radarr', 'sonarr', 'lidarr', 'bazarr'])
+const ARR_IDS = new Set(['radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 'readarr'])
 
 /** Cockpit dot-leader row: LABEL ............. VALUE */
 function DotLeaderRow({ label, value }: { label: string; value: string }) {
@@ -35,177 +35,134 @@ function DotLeaderRow({ label, value }: { label: string; value: string }) {
   )
 }
 
-type AttentionItem = { type: 'manual_import' | 'failed'; name: string }
-
-/** Arr-specific detail view with stats + attention required section */
-function ArrDetailView({
-  serviceId,
-  metrics,
-}: {
-  serviceId: string
-  metrics: Record<string, unknown>
-}) {
-  const isBazarr = serviceId === 'bazarr'
-  const isSonarr = serviceId === 'sonarr'
-
-  const queue = typeof metrics.queue === 'number' ? metrics.queue : 0
-  const monitored = typeof metrics.monitored === 'number' ? metrics.monitored : 0
-  const librarySize = typeof metrics.librarySize === 'string' ? metrics.librarySize : '—'
-  const missing = typeof metrics.missing === 'number' ? metrics.missing : 0
-
-  const rawAttention = Array.isArray(metrics.attentionItems) ? metrics.attentionItems : []
-  const attentionItems: AttentionItem[] = rawAttention.filter(
-    (item): item is AttentionItem =>
-      item !== null &&
-      typeof item === 'object' &&
-      'type' in item &&
-      'name' in item
-  )
-
-  const monitoredLabel = isBazarr
-    ? 'SERIES'
-    : isSonarr
-    ? 'SHOWS'
-    : 'MOVIES'
-
-  const missingLabel = isBazarr ? 'MISSING SUBS' : isSonarr ? 'MISSING SHOWS' : 'MISSING'
-
+/** SABnzbd detail view: active download at top + full queue list below (D-08) */
+function SabnzbdDetailView({ metrics }: { metrics: Record<string, unknown> }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      {/* Stats section */}
-      {!isBazarr && (
-        <DotLeaderRow label="Queue" value={`${queue} items`} />
-      )}
-      <DotLeaderRow
-        label="Monitored"
-        value={`${monitored.toLocaleString()} ${monitoredLabel}`}
-      />
-      {!isBazarr && (
-        <DotLeaderRow label="Library Size" value={librarySize} />
-      )}
-      {!isBazarr && (
-        <DotLeaderRow label={missingLabel} value={`${missing}`} />
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      {/* Active download — top section */}
+      {typeof metrics.currentFilename === 'string' && metrics.currentFilename && (
+        <div style={{
+          padding: '12px',
+          borderBottom: '1px solid rgba(232,160,32,0.15)',
+          fontFamily: 'var(--font-mono)',
+        }}>
+          <div style={{ fontSize: '10px', color: 'rgba(232,160,32,0.5)', letterSpacing: '0.06em', marginBottom: '6px' }}>
+            ACTIVE DOWNLOAD
+          </div>
+          <div style={{ fontSize: '12px', color: 'var(--cockpit-amber)', marginBottom: '4px', wordBreak: 'break-all' }}>
+            {String(metrics.currentFilename)}
+          </div>
+          <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: 'var(--text-offwhite)', marginBottom: '6px' }}>
+            <span>{typeof metrics.speedMBs === 'number' ? metrics.speedMBs.toFixed(1) : '--'} MB/s</span>
+            <span>ETA {typeof metrics.timeLeft === 'string' ? metrics.timeLeft : '--'}</span>
+          </div>
+          {/* Progress bar */}
+          <div style={{ height: '4px', background: 'rgba(255,255,255,0.08)', borderRadius: '2px', overflow: 'hidden' }}>
+            <div style={{
+              height: '100%',
+              width: `${typeof metrics.progressPercent === 'number' ? metrics.progressPercent : 0}%`,
+              background: 'var(--cockpit-purple)',
+              borderRadius: '2px',
+              transition: 'width 0.5s ease',
+            }} />
+          </div>
+        </div>
       )}
 
-      {/* Attention Required section — only shown when items exist */}
-      {attentionItems.length > 0 && (
-        <div
-          style={{
-            marginTop: '8px',
-            borderLeft: '3px solid var(--cockpit-amber)',
-            background: 'rgba(232,160,32,0.08)',
-            padding: '10px 12px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px',
-          }}
-        >
-          {/* Attention header */}
-          <div
-            style={{
-              borderBottom: '1px solid rgba(232,160,32,0.15)',
-              paddingBottom: '6px',
-              marginBottom: '4px',
-            }}
-          >
-            <span
-              className="text-label"
-              style={{
-                color: 'var(--cockpit-amber)',
-                textTransform: 'uppercase',
-                fontWeight: 600,
-                fontSize: '11px',
-              }}
-            >
-              [!] ATTENTION REQUIRED
+      {/* Queue section */}
+      <div style={{ padding: '12px', fontFamily: 'var(--font-mono)' }}>
+        <div style={{ fontSize: '10px', color: 'rgba(232,160,32,0.5)', letterSpacing: '0.06em', marginBottom: '6px' }}>
+          QUEUE ({typeof metrics.queueCount === 'number' ? metrics.queueCount : 0})
+        </div>
+        {/* If queue items are available as an array, render them */}
+        {Array.isArray(metrics.queueItems) && (metrics.queueItems as Record<string, unknown>[]).map((item, i) => (
+          <div key={i} style={{
+            display: 'flex', justifyContent: 'space-between',
+            padding: '4px 0', borderBottom: '1px solid rgba(255,255,255,0.04)',
+            fontSize: '10px',
+          }}>
+            <span style={{ color: 'var(--text-offwhite)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {String(item.filename ?? '')}
+            </span>
+            <span style={{ color: 'rgba(232,160,32,0.6)', flexShrink: 0, marginLeft: '8px' }}>
+              {String(item.status ?? '')}
             </span>
           </div>
+        ))}
+        {/* Fallback if no queue items array */}
+        {!Array.isArray(metrics.queueItems) && typeof metrics.queueCount === 'number' && metrics.queueCount > 0 && (
+          <div style={{ fontSize: '10px', color: 'var(--text-offwhite)' }}>
+            {metrics.queueCount} item(s) queued
+          </div>
+        )}
+        {/* Idle state */}
+        {!metrics.currentFilename && (typeof metrics.queueCount !== 'number' || metrics.queueCount === 0) && (
+          <div style={{ fontSize: '10px', color: '#555' }}>IDLE — no active downloads</div>
+        )}
+      </div>
+    </div>
+  )
+}
 
-          {/* Manual import items */}
-          {attentionItems
-            .filter((item) => item.type === 'manual_import')
-            .map((item, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                <span
-                  className="text-label"
-                  style={{
-                    color: 'rgba(232,160,32,0.60)',
-                    fontSize: '10px',
-                    flexShrink: 0,
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  Manual Import
-                </span>
-                <span
-                  style={{
-                    flex: 1,
-                    borderBottom: '1px dotted rgba(232,160,32,0.15)',
-                    margin: '0 4px',
-                    minWidth: '12px',
-                  }}
-                />
-                <span
-                  className="text-label"
-                  style={{
-                    color: 'var(--cockpit-amber)',
-                    fontSize: '11px',
-                    fontFamily: 'var(--font-mono)',
-                    flexShrink: 0,
-                    maxWidth: '180px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                  title={item.name}
-                >
-                  {item.name}
-                </span>
+/** Arr-specific detail view: status/version dot-leader rows + health warnings (D-14) */
+function ArrDetailView({
+  service,
+  metrics,
+}: {
+  service: { status: string; configured?: boolean }
+  metrics: Record<string, unknown>
+}) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      {/* Status and version — dot-leader rows */}
+      <div style={{ padding: '12px', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+          <span style={{ color: 'var(--text-offwhite)' }}>STATUS</span>
+          <span style={{ flex: 1, borderBottom: '1px dotted rgba(255,255,255,0.15)', margin: '0 8px', alignSelf: 'flex-end' }} />
+          <span style={{ color: service.status === 'online' ? 'var(--cockpit-green, #4ADE80)' : 'var(--cockpit-red)' }}>
+            {service.status === 'online' ? 'ONLINE' : service.status === 'warning' ? 'DEGRADED' : 'OFFLINE'}
+          </span>
+        </div>
+        {typeof metrics.version === 'string' && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+            <span style={{ color: 'var(--text-offwhite)' }}>VERSION</span>
+            <span style={{ flex: 1, borderBottom: '1px dotted rgba(255,255,255,0.15)', margin: '0 8px', alignSelf: 'flex-end' }} />
+            <span style={{ color: 'var(--text-offwhite)' }}>{metrics.version}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Health warnings (D-14) */}
+      {Array.isArray(metrics.healthWarnings) && metrics.healthWarnings.length > 0 && (
+        <div style={{
+          padding: '0 12px 12px 12px',
+          fontFamily: 'var(--font-mono)',
+        }}>
+          <div style={{ fontSize: '10px', color: 'var(--cockpit-amber)', letterSpacing: '0.06em', marginBottom: '6px' }}>
+            WARNINGS ({(metrics.healthWarnings as unknown[]).length})
+          </div>
+          <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+            {(metrics.healthWarnings as Record<string, unknown>[]).map((warn, i) => (
+              <div key={i} style={{
+                padding: '6px 0',
+                borderBottom: '1px solid rgba(255,255,255,0.04)',
+                fontSize: '10px',
+              }}>
+                <div style={{ color: 'var(--cockpit-amber)', marginBottom: '2px' }}>
+                  {String(warn.source ?? '')}
+                </div>
+                <div style={{ color: 'var(--text-offwhite)', lineHeight: '1.3' }}>
+                  {String(warn.message ?? '')}
+                </div>
               </div>
             ))}
-
-          {/* Failed items */}
-          {attentionItems
-            .filter((item) => item.type === 'failed')
-            .map((item, i) => (
-              <div key={`failed-${i}`} style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                <span
-                  className="text-label"
-                  style={{
-                    color: 'rgba(255,59,59,0.80)',
-                    fontSize: '10px',
-                    flexShrink: 0,
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  Failed
-                </span>
-                <span
-                  style={{
-                    flex: 1,
-                    borderBottom: '1px dotted rgba(232,160,32,0.15)',
-                    margin: '0 4px',
-                    minWidth: '12px',
-                  }}
-                />
-                <span
-                  className="text-label"
-                  style={{
-                    color: 'var(--cockpit-red)',
-                    fontSize: '11px',
-                    fontFamily: 'var(--font-mono)',
-                    flexShrink: 0,
-                    maxWidth: '180px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                  title={item.name}
-                >
-                  {item.name}
-                </span>
-              </div>
-            ))}
+          </div>
+        </div>
+      )}
+      {/* No warnings state */}
+      {(!Array.isArray(metrics.healthWarnings) || (metrics.healthWarnings as unknown[]).length === 0) && (
+        <div style={{ padding: '0 12px 12px 12px', fontSize: '10px', color: '#555', fontFamily: 'var(--font-mono)' }}>
+          No health warnings
         </div>
       )}
     </div>
@@ -304,7 +261,7 @@ function PiholeDetailView({ service, metrics }: { service: { status: string; con
         </div>
       </div>
 
-      {/* QUERY DISTRIBUTION donut chart (D-06) */}
+      {/* QUERY DISTRIBUTION donut chart with static table legend (D-17) */}
       {queryTypeData.length > 0 && (
         <div>
           <div
@@ -318,24 +275,39 @@ function PiholeDetailView({ service, metrics }: { service: { status: string; con
           >
             QUERY DISTRIBUTION
           </div>
-          <PieChart width={280} height={200}>
-            <Pie
-              data={queryTypeData}
-              cx={140}
-              cy={100}
-              innerRadius={50}
-              outerRadius={80}
-              dataKey="value"
-              nameKey="name"
-              label={({ name, value }: { name?: string; value?: number }) => `${name ?? ''}: ${value ?? 0}`}
-              labelLine={false}
-            >
-              {queryTypeData.map((_, index) => (
-                <Cell key={index} fill={DONUT_COLORS[index % DONUT_COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
+          {/* Layout: donut chart left, static legend table right (D-17) */}
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+            <PieChart width={120} height={120}>
+              <Pie
+                data={queryTypeData}
+                cx={60}
+                cy={60}
+                innerRadius={35}
+                outerRadius={55}
+                dataKey="value"
+                stroke="none"
+              >
+                {queryTypeData.map((_, index) => (
+                  <Cell key={index} fill={DONUT_COLORS[index % DONUT_COLORS.length]} />
+                ))}
+              </Pie>
+            </PieChart>
+
+            {/* Static legend table — no tooltips (D-17) */}
+            <table style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', borderCollapse: 'collapse' }}>
+              <tbody>
+                {queryTypeData.map((entry, i) => (
+                  <tr key={i}>
+                    <td style={{ paddingRight: '6px', paddingBottom: '2px' }}>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: DONUT_COLORS[i % DONUT_COLORS.length] }} />
+                    </td>
+                    <td style={{ paddingRight: '12px', color: 'var(--cockpit-amber)', paddingBottom: '2px' }}>{entry.name}</td>
+                    <td style={{ color: 'var(--text-offwhite)', paddingBottom: '2px', textAlign: 'right' }}>{entry.value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -389,6 +361,12 @@ export function ServiceDetailPage({ snapshot }: ServiceDetailPageProps) {
   const metrics = service?.metrics as Record<string, unknown> | undefined
   const isArr = serviceId != null && ARR_IDS.has(serviceId)
   const isPihole = serviceId === 'pihole'
+  const isSabnzbd = serviceId === 'sabnzbd'
+
+  // Pi-hole header shows NETWORK (D-15)
+  const displayName = isPihole
+    ? 'NETWORK'
+    : (service?.name ?? serviceId)
 
   return (
     <div style={{ padding: '0 16px' }}>
@@ -400,7 +378,7 @@ export function ServiceDetailPage({ snapshot }: ServiceDetailPageProps) {
           style={{ textTransform: 'uppercase', color: 'var(--cockpit-amber)', outline: 'none' }}
           tabIndex={-1}
         >
-          {service?.name ?? serviceId}
+          {displayName}
         </h1>
       </div>
 
@@ -411,9 +389,12 @@ export function ServiceDetailPage({ snapshot }: ServiceDetailPageProps) {
         <p className="text-label" style={{ color: 'var(--text-offwhite)' }}>
           NO DATA — configure Pi-hole in Settings
         </p>
-      ) : isArr && metrics ? (
-        /* Arr services: rich operational detail view */
-        <ArrDetailView serviceId={serviceId!} metrics={metrics} />
+      ) : isSabnzbd && metrics ? (
+        /* SABnzbd: active download + queue list (D-08) */
+        <SabnzbdDetailView metrics={metrics} />
+      ) : isArr && service && metrics ? (
+        /* Arr services: status/version dot-leaders + health warnings (D-14) */
+        <ArrDetailView service={service} metrics={metrics} />
       ) : (
         /* Generic dot-leader readout for all other services */
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
