@@ -7,7 +7,7 @@ import { pollManager } from '../poll-manager.js'
 
 const VALID_SERVICES = [
   'radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 'readarr', 'sabnzbd',
-  'pihole', 'plex', 'nas',
+  'pihole', 'plex', 'nas', 'unifi',
 ] as const
 
 type ValidService = (typeof VALID_SERVICES)[number]

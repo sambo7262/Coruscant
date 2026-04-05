@@ -3,7 +3,7 @@ import axios from 'axios'
 
 const VALID_SERVICES = [
   'radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 'readarr', 'sabnzbd',
-  'pihole', 'plex', 'nas',
+  'pihole', 'plex', 'nas', 'unifi',
 ] as const
 
 const ARR_SERVICES = new Set(['radarr', 'sonarr', 'lidarr', 'prowlarr', 'readarr'])
@@ -132,6 +132,16 @@ export async function testConnectionRoutes(fastify: FastifyInstance) {
           timeout: 3000,
         }).catch(() => {})
         return reply.send({ success: true, message: 'Connected — DSM authenticated' })
+      }
+
+      if (serviceId === 'unifi') {
+        const res = await axios.get(`${baseUrl}/proxy/network/integration/v1/sites`, {
+          headers: { 'X-API-KEY': apiKey },
+          timeout: 10_000,
+        })
+        const sites = res.data?.data ?? []
+        const siteName = sites[0]?.name ?? 'Unknown'
+        return reply.send({ success: true, message: `Connected — ${siteName}` })
       }
 
       // Should not reach here given the valid service list
