@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 2: Core UI Shell** - Star Wars X-Wing cockpit instrument panel UI with SSE live-data loop proven end-to-end with mock data
 - [x] **Phase 3: Settings + First Service Adapters** - Settings page, then Radarr/Sonarr/Lidarr/Bazarr status cards and SABnzbd activity card (completed 2026-04-03)
 - [ ] **Phase 4: Rich Service Integrations** - Pi-hole, Plex (Now Playing banner), and Synology NAS CPU/RAM/storage/disk/fans
-- [ ] **Phase 5: UI v2 — Instrument Panel Polish** - Second UI pass with real data: refine card metrics, layout density, interaction details, and visual hierarchy now that actual service data is flowing
+- [x] **Phase 5: UI v2 — Instrument Panel Polish** - Second UI pass with real data: refine card metrics, layout density, interaction details, and visual hierarchy now that actual service data is flowing (completed 2026-04-05)
 - [ ] **Phase 6: Network Monitoring** - UniFi device cards, client counts, WAN throughput, API token auth (UniFi OS 5.x)
 - [ ] **Phase 7: Notifications (Pushover Inbox)** - Coruscant as a Pushover receiver — display arr/service alerts in a dashboard inbox
 - [ ] **Phase 8: Logging, Polish + Performance** - Log viewer, SQLite pruning, poll interval tuning for real-time media feel
@@ -115,14 +115,17 @@ Plans:
   3. Touch targets and tap areas are comfortable on the physical 800x480 Pi touchscreen
   4. Any visual bugs deferred from Phase 2 are resolved
   5. Overall aesthetic is cohesive — no obvious rough edges at normal kiosk viewing distance
-**Plans:** 3/5 plans executed
+**Plans:** 8/8 plans executed
 
 Plans:
 - [x] 05-01-PLAN.md — Backend data layer: extend shared types + SABnzbd/Plex/NAS adapters with missing fields
 - [x] 05-02-PLAN.md — Frontend cards: fix LED colors, restructure arr tile, SABnzbd text fix, NETWORK card rename
 - [x] 05-03-PLAN.md — Frontend AppHeader: kill expand/collapse, inline disk temps + Docker stats + image LED
-- [ ] 05-04-PLAN.md — Frontend Plex rail: PLEX label, cycling titles, server stats, media type badges
-- [ ] 05-05-PLAN.md — Viewport budget enforcement (800x480 no-scroll) + visual verification checkpoint
+- [x] 05-04-PLAN.md — Frontend Plex rail: PLEX label, cycling titles, server stats, media type badges
+- [x] 05-05-PLAN.md — Viewport budget enforcement (800x480 no-scroll) + visual verification checkpoint
+- [x] 05-08-PLAN.md — Plex play/pause state indicator (▶/⏸) in StreamRow and NowPlayingBanner rail
+- [x] 05-09-PLAN.md — Gap closure: purple DOWNLOADS LED, consistent banners, tile layout, uniform heights
+- [x] 05-11-PLAN.md — Layout gap closure: 2-col MEDIA+NETWORK grid, body scroll lock, DOWNLOADS progress bar
 **UI hint**: yes
 
 ### Phase 6: Network Monitoring
@@ -137,7 +140,12 @@ Plans:
   2. UniFi card lists per-device status (APs, switches, gateways) with online/offline indication
   3. User taps the UniFi card and reaches a detail view listing all monitored devices with uptime, model, and client count
   4. Backend authenticates via static API token header — no session management or re-auth logic needed
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Shared types (UnifiDevice/UnifiMetrics), backend adapter (pollUnifi), unit tests
+- [ ] 06-02-PLAN.md — Backend wiring: PollManager integration, settings routes, test-connection handler
+- [ ] 06-03-PLAN.md — Frontend: UBIQUITI card section, settings tab, device detail view, visual verification
 **UI hint**: yes
 
 ### Phase 7: Notifications (Pushover Inbox)
@@ -203,8 +211,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 2. Core UI Shell | 13/13 | Complete | 2026-04-03 |
 | 3. Settings + First Service Adapters | 4/4 | Complete | 2026-04-04 |
 | 4. Rich Service Integrations | 5/5 | Complete | 2026-04-05 |
-| 5. UI v2 — Instrument Panel Polish | 5/5 | In Progress (Plex bug) | - |
-| 6. Network Monitoring | 0/? | Not started | - |
+| 5. UI v2 — Instrument Panel Polish | 8/8 | Complete | 2026-04-05 |
+| 6. Network Monitoring | 0/3 | Planned | - |
 | 7. Notifications (Pushover Inbox) | 0/? | Not started | - |
 | 8. Logging, Polish + Performance | 0/? | Not started | - |
 | 9. Local Weather | 0/? | Not started | - |
