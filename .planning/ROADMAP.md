@@ -227,3 +227,21 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 **Goal:** Coruscant running as a fullscreen browser kiosk on a Raspberry Pi on the local LAN
 **Status:** COMPLETE — set up manually by user outside GSD workflow
 **Depends on:** Phase 1
+
+## Backlog
+
+### Phase 999.1: CRT Signal Interference Screen Refresh Animation (BACKLOG)
+
+**Goal:** Periodic full-screen "signal interference" animation — a horizontal static-noise band sweeps top-to-bottom on a configurable interval, doubling as a pixel refresh mechanism for the Raspberry Pi kiosk display
+**Target phase:** Phase 8 (Logging, Polish + Performance)
+**Requirements:** TBD
+**Notes:**
+- Animation: SVG `feTurbulence` filter on a full-screen fixed overlay, translated top→bottom via CSS `@keyframes` — GPU-composited, zero canvas per-frame cost, ARM64-safe
+- Brief full-white flash frame before the band enters (forces all pixels to full brightness — actual pixel refresh)
+- Slight desaturate/green tint during the sweep pass for Star Wars holoprojector feel
+- Settings controls: on/off toggle, interval selector (15 / 30 / 60 min), "Trigger Now" button for testing
+- Total animation duration: ~1.5s — dramatic but non-disruptive to monitoring use
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
