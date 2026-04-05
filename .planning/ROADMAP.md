@@ -113,7 +113,15 @@ Plans:
   3. Touch targets and tap areas are comfortable on the physical 800x480 Pi touchscreen
   4. Any visual bugs deferred from Phase 2 are resolved
   5. Overall aesthetic is cohesive — no obvious rough edges at normal kiosk viewing distance
-**Plans**: TBD
+**Plans:** 5 plans
+
+Plans:
+- [ ] 05-01-PLAN.md — Backend data layer: extend shared types + SABnzbd/Plex/NAS adapters with missing fields
+- [ ] 05-02-PLAN.md — Frontend cards: fix LED colors, restructure arr tile, SABnzbd text fix, NETWORK card rename
+- [ ] 05-03-PLAN.md — Frontend AppHeader: kill expand/collapse, inline disk temps + Docker stats + image LED
+- [ ] 05-04-PLAN.md — Frontend Plex rail: PLEX label, cycling titles, server stats, media type badges
+- [ ] 05-05-PLAN.md — Viewport budget enforcement (800x480 no-scroll) + visual verification checkpoint
+**UI hint**: yes
 
 ### Phase 6: Network Monitoring
 **Goal**: UniFi network equipment is visible on the dashboard with device status, client counts, and throughput — and the backend manages session auth automatically
@@ -174,7 +182,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9
 | 2. Core UI Shell | 13/13 | Complete | 2026-04-03 |
 | 3. Settings + First Service Adapters | 4/4 | Complete   | 2026-04-04 |
 | 4. Rich Service Integrations | 3/5 | In Progress|  |
-| 5. UI v2 — Instrument Panel Polish | 0/? | Not started | - |
+| 5. UI v2 — Instrument Panel Polish | 0/5 | Not started | - |
 | 6. Network Monitoring | 0/? | Not started | - |
 | 7. Notifications | 0/? | Not started | - |
 | 8. Logging + Polish | 0/? | Not started | - |
