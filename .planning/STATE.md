@@ -161,6 +161,7 @@ None yet.
 | 260403-eh1 | arr+SABnzbd status color semantics: green=up, red=down, yellow=error, purple=downloading | 2026-04-03 | b4a0398 | [260403-eh1-arr-sabnzbd-status-color-semantics-green](./quick/260403-eh1-arr-sabnzbd-status-color-semantics-green/) |
 | 260404-rxw | Switch Plex data source from Tautulli webhook to direct 5-second PMS poll | 2026-04-05 | 0db78f8 | [260404-rxw-switch-plex-data-source-from-tautulli-we](./quick/260404-rxw-switch-plex-data-source-from-tautulli-we/) |
 | 260405-1ai | Phase 5 visual fixes: AppHeader 3-col grid, tile height reduction, NETWORK left/right split, guarded decrypt() | 2026-04-05 | 798747a | [260405-1ai-phase5-visual-fixes-and-crypto-error](./quick/260405-1ai-phase5-visual-fixes-and-crypto-error/) |
+| 260405-1of | Add SYNO.API.Info discovery + type=all retry to /debug/docker-stats | 2026-04-05 | 64e3559 | [260405-1of-debug-docker-stats-api-discovery](./quick/260405-1of-debug-docker-stats-api-discovery/) |
 
 ### Blockers/Concerns
 
