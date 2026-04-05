@@ -6,6 +6,8 @@ const TIMEOUT_MS = 5_000
 interface SabnzbdSlot {
   status: string
   percentage?: string
+  filename?: string    // NZB display name
+  timeleft?: string    // formatted like '0:04:32'
 }
 
 interface SabnzbdQueue {
@@ -49,6 +51,8 @@ export async function pollSabnzbd(baseUrl: string, apiKey: string): Promise<Serv
       : 0
     const hasFailedItems = slots.some((s) => s.status === 'Failed')
     const sabStatus = queue.status
+    const currentFilename = firstActiveSlot?.filename ?? ''
+    const timeLeft = firstActiveSlot?.timeleft ?? ''
 
     const metrics: SabnzbdMetrics = {
       speedMBs,
@@ -56,6 +60,8 @@ export async function pollSabnzbd(baseUrl: string, apiKey: string): Promise<Serv
       progressPercent,
       hasFailedItems,
       sabStatus,
+      currentFilename,
+      timeLeft,
     }
 
     const serviceStatus = hasFailedItems ? 'warning' : 'online'

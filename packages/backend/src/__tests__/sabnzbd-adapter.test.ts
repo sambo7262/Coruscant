@@ -127,4 +127,45 @@ describe('pollSabnzbd', () => {
     const metrics = result.metrics as Record<string, unknown>
     expect(metrics?.hasFailedItems).toBe(false)
   })
+
+  it('returns currentFilename and timeLeft from first active slot', async () => {
+    mockAxios.get = vi.fn().mockResolvedValue(
+      makeQueueResponse({
+        slots: [{ status: 'Downloading', percentage: '50', filename: 'My.Movie.2024.nzb', timeleft: '0:04:32' }],
+      })
+    )
+
+    const result = await pollSabnzbd('http://localhost:8080', 'test-key')
+
+    const metrics = result.metrics as Record<string, unknown>
+    expect(metrics?.currentFilename).toBe('My.Movie.2024.nzb')
+    expect(metrics?.timeLeft).toBe('0:04:32')
+  })
+
+  it('returns empty strings for currentFilename and timeLeft when queue is empty', async () => {
+    mockAxios.get = vi.fn().mockResolvedValue(makeQueueResponse({ slots: [] }))
+
+    const result = await pollSabnzbd('http://localhost:8080', 'test-key')
+
+    const metrics = result.metrics as Record<string, unknown>
+    expect(metrics?.currentFilename).toBe('')
+    expect(metrics?.timeLeft).toBe('')
+  })
+
+  it('skips Failed slots when extracting currentFilename and timeLeft', async () => {
+    mockAxios.get = vi.fn().mockResolvedValue(
+      makeQueueResponse({
+        slots: [
+          { status: 'Failed', percentage: '0', filename: 'Bad.File.nzb', timeleft: '0:00:00' },
+          { status: 'Downloading', percentage: '30', filename: 'Good.File.nzb', timeleft: '0:12:00' },
+        ],
+      })
+    )
+
+    const result = await pollSabnzbd('http://localhost:8080', 'test-key')
+
+    const metrics = result.metrics as Record<string, unknown>
+    expect(metrics?.currentFilename).toBe('Good.File.nzb')
+    expect(metrics?.timeLeft).toBe('0:12:00')
+  })
 })

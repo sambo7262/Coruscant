@@ -60,8 +60,11 @@ export interface PlexStream {
   season?: number
   episode?: number
   progressPercent: number
-  quality: string           // e.g. '1080p'
+  quality: string           // e.g. '1080p' for video; 'FLAC 1411k' for audio
   transcode: boolean        // true = transcoding, false = direct play
+  mediaType?: 'audio' | 'video'  // derived from Plex item.type
+  albumName?: string             // for audio: item.parentTitle (album name)
+  trackTitle?: string            // for audio: item.title (track title)
 }
 
 export interface PlexServerStats {
@@ -84,6 +87,8 @@ export interface SabnzbdMetrics {
   progressPercent: number
   hasFailedItems: boolean
   sabStatus: string
+  currentFilename?: string   // display name of active download NZB
+  timeLeft?: string          // formatted time remaining e.g. '0:04:32'
 }
 
 export interface ArrHealthWarning {

@@ -168,4 +168,44 @@ describe('fetchPlexSessions', () => {
       })
     )
   })
+
+  it('sets mediaType=audio for track type with codec quality and album/track fields', async () => {
+    const trackItem = makeTrackItem({
+      parentTitle: 'A Night at the Opera',
+      Media: [{ audioCodec: 'flac', bitrate: 1411 }],
+    })
+    mockAxios.get = vi.fn().mockResolvedValue(makeSessionsResponse([trackItem]))
+
+    const result = await fetchPlexSessions('http://plex:32400', 'TOKEN')
+
+    expect(result).toHaveLength(1)
+    expect(result[0].mediaType).toBe('audio')
+    expect(result[0].albumName).toBe('A Night at the Opera')
+    expect(result[0].trackTitle).toBe('Bohemian Rhapsody')
+    expect(result[0].quality).toBe('FLAC 1411k')
+    expect(result[0].season).toBeUndefined()
+    expect(result[0].episode).toBeUndefined()
+  })
+
+  it('sets mediaType=video for movie type with no album/track fields', async () => {
+    mockAxios.get = vi.fn().mockResolvedValue(makeSessionsResponse([makeMovieItem()]))
+
+    const result = await fetchPlexSessions('http://plex:32400', 'TOKEN')
+
+    expect(result[0].mediaType).toBe('video')
+    expect(result[0].albumName).toBeUndefined()
+    expect(result[0].trackTitle).toBeUndefined()
+  })
+
+  it('formats audio quality as codec uppercase without bitrate when bitrate absent', async () => {
+    const trackItem = makeTrackItem({
+      parentTitle: 'Some Album',
+      Media: [{ audioCodec: 'aac' }],
+    })
+    mockAxios.get = vi.fn().mockResolvedValue(makeSessionsResponse([trackItem]))
+
+    const result = await fetchPlexSessions('http://plex:32400', 'TOKEN')
+
+    expect(result[0].quality).toBe('AAC')
+  })
 })
