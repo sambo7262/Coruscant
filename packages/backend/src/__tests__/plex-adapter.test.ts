@@ -278,20 +278,22 @@ describe('fetchPlexServerStats', () => {
     expect(result?.processRamPercent).toBe(25.0)
   })
 
-  it('returns undefined when StatisticsResources array is empty', async () => {
+  it('returns zeroed stats when StatisticsResources array is empty (PMS idle state)', async () => {
     mockAxios.get = vi.fn().mockResolvedValue(makeStatisticsResponse([]))
 
-    const result = await fetchPlexServerStats('http://plex:32400', 'TOKEN', 0)
+    const result = await fetchPlexServerStats('http://plex:32400', 'TOKEN', 2000)
 
-    expect(result).toBeUndefined()
+    // PMS reachable but no resource entries (idle) — zeroed CPU/RAM, computed bandwidth
+    expect(result).toEqual({ processCpuPercent: 0, processRamPercent: 0, bandwidthMbps: 2 })
   })
 
-  it('returns undefined when StatisticsResources key is missing', async () => {
+  it('returns zeroed stats when StatisticsResources key is missing (PMS idle state)', async () => {
     mockAxios.get = vi.fn().mockResolvedValue(makeStatisticsResponse())
 
     const result = await fetchPlexServerStats('http://plex:32400', 'TOKEN', 0)
 
-    expect(result).toBeUndefined()
+    // PMS reachable but no resource entries (idle) — zeroed stats
+    expect(result).toEqual({ processCpuPercent: 0, processRamPercent: 0, bandwidthMbps: 0 })
   })
 
   it('returns undefined on network error — never throws', async () => {

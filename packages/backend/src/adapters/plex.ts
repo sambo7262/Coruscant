@@ -153,9 +153,14 @@ export async function fetchPlexServerStats(
       },
     )
 
+    const bandwidthMbps = Math.round((sessionBandwidthKbps / 1000) * 10) / 10
+
     const entries = response.data.MediaContainer?.StatisticsResources
     if (!entries || entries.length === 0) {
-      return undefined
+      // PMS returned a 200 OK but no resource entries — common in idle state when
+      // /statistics/resources has no data yet. Return zeroed stats so the stats
+      // block always renders while Plex is configured, rather than disappearing.
+      return { processCpuPercent: 0, processRamPercent: 0, bandwidthMbps }
     }
 
     // Take the first entry — PMS returns most recent first
@@ -163,11 +168,11 @@ export async function fetchPlexServerStats(
 
     const processCpuPercent = Math.round(entry.cpuPercentage * 10) / 10
     const processRamPercent = Math.round((entry.physMemMB / entry.totalPhysMemMB) * 1000) / 10
-    const bandwidthMbps = Math.round((sessionBandwidthKbps / 1000) * 10) / 10
 
     return { processCpuPercent, processRamPercent, bandwidthMbps }
   } catch {
-    // Network error, parse error, non-200 — return undefined (graceful degradation)
+    // Network error, parse error, non-200 — return undefined (graceful degradation).
+    // Only truly unreachable PMS → undefined; a 200 with empty entries is handled above.
     return undefined
   }
 }

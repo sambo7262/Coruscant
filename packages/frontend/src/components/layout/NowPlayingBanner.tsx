@@ -44,11 +44,26 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
           borderTop: '1px solid rgba(232,160,32,0.2)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
+          padding: '0 12px',
+          gap: '8px',
         }}
       >
+        {/* Left: PLEX label */}
+        <span style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: '11px',
+          color: 'var(--cockpit-amber)',
+          letterSpacing: '0.08em',
+          flexShrink: 0,
+          fontWeight: 600,
+        }}>
+          PLEX
+        </span>
+
+        {/* Center: idle label */}
         <span
           style={{
+            flex: 1,
             fontSize: '12px',
             color: '#666666',
             fontFamily: 'var(--font-mono)',
@@ -57,6 +72,22 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
         >
           NO ACTIVE STREAMS
         </span>
+
+        {/* Right: server stats — shows CPU/RAM/BW even in idle so the block is always visible */}
+        {plexServerStats && (
+          <div style={{
+            display: 'flex',
+            gap: '8px',
+            flexShrink: 0,
+            fontSize: '10px',
+            fontFamily: 'var(--font-mono)',
+            color: '#555555',
+          }}>
+            <span>CPU {(plexServerStats.processCpuPercent ?? 0).toFixed(0)}%</span>
+            <span>RAM {(plexServerStats.processRamPercent ?? 0).toFixed(0)}%</span>
+            <span>{(plexServerStats.bandwidthMbps ?? 0).toFixed(1)} Mbps</span>
+          </div>
+        )}
       </div>
     )
   }
@@ -206,9 +237,9 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
               fontFamily: 'var(--font-mono)',
               color: 'var(--text-offwhite)',
             }}>
-              <span>CPU {plexServerStats.processCpuPercent.toFixed(0)}%</span>
-              <span>RAM {plexServerStats.processRamPercent.toFixed(0)}%</span>
-              <span>{plexServerStats.bandwidthMbps.toFixed(1)} Mbps</span>
+              <span>CPU {(plexServerStats.processCpuPercent ?? 0).toFixed(0)}%</span>
+              <span>RAM {(plexServerStats.processRamPercent ?? 0).toFixed(0)}%</span>
+              <span>{(plexServerStats.bandwidthMbps ?? 0).toFixed(1)} Mbps</span>
             </div>
           )}
         </div>
@@ -263,9 +294,9 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
                       fontFamily: 'var(--font-mono)',
                     }}
                   >
-                    <span>CPU {plexServerStats.processCpuPercent.toFixed(1)}%</span>
-                    <span>RAM {plexServerStats.processRamPercent.toFixed(1)}%</span>
-                    <span>BW {plexServerStats.bandwidthMbps.toFixed(1)} Mbps</span>
+                    <span>CPU {(plexServerStats.processCpuPercent ?? 0).toFixed(1)}%</span>
+                    <span>RAM {(plexServerStats.processRamPercent ?? 0).toFixed(1)}%</span>
+                    <span>BW {(plexServerStats.bandwidthMbps ?? 0).toFixed(1)} Mbps</span>
                   </div>
                 </div>
               )}

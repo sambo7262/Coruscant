@@ -122,7 +122,13 @@ export class PollManager {
    */
   updatePlexState(streams: PlexStream[], serverStats?: PlexServerStats): void {
     this.plexStreams = streams
-    this.plexServerStats = serverStats
+    // Only overwrite plexServerStats when a defined value is provided.
+    // Tautulli webhooks call this with serverStats=undefined (no server-metrics payload);
+    // preserving the last PMS-polled value prevents the stats block from flickering off
+    // on every playback event.
+    if (serverStats !== undefined) {
+      this.plexServerStats = serverStats
+    }
     // Trigger an immediate SSE push so clients see the update instantly
     this.broadcastSnapshot()
   }
