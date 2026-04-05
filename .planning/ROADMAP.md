@@ -116,8 +116,8 @@ Plans:
 **Plans:** 5 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Backend data layer: extend shared types + SABnzbd/Plex/NAS adapters with missing fields
-- [ ] 05-02-PLAN.md — Frontend cards: fix LED colors, restructure arr tile, SABnzbd text fix, NETWORK card rename
+- [x] 05-01-PLAN.md — Backend data layer: extend shared types + SABnzbd/Plex/NAS adapters with missing fields
+- [x] 05-02-PLAN.md — Frontend cards: fix LED colors, restructure arr tile, SABnzbd text fix, NETWORK card rename
 - [ ] 05-03-PLAN.md — Frontend AppHeader: kill expand/collapse, inline disk temps + Docker stats + image LED
 - [ ] 05-04-PLAN.md — Frontend Plex rail: PLEX label, cycling titles, server stats, media type badges
 - [ ] 05-05-PLAN.md — Viewport budget enforcement (800x480 no-scroll) + visual verification checkpoint

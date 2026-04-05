@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Checkpoint: visual verification of Phase 4 UI (04-05 Task 2)"
-last_updated: "2026-04-05T05:12:20.462Z"
-last_activity: 2026-04-05 -- Phase 05 execution started
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-04-05T05:29:09.918Z"
+last_activity: 2026-04-05
 progress:
   total_phases: 11
   completed_phases: 4
   total_plans: 29
-  completed_plans: 24
+  completed_plans: 26
   percent: 0
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 ## Current Position
 
 Phase: 05 (ui-v2-instrument-panel-polish) — EXECUTING
-Plan: 1 of 5
-Status: Executing Phase 05
-Last activity: 2026-04-05 -- Phase 05 execution started
+Plan: 2 of 5
+Status: Ready to execute
+Last activity: 2026-04-05
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -75,6 +75,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 04-rich-service-integrations P03 | 314s | 2 tasks | 4 files |
 | Phase 04-rich-service-integrations P04 | 116s | 2 tasks | 2 files |
 | Phase 04-rich-service-integrations P05 | 1.5min | 1 tasks | 2 files |
+| Phase 05-ui-v2-instrument-panel-polish P02 | 8min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -137,6 +138,9 @@ Recent decisions affecting current work:
 - [Phase 04-rich-service-integrations]: AppHeader expandable panel IS the NAS detail view (SVCRICH-05) — no separate route needed
 - [Phase 04-rich-service-integrations]: nasConfigured uses strict !== false check — legacy/mock services without configured flag are not treated as unconfigured
 - [Phase 04-rich-service-integrations]: NowPlayingBanner returns null only when plexConfigured is false — idle state shown for configured+no-streams (D-11)
+- [Phase 05-ui-v2-instrument-panel-polish]: MediaStackRow LED: green when online+idle (not purple); solid purple=downloading, flashing=queued
+- [Phase 05-ui-v2-instrument-panel-polish]: Pi-hole card renamed NETWORK with Ubiquiti NOT CONFIGURED placeholder (D-15, D-16)
+- [Phase 05-ui-v2-instrument-panel-polish]: CardGrid rewritten as flat grid without tier section labels — reclaims 96px vertical space for 800x480
 
 ### Roadmap Evolution
 
@@ -163,6 +167,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T22:50:41.829Z
-Stopped at: Checkpoint: visual verification of Phase 4 UI (04-05 Task 2)
+Last session: 2026-04-05T05:29:09.911Z
+Stopped at: Completed 05-02-PLAN.md
 Resume file: None
