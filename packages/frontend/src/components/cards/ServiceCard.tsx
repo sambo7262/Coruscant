@@ -299,28 +299,33 @@ function NetworkInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   const blocking = metrics.blockingActive === true ? 'BLOCKING' : 'DISABLED'
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-      {/* PI-HOLE section */}
-      <div style={{ fontSize: '8px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
-        PI-HOLE
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 8px' }}>
+      {/* LEFT — Pi-hole */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+        <div style={{ fontSize: '8px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em',
+          textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>PI-HOLE</div>
+        <span style={{ fontSize: '9px', fontFamily: 'var(--font-mono)',
+          color: blocking === 'BLOCKING' ? 'var(--cockpit-green)' : 'var(--cockpit-red)' }}>
+          {blocking}
+        </span>
+        <span style={{ fontSize: '9px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)' }}>
+          QPM {qpm}
+        </span>
+        <span style={{ fontSize: '9px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)' }}>
+          LOAD {load}
+        </span>
+        <span style={{ fontSize: '9px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)' }}>
+          MEM {mem}
+        </span>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 8px', fontSize: '9px', fontFamily: 'var(--font-mono)' }}>
-        <span style={{ color: blocking === 'BLOCKING' ? 'var(--cockpit-green)' : 'var(--cockpit-red)' }}>{blocking}</span>
-        <span style={{ color: 'var(--text-offwhite)' }}>QPM {qpm}</span>
-        <span style={{ color: 'var(--text-offwhite)' }}>LOAD {load}</span>
-        <span style={{ color: 'var(--text-offwhite)' }}>MEM {mem}</span>
+      {/* RIGHT — Ubiquiti placeholder */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+        <div style={{ fontSize: '8px', color: '#555', letterSpacing: '0.08em',
+          textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>UBIQUITI</div>
+        <span style={{ fontSize: '9px', color: '#444', fontFamily: 'var(--font-mono)' }}>
+          NOT CONFIGURED
+        </span>
       </div>
-
-      {/* 1px amber divider */}
-      <div style={{ height: '1px', background: 'rgba(232,160,32,0.2)', margin: '2px 0' }} />
-
-      {/* UBIQUITI placeholder section (D-16) */}
-      <div style={{ fontSize: '8px', color: '#555', letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
-        UBIQUITI
-      </div>
-      <span style={{ fontSize: '9px', color: '#444', fontFamily: 'var(--font-mono)' }}>
-        NOT CONFIGURED
-      </span>
     </div>
   )
 }
@@ -450,7 +455,7 @@ export function ServiceCard({ service, index }: ServiceCardProps) {
       className="chamfer-card"
       style={{
         position: 'relative',
-        minHeight: '160px',
+        minHeight: service.id === 'sabnzbd' ? '110px' : service.id === 'pihole' ? '130px' : '160px',
         padding: 0,
         background: 'var(--bg-panel)',
         border: `1px solid ${hovered ? 'rgba(232,160,32,0.60)' : 'var(--border-rest)'}`,

@@ -56,7 +56,7 @@ export function CardGrid({ snapshot }: CardGridProps) {
   let globalIndex = 0
 
   return (
-    <div style={{ padding: '0 8px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', alignItems: 'stretch' }}>
+    <div style={{ padding: '0 8px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', alignItems: 'start' }}>
       {/* 1. Arr services tile — chamfered card with MEDIA label in amber header (D-09, D-12) */}
       {arrServices.length > 0 && (
         <div
@@ -67,7 +67,6 @@ export function CardGrid({ snapshot }: CardGridProps) {
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            height: '100%',
           }}
         >
           {/* 20px amber header strip with MEDIA label */}
@@ -97,7 +96,7 @@ export function CardGrid({ snapshot }: CardGridProps) {
 
       {/* 3. Download cards (SABnzbd) — always on its own row below media and network */}
       {downloadServices.length > 0 && (
-        <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
+        <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '1fr', gap: '8px' }}>
           {downloadServices.map((service) => (
             <ServiceCard key={service.id} service={service} index={globalIndex++} />
           ))}
