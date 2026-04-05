@@ -122,4 +122,66 @@ export async function debugRoutes(fastify: FastifyInstance) {
 
     return reply.send({ discoveryAll, containerListAttempts, resourceAttempts, projectList })
   })
+
+  /**
+   * GET /debug/plex-stats
+   * Hits PMS /statistics/resources directly and returns the raw JSON response.
+   * Tries timespan=1 and timespan=6 so we can see which returns real data.
+   */
+  fastify.get('/debug/plex-stats', async (_request, reply) => {
+    const db = getDb()
+    const row = db.select().from(serviceConfig).where(eq(serviceConfig.serviceName, 'plex')).get()
+
+    if (!SEED) return reply.status(500).send({ error: 'ENCRYPTION_KEY_SEED not configured' })
+    if (!row?.baseUrl) return reply.status(404).send({ error: 'Plex not configured' })
+
+    let token = ''
+    if (row.encryptedApiKey) {
+      try { token = decrypt(row.encryptedApiKey, SEED) } catch { return reply.status(500).send({ error: 'Failed to decrypt Plex token' }) }
+    }
+
+    const baseUrl = row.baseUrl.replace(/\/$/, '')
+    const https = (await import('node:https')).default
+    const agent = new https.Agent({ rejectUnauthorized: false })
+    const results: Record<string, unknown> = {}
+
+    for (const timespan of [1, 2, 3, 6]) {
+      try {
+        const res = await axios.get(
+          `${baseUrl}/statistics/resources?timespan=${timespan}&X-Plex-Token=${token}`,
+          { headers: { Accept: 'application/json' }, httpsAgent: agent, timeout: 5000 },
+        )
+        const entries = res.data?.MediaContainer?.StatisticsResources
+        results[`timespan_${timespan}`] = {
+          entryCount: Array.isArray(entries) ? entries.length : 'not_array',
+          firstEntry: Array.isArray(entries) ? entries[0] : null,
+          lastEntry: Array.isArray(entries) && entries.length > 0 ? entries[entries.length - 1] : null,
+          mediaContainerKeys: Object.keys(res.data?.MediaContainer ?? {}),
+          rawSize: JSON.stringify(res.data).length,
+        }
+      } catch (e: unknown) {
+        results[`timespan_${timespan}`] = { error: String(e) }
+      }
+    }
+
+    // Also hit /status/sessions to confirm session bandwidth source
+    try {
+      const res = await axios.get(
+        `${baseUrl}/status/sessions?X-Plex-Token=${token}`,
+        { headers: { Accept: 'application/json' }, httpsAgent: agent, timeout: 5000 },
+      )
+      const sessions = res.data?.MediaContainer?.Metadata ?? []
+      results['sessions'] = {
+        count: sessions.length,
+        bandwidths: sessions.map((s: { Session?: { bandwidth?: number }; title?: string }) => ({
+          title: s.title,
+          bandwidth: s.Session?.bandwidth,
+        })),
+      }
+    } catch (e: unknown) {
+      results['sessions'] = { error: String(e) }
+    }
+
+    return reply.send(results)
+  })
 }
