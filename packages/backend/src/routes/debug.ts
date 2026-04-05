@@ -69,34 +69,49 @@ export async function debugRoutes(fastify: FastifyInstance) {
       discoveryAll = { error: String(e) }
     }
 
-    // Step 3: probe alternate Docker entrypoint path
-    let altPathProbe: unknown = null
-    try {
-      const res = await axios.get(`${baseUrl}/webapi/docker/entry.cgi`, {
-        params: { api: 'SYNO.Docker.Container', version: 1, method: 'list', _sid: sid },
-        timeout: 5000,
-      })
-      altPathProbe = { path: '/webapi/docker/entry.cgi', success: res.data?.success, dataKeys: Object.keys(res.data?.data ?? {}), raw: res.data }
-    } catch (e: unknown) {
-      altPathProbe = { path: '/webapi/docker/entry.cgi', error: String(e) }
-    }
-
-    // Step 4: try all known Container Manager API paths via entry.cgi
-    const attempts: Record<string, unknown>[] = []
-    for (const api of ['SYNO.Docker.Container', 'SYNO.ContainerManager.Container']) {
-      for (const version of ['1', '2']) {
-        try {
-          const res = await axios.get(`${baseUrl}/webapi/entry.cgi`, {
-            params: { api, version, method: 'list', _sid: sid },
-            timeout: 5000,
-          })
-          attempts.push({ api, version, success: res.data?.success, dataKeys: Object.keys(res.data?.data ?? {}), raw: res.data })
-        } catch (e: unknown) {
-          attempts.push({ api, version, error: String(e) })
-        }
+    // Step 3: SYNO.Docker.Container list — POST with JSON body (requestFormat=JSON requires this)
+    const containerListAttempts: Record<string, unknown>[] = []
+    for (const method of ['list', 'getinfo']) {
+      try {
+        const res = await axios.post(
+          `${baseUrl}/webapi/entry.cgi`,
+          { api: 'SYNO.Docker.Container', version: 1, method, _sid: sid },
+          { headers: { 'Content-Type': 'application/json' }, timeout: 5000 },
+        )
+        containerListAttempts.push({ method, via: 'POST/JSON', success: res.data?.success, dataKeys: Object.keys(res.data?.data ?? {}), raw: res.data })
+      } catch (e: unknown) {
+        containerListAttempts.push({ method, via: 'POST/JSON', error: String(e) })
       }
     }
 
-    return reply.send({ discoveryAll, altPathProbe, attempts })
+    // Step 4: SYNO.Docker.Container.Resource — CPU/RAM stats per container
+    const resourceAttempts: Record<string, unknown>[] = []
+    for (const method of ['list', 'get', 'getinfo']) {
+      try {
+        const res = await axios.post(
+          `${baseUrl}/webapi/entry.cgi`,
+          { api: 'SYNO.Docker.Container.Resource', version: 1, method, _sid: sid },
+          { headers: { 'Content-Type': 'application/json' }, timeout: 5000 },
+        )
+        resourceAttempts.push({ method, success: res.data?.success, dataKeys: Object.keys(res.data?.data ?? {}), raw: res.data })
+      } catch (e: unknown) {
+        resourceAttempts.push({ method, error: String(e) })
+      }
+    }
+
+    // Step 5: SYNO.Docker.Project list — Docker Compose projects
+    let projectList: unknown = null
+    try {
+      const res = await axios.post(
+        `${baseUrl}/webapi/entry.cgi`,
+        { api: 'SYNO.Docker.Project', version: 1, method: 'list', _sid: sid },
+        { headers: { 'Content-Type': 'application/json' }, timeout: 5000 },
+      )
+      projectList = { success: res.data?.success, dataKeys: Object.keys(res.data?.data ?? {}), raw: res.data }
+    } catch (e: unknown) {
+      projectList = { error: String(e) }
+    }
+
+    return reply.send({ discoveryAll, containerListAttempts, resourceAttempts, projectList })
   })
 }
