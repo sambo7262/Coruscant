@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify'
 import { eq } from 'drizzle-orm'
 import { getDb } from '../db.js'
 import { serviceConfig } from '../schema.js'
-import { encrypt } from '../crypto.js'
+import { encrypt, decrypt } from '../crypto.js'
 import { pollManager } from '../poll-manager.js'
 
 const VALID_SERVICES = [
@@ -177,8 +177,12 @@ export async function settingsRoutes(fastify: FastifyInstance) {
       })
       .run()
 
-    // Hot-reload polling with the new config (D-06)
-    await pollManager.reload(serviceId, { baseUrl, apiKey, username })
+    // Hot-reload polling with the new config (D-06).
+    // Use the resolved plaintext key — not the raw form value, which may be '' when the
+    // user saves without re-entering credentials. The DB already preserves the stored key;
+    // here we decrypt it so the adapter always receives a real credential.
+    const resolvedApiKey = apiKey !== '' ? apiKey : decrypt(encryptedApiKey, seed)
+    await pollManager.reload(serviceId, { baseUrl, apiKey: resolvedApiKey, username })
 
     return reply.send({ ok: true })
   })

@@ -164,6 +164,9 @@ export class PollManager {
         configured: true,
         lastPollAt: new Date().toISOString(),
       })
+      // Broadcast immediately so the SSE clients see plexConfigured=true without
+      // waiting for the next 5-second SSE tick.
+      this.broadcastSnapshot()
       return
     }
 
@@ -179,9 +182,22 @@ export class PollManager {
         } else if (serviceId === 'pihole') {
           result = await pollPihole(baseUrl, apiKey)
         } else if (serviceId === 'nas') {
-          // NAS doesn't produce a ServiceStatus entry — stores data directly in nasData
+          // NAS stores metrics in nasData and marks itself configured in state
           const nasResult = await pollNas(baseUrl, username ?? '', apiKey)
           this.nasData = nasResult
+          // Mark NAS as configured and online in the service status map so
+          // App.tsx derives nasConfigured = true and shows the live gauge strip.
+          this.state.set('nas', {
+            id: 'nas',
+            name: 'NAS',
+            tier: 'rich',
+            status: 'online',
+            configured: true,
+            lastPollAt: new Date().toISOString(),
+          })
+          // Broadcast immediately so the SSE clients see the update without
+          // waiting for the 5-second SSE interval.
+          this.broadcastSnapshot()
           return
         } else if (ARR_SERVICES[serviceId]) {
           const meta = ARR_SERVICES[serviceId]!
