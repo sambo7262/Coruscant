@@ -176,19 +176,20 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
   const handleSave = async () => {
     setSaving(true)
     try {
-      await fetch(`/api/settings/${activeTab}`, {
+      const res = await fetch(`/api/settings/${activeTab}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ baseUrl: url, apiKey, username }),
       })
-      setSaved(true)
-      setTimeout(() => setSaved(false), 2000)
-      if (apiKey) {
-        setHasExistingKey(true)
-        setApiKey('')
+      if (res.ok) {
+        setSaved(true)
+        setTimeout(() => setSaved(false), 2000)
+        await loadTabConfig(activeTab)
+      } else {
+        setTestResult({ success: false, message: `Save failed (${res.status})` })
       }
     } catch {
-      // save failed silently — no network error display for save
+      setTestResult({ success: false, message: 'Save failed — network error' })
     } finally {
       setSaving(false)
     }
