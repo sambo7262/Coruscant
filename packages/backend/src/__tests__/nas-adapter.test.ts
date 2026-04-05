@@ -233,5 +233,74 @@ describe('NAS adapter', () => {
 
       expect(result).toBe(true) // nginx has update available
     })
+
+    it('detects update via canUpgrade field (ContainerManager namespace)', async () => {
+      mockAxios.get = vi.fn()
+        .mockImplementationOnce(() => Promise.resolve({
+          data: { success: true, data: { sid: 'dsm-sid-img2' } },
+        }))
+        .mockImplementationOnce(() => Promise.resolve({
+          data: {
+            success: true,
+            data: {
+              images: [
+                { name: 'coruscant:latest', canUpgrade: true },
+              ],
+            },
+          },
+        }))
+
+      const { checkNasImageUpdates } = await import('../adapters/nas.js')
+      const result = await checkNasImageUpdates('http://nas.local:5000', 'admin', 'pass')
+
+      expect(result).toBe(true)
+    })
+  })
+
+  describe('fetchNasDockerStats', () => {
+    it('aggregates cpu and ram across running containers', async () => {
+      mockAxios.get = vi.fn()
+        .mockImplementationOnce(() => Promise.resolve({
+          data: { success: true, data: { sid: 'dsm-sid-docker' } },
+        }))
+        .mockImplementationOnce(() => Promise.resolve({
+          data: {
+            success: true,
+            data: {
+              containers: [
+                { status: 'running', cpu_usage: 12.5, memory_usage: 512_000_000, memory_limit: 2_000_000_000, up_bytes: 0, down_bytes: 0 },
+                { status: 'running', cpu_usage: 7.0, memory_usage: 256_000_000, memory_limit: 2_000_000_000, up_bytes: 0, down_bytes: 0 },
+                { status: 'stopped', cpu_usage: 0, memory_usage: 0, memory_limit: 0, up_bytes: 0, down_bytes: 0 },
+              ],
+            },
+          },
+        }))
+
+      const { fetchNasDockerStats } = await import('../adapters/nas.js')
+      const result = await fetchNasDockerStats('http://nas.local:5000', 'admin', 'pass')
+
+      expect(result).toBeDefined()
+      expect(result!.cpuPercent).toBe(19.5) // 12.5 + 7.0
+      // RAM: (512M + 256M) / (2G + 2G) * 100 = 768M / 4G * 100 = 19.2%
+      expect(result!.ramPercent).toBeCloseTo(19.2, 0)
+    })
+
+    it('returns undefined when Docker API fails', async () => {
+      mockAxios.get = vi.fn()
+        .mockImplementationOnce(() => Promise.resolve({
+          data: { success: true, data: { sid: 'dsm-sid-docker2' } },
+        }))
+        .mockImplementationOnce(() => Promise.resolve({
+          data: { success: false, error: { code: 103 } },
+        }))
+        .mockImplementationOnce(() => Promise.resolve({
+          data: { success: false, error: { code: 103 } },
+        }))
+
+      const { fetchNasDockerStats } = await import('../adapters/nas.js')
+      const result = await fetchNasDockerStats('http://nas.local:5000', 'admin', 'pass')
+
+      expect(result).toBeUndefined()
+    })
   })
 })

@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { NasStatus } from '@coruscant/shared'
+import type { NasDockerStats, NasStatus } from '@coruscant/shared'
 
 const TIMEOUT_MS = 10_000
 // DSM sessions last ~30 minutes; use 25 min to be conservative
@@ -97,10 +97,11 @@ export async function pollNas(baseUrl: string, username: string, password: strin
       return `${baseUrl}/webapi/entry.cgi?${params.toString()}`
     }
 
-    const [utilizationRes, storageRes, fanRes] = await Promise.all([
+    const [utilizationRes, storageRes, fanRes, dockerStats] = await Promise.all([
       axios.get(makeUrl('SYNO.Core.System.Utilization', 1, 'get', { type: 'current' }), { timeout: TIMEOUT_MS }),
       axios.get(makeUrl('SYNO.Core.System', 1, 'info', { type: 'storage' }), { timeout: TIMEOUT_MS }),
       axios.get(makeUrl('SYNO.Core.Hardware.FanSpeed', 1, 'get'), { timeout: TIMEOUT_MS }),
+      fetchNasDockerStats(baseUrl, username, password).catch(() => undefined),
     ])
 
     // Check for session expiry in any response — if so, throw to trigger re-auth
@@ -161,6 +162,7 @@ export async function pollNas(baseUrl: string, username: string, password: strin
       volumes,
       ...(disks !== undefined && { disks }),
       ...(fans !== undefined && { fans }),
+      ...(dockerStats !== undefined && { docker: dockerStats }),
     }
   }
 
@@ -185,31 +187,106 @@ export async function pollNas(baseUrl: string, username: string, password: strin
 }
 
 /**
+ * Fetch Docker container stats from SYNO.Docker.Container or SYNO.ContainerManager.Container.
+ * Aggregates CPU %, RAM %, and network bytes across all running containers.
+ * Returns undefined if neither API is available.
+ */
+export async function fetchNasDockerStats(
+  baseUrl: string,
+  username: string,
+  password: string,
+): Promise<NasDockerStats | undefined> {
+  try {
+    const sid = await ensureSession(baseUrl, username, password)
+
+    for (const api of ['SYNO.Docker.Container', 'SYNO.ContainerManager.Container']) {
+      const params = new URLSearchParams({
+        api,
+        version: '1',
+        method: 'list',
+        _sid: sid,
+      })
+
+      const response = await axios.get(`${baseUrl}/webapi/entry.cgi?${params.toString()}`, {
+        timeout: TIMEOUT_MS,
+      })
+
+      if (response.data?.success && response.data?.data?.containers) {
+        const containers: Array<{
+          cpu_usage?: number
+          memory_usage?: number
+          memory_limit?: number
+          up_bytes?: number
+          down_bytes?: number
+          status?: string
+        }> = response.data.data.containers
+
+        const running = containers.filter((c) => c.status === 'running')
+        if (running.length === 0) {
+          return { cpuPercent: 0, ramPercent: 0, networkMbpsUp: 0, networkMbpsDown: 0 }
+        }
+
+        const cpuPercent = running.reduce((sum, c) => sum + (c.cpu_usage ?? 0), 0)
+        const totalMemUsage = running.reduce((sum, c) => sum + (c.memory_usage ?? 0), 0)
+        const totalMemLimit = running.reduce((sum, c) => sum + (c.memory_limit ?? 0), 0)
+        const ramPercent = totalMemLimit > 0 ? (totalMemUsage / totalMemLimit) * 100 : 0
+        const networkUp = running.reduce((sum, c) => sum + (c.up_bytes ?? 0), 0)
+        const networkDown = running.reduce((sum, c) => sum + (c.down_bytes ?? 0), 0)
+
+        return {
+          cpuPercent: Math.round(cpuPercent * 10) / 10,
+          ramPercent: Math.round(ramPercent * 10) / 10,
+          networkMbpsUp: Math.round((networkUp / 1_048_576) * 10) / 10,
+          networkMbpsDown: Math.round((networkDown / 1_048_576) * 10) / 10,
+        }
+      }
+    }
+
+    return undefined
+  } catch {
+    return undefined
+  }
+}
+
+/**
  * Check if any Docker images on the NAS have updates available.
+ * Tries both SYNO.Docker.Image and SYNO.ContainerManager.Image namespaces and
+ * multiple field names (is_update_available, canUpgrade, upgrade_available).
  * Runs on a separate 12-hour timer (D-18).
- * Returns false on any error (defensive — open question from RESEARCH.md).
+ * Returns false on any error (defensive).
  */
 export async function checkNasImageUpdates(baseUrl: string, username: string, password: string): Promise<boolean> {
   try {
     const sid = await ensureSession(baseUrl, username, password)
 
-    const params = new URLSearchParams({
-      api: 'SYNO.Docker.Image',
-      version: '1',
-      method: 'list',
-      _sid: sid,
-    })
+    for (const api of ['SYNO.Docker.Image', 'SYNO.ContainerManager.Image']) {
+      for (const version of ['1', '2']) {
+        const params = new URLSearchParams({
+          api,
+          version,
+          method: 'list',
+          _sid: sid,
+        })
 
-    const response = await axios.get(`${baseUrl}/webapi/entry.cgi?${params.toString()}`, {
-      timeout: TIMEOUT_MS,
-    })
+        const response = await axios.get(`${baseUrl}/webapi/entry.cgi?${params.toString()}`, {
+          timeout: TIMEOUT_MS,
+        })
 
-    if (!response.data?.success) {
-      return false
+        if (!response.data?.success) continue
+
+        const images: Array<Record<string, unknown>> = response.data?.data?.images ?? []
+        const hasUpdate = images.some(
+          (img) =>
+            img.is_update_available === true ||
+            img.canUpgrade === true ||
+            img.upgrade_available === true,
+        )
+        if (hasUpdate) return true
+        return false
+      }
     }
 
-    const images: Array<{ is_update_available?: boolean }> = response.data?.data?.images ?? []
-    return images.some((img) => img.is_update_available === true)
+    return false
   } catch {
     return false
   }
