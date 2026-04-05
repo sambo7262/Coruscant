@@ -1,7 +1,5 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Settings, List } from 'lucide-react'
-import { AnimatePresence, motion } from 'framer-motion'
 import type { NasStatus } from '@coruscant/shared'
 
 interface AppHeaderProps {
@@ -97,95 +95,8 @@ function GaugeColumn({
   )
 }
 
-/** Expanded downward panel — serves as NAS detail view (SVCRICH-05) */
-function NasHeaderPanel({ nas }: { nas: NasStatus }) {
-  return (
-    <motion.div
-      initial={{ height: 0, opacity: 0 }}
-      animate={{ height: 'auto', opacity: 1 }}
-      exit={{ height: 0, opacity: 0 }}
-      transition={{ duration: 0.3, ease: 'easeInOut' }}
-      style={{
-        overflow: 'hidden',
-        background: 'rgba(13, 13, 13, 0.97)',
-        borderBottom: '1px solid var(--cockpit-amber)',
-        position: 'absolute',
-        top: '44px',
-        left: 0,
-        right: 0,
-        zIndex: 30,
-        padding: '0 16px',
-      }}
-    >
-      <div style={{ padding: '12px 0', maxWidth: '800px', margin: '0 auto' }}>
-        {/* Per-disk section — only if disks exist (D-19) */}
-        {nas.disks && nas.disks.length > 0 && (
-          <div style={{ marginBottom: '12px' }}>
-            <div style={{ fontSize: '12px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em', marginBottom: '4px', fontFamily: 'var(--font-mono)' }}>DISKS</div>
-            {nas.disks.map(disk => {
-              const tempF = disk.tempC * 9 / 5 + 32
-              return (
-                <div key={disk.id} style={{ display: 'flex', justifyContent: 'space-between', height: '28px', alignItems: 'center', fontSize: '14px', color: 'var(--text-offwhite)' }}>
-                  <span style={{ fontSize: '12px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)' }}>{disk.name}</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '12px' }}>
-                    {disk.readBytesPerSec != null && <span style={{ marginRight: '12px' }}>R: {(disk.readBytesPerSec / 1048576).toFixed(1)} MB/s</span>}
-                    {disk.writeBytesPerSec != null && <span style={{ marginRight: '12px' }}>W: {(disk.writeBytesPerSec / 1048576).toFixed(1)} MB/s</span>}
-                    <span style={{ color: tempColor(tempF) }}>{disk.tempC}C</span>
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-        )}
-
-        {/* Docker section — only if docker stats exist (D-19) */}
-        {nas.docker && (
-          <div style={{ marginBottom: '12px' }}>
-            <div style={{ fontSize: '12px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em', marginBottom: '4px', fontFamily: 'var(--font-mono)' }}>DOCKER</div>
-            <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)' }}>
-              <span>CPU {nas.docker.cpuPercent.toFixed(1)}%</span>
-              <span>RAM {nas.docker.ramPercent.toFixed(1)}%</span>
-              <span>UP {nas.docker.networkMbpsUp.toFixed(1)} Mbps</span>
-              <span>DN {nas.docker.networkMbpsDown.toFixed(1)} Mbps</span>
-            </div>
-          </div>
-        )}
-
-        {/* Fan section — only if fans exist (D-19) */}
-        {nas.fans && nas.fans.length > 0 && (
-          <div style={{ marginBottom: '12px' }}>
-            <div style={{ fontSize: '12px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em', marginBottom: '4px', fontFamily: 'var(--font-mono)' }}>FANS</div>
-            <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)' }}>
-              {nas.fans.map(fan => (
-                <span key={fan.id}>{fan.id}: {fan.rpm} RPM</span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Image update LED */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{
-            width: '8px',
-            height: '8px',
-            borderRadius: '50%',
-            background: nas.imageUpdateAvailable ? 'var(--cockpit-amber)' : '#666666',
-            animation: nas.imageUpdateAvailable ? 'ledPulseWarn 1.2s ease-in-out infinite' : 'none',
-            flexShrink: 0,
-          }} />
-          <span style={{ fontSize: '12px', color: nas.imageUpdateAvailable ? 'var(--cockpit-amber)' : '#666666', letterSpacing: '0.08em', fontFamily: 'var(--font-mono)' }}>
-            {nas.imageUpdateAvailable ? 'UPDATES AVAILABLE' : 'UP TO DATE'}
-          </span>
-        </div>
-      </div>
-    </motion.div>
-  )
-}
-
 export function AppHeader({ nas, connected, showBack = false, nasConfigured }: AppHeaderProps) {
-  const [expanded, setExpanded] = useState(false)
-
-  // Collapse drawer when navigating to a sub-page
+  // D-18: no expand/collapse mechanic — all NAS data always visible
   const isLive = nasConfigured !== false && nas !== null
   const isStale = nasConfigured !== false && nas === null
   const isUnconfigured = nasConfigured === false
@@ -289,22 +200,13 @@ export function AppHeader({ nas, connected, showBack = false, nasConfigured }: A
               </>
             )}
 
-            {/* Live state — interactive strip */}
+            {/* Live state — always-visible stats strip (D-18, D-19) */}
             {isLive && (
               <div
-                role="button"
-                tabIndex={0}
-                aria-label={expanded ? 'Collapse NAS details' : 'Expand NAS details'}
-                aria-expanded={expanded}
-                onClick={() => setExpanded(e => !e)}
-                onKeyDown={(ev) => {
-                  if (ev.key === 'Enter' || ev.key === ' ') setExpanded(e => !e)
-                }}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px',
-                  cursor: 'pointer',
                 }}
               >
                 <GaugeColumn
@@ -333,14 +235,14 @@ export function AppHeader({ nas, connected, showBack = false, nasConfigured }: A
                     ↓{nas.networkMbpsDown.toFixed(1)}
                   </span>
                 </div>
-                {/* CPU Temp */}
+                {/* CPU Temp — D-21: display °F (not °C) */}
                 {nas.cpuTempC != null && (() => {
                   const tempF = nas.cpuTempC * 9 / 5 + 32
                   return (
                     <GaugeColumn
                       label="TEMP"
                       fillPct={Math.max(0, Math.min(100, ((tempF - 32) / (140 - 32)) * 100))}
-                      valueText={`${Math.round(nas.cpuTempC)}C`}
+                      valueText={`${Math.round(tempF)}°F`}
                       color={tempColor(tempF)}
                     />
                   )
@@ -387,25 +289,90 @@ export function AppHeader({ nas, connected, showBack = false, nasConfigured }: A
         )}
       </div>
 
-      {/* Backdrop overlay when expanded */}
-      <AnimatePresence>
-        {expanded && isLive && (
-          <motion.div
-            key="nas-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={() => setExpanded(false)}
-            style={{ position: 'fixed', inset: 0, zIndex: 25, background: 'rgba(0,0,0,0.4)', top: '44px' }}
-          />
-        )}
-      </AnimatePresence>
+      {/* NAS inline sections — always visible (D-18, D-19) */}
+      {!showBack && isLive && nas && (
+        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 12px' }}>
+          {/* Disk temp bars section — all disks with °F temps (D-19, D-21) */}
+          {nas.disks && nas.disks.length > 0 && (
+            <div style={{
+              display: 'flex',
+              gap: '6px',
+              alignItems: 'flex-end',
+              padding: '4px 0',
+              flexWrap: 'wrap',
+              borderTop: '1px solid rgba(232,160,32,0.1)',
+            }}>
+              <span style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '8px',
+                color: 'rgba(232,160,32,0.5)',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                alignSelf: 'center',
+                marginRight: '2px',
+              }}>DISKS</span>
+              {nas.disks.map(disk => {
+                const tempF = Math.round(disk.tempC * 9 / 5 + 32)
+                // Truncate disk name to 6 chars max for space
+                const label = disk.name.length > 6 ? disk.name.slice(0, 6) : disk.name
+                return (
+                  <GaugeColumn
+                    key={disk.id}
+                    label={label}
+                    fillPct={Math.max(0, Math.min(100, ((tempF - 32) / (140 - 32)) * 100))}
+                    valueText={`${tempF}°`}
+                    color={tempColor(tempF)}
+                  />
+                )
+              })}
+            </div>
+          )}
 
-      {/* Expanded NAS panel — IS the NAS detail view (SVCRICH-05) */}
-      <AnimatePresence>
-        {expanded && isLive && nas && <NasHeaderPanel nas={nas} />}
-      </AnimatePresence>
+          {/* Docker stats row — only if docker data exists (D-22) */}
+          {nas.docker && (
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              padding: '2px 0',
+              fontSize: '10px',
+              color: 'var(--text-offwhite)',
+              fontFamily: 'var(--font-mono)',
+              borderTop: '1px solid rgba(232,160,32,0.1)',
+            }}>
+              <span style={{ color: 'rgba(232,160,32,0.5)', fontSize: '8px', letterSpacing: '0.06em', alignSelf: 'center' }}>DOCKER</span>
+              <span>CPU {nas.docker.cpuPercent.toFixed(1)}%</span>
+              <span>RAM {nas.docker.ramPercent.toFixed(1)}%</span>
+              <span>↑{nas.docker.networkMbpsUp.toFixed(1)}</span>
+              <span>↓{nas.docker.networkMbpsDown.toFixed(1)}</span>
+            </div>
+          )}
+
+          {/* Image update LED — always visible inline (D-20) */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '2px 0 4px 0',
+          }}>
+            <div style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              background: nas.imageUpdateAvailable ? 'var(--cockpit-amber)' : '#444',
+              animation: nas.imageUpdateAvailable ? 'ledPulseWarn 1.2s ease-in-out infinite' : 'none',
+              flexShrink: 0,
+            }} />
+            <span style={{
+              fontSize: '9px',
+              color: nas.imageUpdateAvailable ? 'var(--cockpit-amber)' : '#555',
+              letterSpacing: '0.06em',
+              fontFamily: 'var(--font-mono)',
+            }}>
+              {nas.imageUpdateAvailable ? 'IMAGE UPDATES' : 'IMAGES CURRENT'}
+            </span>
+          </div>
+        </div>
+      )}
     </header>
   )
 }
