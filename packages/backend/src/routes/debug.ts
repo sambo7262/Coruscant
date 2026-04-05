@@ -51,7 +51,19 @@ export async function debugRoutes(fastify: FastifyInstance) {
       return reply.send({ error: 'Auth request failed', detail: String(e) })
     }
 
-    // Step 2: try all known Container Manager API paths
+    // Step 2: discover SYNO.Docker API spec
+    let discovery: unknown = null
+    try {
+      const infoRes = await axios.get(`${baseUrl}/webapi/entry.cgi`, {
+        params: { api: 'SYNO.API.Info', version: 1, method: 'query', query: 'SYNO.Docker', _sid: sid },
+        timeout: 5000,
+      })
+      discovery = infoRes.data
+    } catch (e: unknown) {
+      discovery = { error: String(e) }
+    }
+
+    // Step 3: try all known Container Manager API paths
     const attempts: Record<string, unknown>[] = []
     for (const api of ['SYNO.Docker.Container', 'SYNO.ContainerManager.Container']) {
       for (const version of ['1', '2']) {
@@ -67,6 +79,22 @@ export async function debugRoutes(fastify: FastifyInstance) {
       }
     }
 
-    return reply.send({ attempts })
+    // Step 4: retry container list with type=all (most common missing param for error 114)
+    const attemptsWithType: Record<string, unknown>[] = []
+    for (const api of ['SYNO.Docker.Container', 'SYNO.ContainerManager.Container']) {
+      for (const version of ['1', '2']) {
+        try {
+          const res = await axios.get(`${baseUrl}/webapi/entry.cgi`, {
+            params: { api, version, method: 'list', type: 'all', _sid: sid },
+            timeout: 5000,
+          })
+          attemptsWithType.push({ api, version, success: res.data?.success, dataKeys: Object.keys(res.data?.data ?? {}), raw: res.data })
+        } catch (e: unknown) {
+          attemptsWithType.push({ api, version, error: String(e) })
+        }
+      }
+    }
+
+    return reply.send({ discovery, attempts, attemptsWithType })
   })
 }
