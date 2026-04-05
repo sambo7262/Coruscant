@@ -4,12 +4,14 @@ import { pollBazarr } from './adapters/bazarr.js'
 import { pollSabnzbd } from './adapters/sabnzbd.js'
 import { pollPihole } from './adapters/pihole.js'
 import { pollNas, checkNasImageUpdates } from './adapters/nas.js'
+import { fetchPlexSessions } from './adapters/plex.js'
 
 // Poll intervals (ms) — per D-27, D-28, D-24, D-26
 const ARR_INTERVAL_MS = 5_000       // D-27: 5 seconds (was 45_000)
 const SABNZBD_INTERVAL_MS = 10_000  // D-28: 10 seconds (unchanged)
 const PIHOLE_INTERVAL_MS = 60_000   // D-24: 60 seconds
 const NAS_INTERVAL_MS = 3_000       // D-26: 3 seconds
+const PLEX_INTERVAL_MS = 5_000      // 5 second direct poll of PMS /status/sessions
 const IMAGE_UPDATE_INTERVAL_MS = 12 * 60 * 60 * 1000 // D-18: 2x per day (12 hours)
 
 // Arr service metadata
@@ -70,6 +72,7 @@ export class PollManager {
   private nasData: NasStatus = { cpu: 0, ram: 0, networkMbpsUp: 0, networkMbpsDown: 0, volumes: [] }
   private plexStreams: PlexStream[] = []
   private plexServerStats: PlexServerStats | undefined = undefined
+  private plexConfig: { baseUrl: string; token: string } | null = null
 
   // Separate timer for Docker image update checks (12h interval, D-18)
   private imageUpdateTimer: ReturnType<typeof setInterval> | null = null
@@ -114,7 +117,8 @@ export class PollManager {
   /**
    * Called by the Tautulli webhook route when a playback event arrives.
    * Updates Plex stream state and triggers an SSE snapshot push.
-   * This is the ONLY way Plex data enters the system — there is no Plex poll timer.
+   * Backward-compatible: webhooks can still override stream state when Tautulli is running.
+   * Primary data source is now the 5-second direct PMS poll in reload().
    */
   updatePlexState(streams: PlexStream[], serverStats?: PlexServerStats): void {
     this.plexStreams = streams
@@ -146,16 +150,19 @@ export class PollManager {
       if (serviceId === 'plex') {
         this.plexStreams = []
         this.plexServerStats = undefined
+        this.plexConfig = null
       }
       return
     }
 
     const { baseUrl, apiKey, username } = config
 
-    // Plex uses Tautulli webhooks — no polling timer.
-    // Store config acknowledged (so test-connection works), but skip setInterval.
+    // Plex uses direct 5-second polling of PMS /status/sessions.
     if (serviceId === 'plex') {
-      // Mark plex as configured (not unconfigured) with stale status until webhook arrives
+      // Store config for polling
+      this.plexConfig = { baseUrl, token: apiKey }
+
+      // Mark plex as configured with stale status until first poll completes
       this.state.set(serviceId, {
         id: 'plex',
         name: 'Plex',
@@ -164,9 +171,30 @@ export class PollManager {
         configured: true,
         lastPollAt: new Date().toISOString(),
       })
-      // Broadcast immediately so the SSE clients see plexConfigured=true without
-      // waiting for the next 5-second SSE tick.
-      this.broadcastSnapshot()
+
+      const doPollPlex = async () => {
+        try {
+          const streams = await fetchPlexSessions(baseUrl, apiKey)
+          this.plexStreams = streams
+          this.state.set('plex', {
+            id: 'plex',
+            name: 'Plex',
+            tier: 'rich',
+            status: 'online',
+            configured: true,
+            lastPollAt: new Date().toISOString(),
+          })
+        } catch {
+          // fetchPlexSessions never throws — this is a safety net
+        }
+        this.broadcastSnapshot()
+      }
+
+      // Immediate first poll
+      await doPollPlex()
+
+      const timer = setInterval(doPollPlex, PLEX_INTERVAL_MS)
+      this.timers.set('plex', timer)
       return
     }
 
