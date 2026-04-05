@@ -242,14 +242,14 @@ export function AppHeader({ nas, connected, showBack = false, nasConfigured }: A
           borderTop: '1px solid rgba(232,160,32,0.1)',
         }}>
           <div style={{
-            display: 'flex',
-            alignItems: 'flex-end',
-            gap: '8px',
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr 1fr',
+            alignItems: 'center',
             padding: '3px 0 4px 0',
           }}>
 
             {/* LEFT — DISKS: labeled temp gauge bars */}
-            <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-end', flexShrink: 0 }}>
+            <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-end', justifyContent: 'flex-start' }}>
               <span style={{
                 fontFamily: 'var(--font-mono)',
                 fontSize: '8px',
@@ -281,7 +281,6 @@ export function AppHeader({ nas, connected, showBack = false, nasConfigured }: A
 
             {/* MIDDLE — NAS stats: CPU / RAM / NET / TEMP */}
             <div style={{
-              flex: 1,
               display: 'flex',
               gap: '8px',
               justifyContent: 'center',
@@ -337,7 +336,7 @@ export function AppHeader({ nas, connected, showBack = false, nasConfigured }: A
               flexDirection: 'column',
               gap: '2px',
               alignItems: 'flex-end',
-              flexShrink: 0,
+              justifyContent: 'flex-end',
             }}>
               <span style={{
                 fontFamily: 'var(--font-mono)',
