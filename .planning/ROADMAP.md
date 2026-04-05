@@ -140,11 +140,11 @@ Plans:
   2. UniFi card lists per-device status (APs, switches, gateways) with online/offline indication
   3. User taps the UniFi card and reaches a detail view listing all monitored devices with uptime, model, and client count
   4. Backend authenticates via static API token header — no session management or re-auth logic needed
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 - [x] 06-01-PLAN.md — Shared types (UnifiDevice/UnifiMetrics), backend adapter (pollUnifi), unit tests
-- [ ] 06-02-PLAN.md — Backend wiring: PollManager integration, settings routes, test-connection handler
+- [x] 06-02-PLAN.md — Backend wiring: PollManager integration, settings routes, test-connection handler
 - [ ] 06-03-PLAN.md — Frontend: UBIQUITI card section, settings tab, device detail view, visual verification
 **UI hint**: yes
 
@@ -212,7 +212,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 3. Settings + First Service Adapters | 4/4 | Complete | 2026-04-04 |
 | 4. Rich Service Integrations | 5/5 | Complete | 2026-04-05 |
 | 5. UI v2 — Instrument Panel Polish | 8/8 | Complete | 2026-04-05 |
-| 6. Network Monitoring | 1/3 | In Progress|  |
+| 6. Network Monitoring | 2/3 | In Progress|  |
 | 7. Notifications (Pushover Inbox) | 0/? | Not started | - |
 | 8. Logging, Polish + Performance | 0/? | Not started | - |
 | 9. Local Weather | 0/? | Not started | - |
