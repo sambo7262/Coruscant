@@ -47,10 +47,10 @@
 
 ### Network Monitoring
 
-- [ ] **NET-01**: UniFi card shows active client count, WAN throughput (rx/tx), and overall network health state
-- [ ] **NET-02**: UniFi card shows per-device status (APs, switches, gateways) with online/offline state
+- [x] **NET-01**: UniFi card shows active client count, WAN throughput (rx/tx), and overall network health state
+- [x] **NET-02**: UniFi card shows per-device status (APs, switches, gateways) with online/offline state
 - [ ] **NET-03**: UniFi detail view lists all monitored devices with uptime, model, and connected client count
-- [ ] **NET-04**: Backend manages UniFi cookie session lifecycle (login, re-auth on expiry)
+- [x] **NET-04**: Backend manages UniFi cookie session lifecycle (login, re-auth on expiry)
 
 ### Notifications
 
@@ -146,10 +146,10 @@ These are isolated in their own phase due to complexity, OAuth requirements, and
 | SVCRICH-03 | Phase 4 | Complete |
 | SVCRICH-04 | Phase 4 | Complete |
 | SVCRICH-05 | Phase 4 | Complete |
-| NET-01 | Phase 5 | Pending |
-| NET-02 | Phase 5 | Pending |
+| NET-01 | Phase 5 | Complete |
+| NET-02 | Phase 5 | Complete |
 | NET-03 | Phase 5 | Pending |
-| NET-04 | Phase 5 | Pending |
+| NET-04 | Phase 5 | Complete |
 | NOTIF-01 | Phase 6 | Pending |
 | NOTIF-02 | Phase 6 | Pending |
 | NOTIF-03 | Phase 6 | Pending |

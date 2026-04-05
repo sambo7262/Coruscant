@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed quick task 260405-byq (extend-plex-adapter-to-populate-plexserv)
-last_updated: "2026-04-05T16:20:11Z"
+stopped_at: Completed 06-01-PLAN.md (UniFi adapter types and unit tests)
+last_updated: "2026-04-05T21:36:42.944Z"
 last_activity: 2026-04-05
 progress:
-  total_phases: 11
+  total_phases: 12
   completed_phases: 4
-  total_plans: 35
-  completed_plans: 32
+  total_plans: 38
+  completed_plans: 33
   percent: 0
 ---
 
@@ -21,12 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-02)
 
 **Core value:** A single glance from a phone tells you whether your home infrastructure is healthy or needs attention.
-**Current focus:** Phase 05 — ui-v2-instrument-panel-polish
+**Current focus:** Phase 06 — network-monitoring
 
 ## Current Position
 
-Phase: 05 (ui-v2-instrument-panel-polish) — EXECUTING
-Plan: 3 of 5
+Phase: 06 (network-monitoring) — EXECUTING
+Plan: 2 of 3
+Phase: 06 (network-monitoring) — NEXT
 Status: Ready to execute
 Last activity: 2026-04-05
 
@@ -77,6 +78,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 04-rich-service-integrations P05 | 1.5min | 1 tasks | 2 files |
 | Phase 05-ui-v2-instrument-panel-polish P02 | 8min | 2 tasks | 3 files |
 | Phase 05-ui-v2-instrument-panel-polish P03 | 127s | 1 tasks | 1 files |
+| Phase 06-network-monitoring P01 | 206s | 1 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -145,6 +147,10 @@ Recent decisions affecting current work:
 - [Phase 05-ui-v2-instrument-panel-polish]: NAS header is always-visible with no expand/collapse mechanic — disk temps, Docker stats, and image update LED render inline (D-18 through D-22)
 - [Phase quick-260405-1of]: /debug/docker-stats now returns { discovery, attempts, attemptsWithType } — discovery holds raw SYNO.API.Info response revealing exact required params; attemptsWithType retries with type=all to resolve error 114 (missing required param)
 - [Phase quick-260405-b24]: fetchNasDockerStats uses SYNO.Docker.Container.Resource GET name=any — returns resources[] with cpu+memoryPercent per container; networkMbpsUp/Down removed from NasDockerStats type entirely
+- [Phase 06-network-monitoring]: UniFi authentication uses static X-API-KEY header (not cookies, not Basic auth)
+- [Phase 06-network-monitoring]: stat/health endpoint is optional — 401 returns wanTxMbps=null rather than failing the poll
+- [Phase 06-network-monitoring]: Site ID cached in module-level variable; resetUnifiCache() clears for reconfiguration
+- [Phase 06-network-monitoring]: Gateway-first health LED rollup: RED if no gateways or gateway offline; AMBER if non-gateway offline; GREEN if all online
 
 ### Roadmap Evolution
 
@@ -175,6 +181,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T16:20:11Z
-Stopped at: Completed quick task 260405-byq (extend-plex-adapter-to-populate-plexserv)
+Last session: 2026-04-05T21:36:42.939Z
+Stopped at: Completed 06-01-PLAN.md (UniFi adapter types and unit tests)
 Resume file: None
