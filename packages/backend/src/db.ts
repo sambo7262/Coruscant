@@ -48,4 +48,12 @@ export function initDb(): void {
       updated_at TEXT NOT NULL
     );
   `)
+
+  // Phase 4 migration: add username column if it doesn't exist yet.
+  // SQLite does not support IF NOT EXISTS on ALTER TABLE, so we use PRAGMA table_info
+  // to check before issuing the ALTER. This is idempotent and safe on any existing DB.
+  const columns = (_sqlite.prepare('PRAGMA table_info(service_config)').all() as Array<{ name: string }>).map(c => c.name)
+  if (!columns.includes('username')) {
+    _sqlite.exec(`ALTER TABLE service_config ADD COLUMN username TEXT NOT NULL DEFAULT '';`)
+  }
 }
