@@ -4,7 +4,7 @@ import { pollBazarr } from './adapters/bazarr.js'
 import { pollSabnzbd } from './adapters/sabnzbd.js'
 import { pollPihole } from './adapters/pihole.js'
 import { pollNas, checkNasImageUpdates } from './adapters/nas.js'
-import { fetchPlexSessions } from './adapters/plex.js'
+import { fetchPlexSessions, fetchPlexServerStats } from './adapters/plex.js'
 
 // Poll intervals (ms) — per D-27, D-28, D-24, D-26
 const ARR_INTERVAL_MS = 5_000       // D-27: 5 seconds (was 45_000)
@@ -174,8 +174,8 @@ export class PollManager {
 
       const doPollPlex = async () => {
         try {
-          const streams = await fetchPlexSessions(baseUrl, apiKey)
-          this.plexStreams = streams
+          const { streams, totalBandwidthKbps } = await fetchPlexSessions(baseUrl, apiKey)
+          const serverStats = await fetchPlexServerStats(baseUrl, apiKey, totalBandwidthKbps)
           this.state.set('plex', {
             id: 'plex',
             name: 'Plex',
@@ -184,10 +184,12 @@ export class PollManager {
             configured: true,
             lastPollAt: new Date().toISOString(),
           })
+          // updatePlexState sets plexStreams + plexServerStats and triggers broadcastSnapshot
+          this.updatePlexState(streams, serverStats)
         } catch {
-          // fetchPlexSessions never throws — this is a safety net
+          // fetchPlexSessions and fetchPlexServerStats never throw — this is a safety net
+          this.broadcastSnapshot()
         }
-        this.broadcastSnapshot()
       }
 
       // Immediate first poll
