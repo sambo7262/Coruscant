@@ -52,6 +52,22 @@ body {
   overflow-x: hidden;
 }
 
+/* Kiosk viewport: prevent body scroll at 800x480 (D-01) */
+@media (max-height: 480px) {
+  body {
+    overflow: hidden;
+    height: 100vh;
+    max-height: 480px;
+  }
+}
+
+@media (min-height: 481px) {
+  body {
+    max-height: none;
+    overflow-x: hidden;
+  }
+}
+
 /* CRT scanline overlay — D-10 */
 body::after {
   content: '';
