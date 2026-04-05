@@ -92,7 +92,7 @@ export async function pollPihole(baseUrl: string, password: string): Promise<Ser
     return {
       id: 'pihole',
       name: 'Pi-hole',
-      tier: 'rich',
+      tier: 'status',
       status,
       configured: true,
       lastPollAt,
@@ -124,7 +124,7 @@ export async function pollPihole(baseUrl: string, password: string): Promise<Ser
         return {
           id: 'pihole',
           name: 'Pi-hole',
-          tier: 'rich',
+          tier: 'status',
           status: 'offline',
           configured: true,
           lastPollAt,
@@ -137,7 +137,7 @@ export async function pollPihole(baseUrl: string, password: string): Promise<Ser
     return {
       id: 'pihole',
       name: 'Pi-hole',
-      tier: 'rich',
+      tier: 'status',
       status: 'offline',
       configured: true,
       lastPollAt,

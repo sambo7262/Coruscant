@@ -67,7 +67,7 @@ describe('pollPihole', () => {
     expect(result.status).toBe('online')
     expect(result.id).toBe('pihole')
     expect(result.name).toBe('Pi-hole')
-    expect(result.tier).toBe('rich')
+    expect(result.tier).toBe('status')
     expect(result.configured).toBe(true)
     expect(result.metrics).toBeDefined()
 

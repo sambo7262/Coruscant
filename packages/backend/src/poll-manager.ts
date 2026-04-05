@@ -56,7 +56,9 @@ function idToName(id: string): string {
 
 function idToTier(id: string): 'status' | 'activity' | 'rich' {
   if (id === 'sabnzbd') return 'activity'
-  if (id === 'pihole' || id === 'plex' || id === 'nas') return 'rich'
+  if (id === 'plex' || id === 'nas') return 'rich'
+  // pihole is 'status' tier so it co-renders with the arr media stack
+  // in the two-column layout (media stack left, Pi-hole right)
   return 'status'
 }
 
