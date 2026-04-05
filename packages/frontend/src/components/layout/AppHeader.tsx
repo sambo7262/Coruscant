@@ -9,11 +9,16 @@ interface AppHeaderProps {
   nasConfigured?: boolean
 }
 
-/** Map a Fahrenheit temp to fill color for the bar */
+/** Map a Fahrenheit temp to fill color for the bar.
+ *  Thresholds match Synology DSM: warn at 45°C, critical at 60°C.
+ *  ≥ 140°F (60°C) = red (DSM critical)
+ *  ≥ 113°F (45°C) = orange (DSM warning)
+ *  < 113°F        = amber (normal)
+ */
 function tempColor(tempF: number): string {
-  if (tempF >= 114) return '#FF3B3B'   // red — very hot
-  if (tempF >= 95)  return '#FF8C00'   // orange — warm
-  return 'var(--cockpit-amber)'         // amber — normal
+  if (tempF >= 140) return '#FF3B3B'   // red   — ≥ 60°C (DSM critical)
+  if (tempF >= 113) return '#FF8C00'   // orange — ≥ 45°C (DSM warning)
+  return 'var(--cockpit-amber)'         // amber  — normal
 }
 
 /**
@@ -148,14 +153,14 @@ export function AppHeader({ nas, connected, showBack = false, nasConfigured }: A
           )}
         </div>
 
-        {/* Center: NAS instrument panel (hidden when showBack) */}
+        {/* Center: connection status indicators (hidden when showBack) */}
         {!showBack && (
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: '8px',
-              maxWidth: '280px',
             }}
           >
             {/* Disconnected indicator */}
@@ -187,67 +192,6 @@ export function AppHeader({ nas, connected, showBack = false, nasConfigured }: A
               >
                 NAS NOT CONFIGURED
               </span>
-            )}
-
-            {/* Stale state — dashes */}
-            {isStale && (
-              <>
-                <GaugeColumn label="CPU" fillPct={0} valueText="—" />
-                <GaugeColumn label="RAM" fillPct={0} valueText="—" />
-                <GaugeColumn label="DSK" fillPct={0} valueText="—" />
-                <div style={{ width: '1px', height: '24px', background: 'rgba(232,160,32,0.25)', flexShrink: 0 }} />
-                <GaugeColumn label="TEMP" fillPct={0} valueText="—" />
-              </>
-            )}
-
-            {/* Live state — always-visible stats strip (D-18, D-19) */}
-            {isLive && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                }}
-              >
-                <GaugeColumn
-                  label="CPU"
-                  fillPct={nas.cpu}
-                  valueText={`${Math.round(nas.cpu)}%`}
-                />
-                <GaugeColumn
-                  label="RAM"
-                  fillPct={nas.ram}
-                  valueText={`${Math.round(nas.ram)}%`}
-                />
-                <GaugeColumn
-                  label="DSK"
-                  fillPct={nas.volumes[0]?.usedPercent ?? 0}
-                  valueText={`${Math.round(nas.volumes[0]?.usedPercent ?? 0)}%`}
-                />
-                <div style={{ width: '1px', height: '24px', background: 'rgba(232,160,32,0.25)', flexShrink: 0 }} />
-                {/* Network */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'rgba(232,160,32,0.6)', letterSpacing: '0.06em' }}>NET</span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--cockpit-amber)' }}>
-                    ↑{nas.networkMbpsUp.toFixed(1)}
-                  </span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--cockpit-amber)' }}>
-                    ↓{nas.networkMbpsDown.toFixed(1)}
-                  </span>
-                </div>
-                {/* CPU Temp — D-21: display °F (not °C) */}
-                {nas.cpuTempC != null && (() => {
-                  const tempF = nas.cpuTempC * 9 / 5 + 32
-                  return (
-                    <GaugeColumn
-                      label="TEMP"
-                      fillPct={Math.max(0, Math.min(100, ((tempF - 32) / (140 - 32)) * 100))}
-                      valueText={`${Math.round(tempF)}°F`}
-                      color={tempColor(tempF)}
-                    />
-                  )
-                })()}
-              </div>
             )}
           </div>
         )}
@@ -289,19 +233,23 @@ export function AppHeader({ nas, connected, showBack = false, nasConfigured }: A
         )}
       </div>
 
-      {/* NAS inline sections — always visible (D-18, D-19) */}
-      {!showBack && isLive && nas && (
-        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 12px' }}>
-          {/* Disk temp bars section — all disks with °F temps (D-19, D-21) */}
-          {nas.disks && nas.disks.length > 0 && (
-            <div style={{
-              display: 'flex',
-              gap: '6px',
-              alignItems: 'flex-end',
-              padding: '4px 0',
-              flexWrap: 'wrap',
-              borderTop: '1px solid rgba(232,160,32,0.1)',
-            }}>
+      {/* NAS data row — three sections: DISKS left | NAS stats middle | Docker+LED right (D-18, D-19) */}
+      {!showBack && (isLive || isStale) && (
+        <div style={{
+          maxWidth: '800px',
+          margin: '0 auto',
+          padding: '0 12px',
+          borderTop: '1px solid rgba(232,160,32,0.1)',
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'flex-end',
+            gap: '8px',
+            padding: '3px 0 4px 0',
+          }}>
+
+            {/* LEFT — DISKS: labeled temp gauge bars */}
+            <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-end', flexShrink: 0 }}>
               <span style={{
                 fontFamily: 'var(--font-mono)',
                 fontSize: '8px',
@@ -311,66 +259,131 @@ export function AppHeader({ nas, connected, showBack = false, nasConfigured }: A
                 alignSelf: 'center',
                 marginRight: '2px',
               }}>DISKS</span>
-              {nas.disks.map(disk => {
-                const tempF = Math.round(disk.tempC * 9 / 5 + 32)
-                // Truncate disk name to 6 chars max for space; guard against missing name
-                const name = disk.name ?? ''
-                const label = name.length > 6 ? name.slice(0, 6) : name
-                return (
-                  <GaugeColumn
-                    key={disk.id}
-                    label={label}
-                    fillPct={Math.max(0, Math.min(100, ((tempF - 32) / (140 - 32)) * 100))}
-                    valueText={`${tempF}°`}
-                    color={tempColor(tempF)}
-                  />
-                )
-              })}
+              {isLive && nas && nas.disks && nas.disks.length > 0 ? (
+                nas.disks.map(disk => {
+                  const tempF = Math.round(disk.tempC * 9 / 5 + 32)
+                  const name = disk.name ?? ''
+                  const label = name.length > 6 ? name.slice(0, 6) : name
+                  return (
+                    <GaugeColumn
+                      key={disk.id}
+                      label={label}
+                      fillPct={Math.max(0, Math.min(100, ((tempF - 32) / (140 - 32)) * 100))}
+                      valueText={`${tempF}°`}
+                      color={tempColor(tempF)}
+                    />
+                  )
+                })
+              ) : (
+                <GaugeColumn label="—" fillPct={0} valueText="—" />
+              )}
             </div>
-          )}
 
-          {/* Docker stats row — only if docker data exists (D-22) */}
-          {nas.docker && (
+            {/* MIDDLE — NAS stats: CPU / RAM / NET / TEMP */}
+            <div style={{
+              flex: 1,
+              display: 'flex',
+              gap: '8px',
+              justifyContent: 'center',
+              alignItems: 'flex-end',
+            }}>
+              {isLive && nas ? (
+                <>
+                  <GaugeColumn
+                    label="CPU"
+                    fillPct={nas.cpu}
+                    valueText={`${Math.round(nas.cpu)}%`}
+                  />
+                  <GaugeColumn
+                    label="RAM"
+                    fillPct={nas.ram}
+                    valueText={`${Math.round(nas.ram)}%`}
+                  />
+                  {/* Network up/down as stacked text */}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'rgba(232,160,32,0.6)', letterSpacing: '0.06em' }}>NET</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--cockpit-amber)' }}>
+                      ↑{nas.networkMbpsUp.toFixed(1)}
+                    </span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--cockpit-amber)' }}>
+                      ↓{nas.networkMbpsDown.toFixed(1)}
+                    </span>
+                  </div>
+                  {/* CPU Temp — D-21: °F; scale 32°F–158°F (0–70°C) */}
+                  {nas.cpuTempC != null && (() => {
+                    const tempF = nas.cpuTempC * 9 / 5 + 32
+                    return (
+                      <GaugeColumn
+                        label="TEMP"
+                        fillPct={Math.max(0, Math.min(100, ((tempF - 32) / (158 - 32)) * 100))}
+                        valueText={`${Math.round(tempF)}°`}
+                        color={tempColor(tempF)}
+                      />
+                    )
+                  })()}
+                </>
+              ) : (
+                <>
+                  <GaugeColumn label="CPU" fillPct={0} valueText="—" />
+                  <GaugeColumn label="RAM" fillPct={0} valueText="—" />
+                  <GaugeColumn label="TEMP" fillPct={0} valueText="—" />
+                </>
+              )}
+            </div>
+
+            {/* RIGHT — Docker stats + image update LED */}
             <div style={{
               display: 'flex',
-              gap: '12px',
-              padding: '2px 0',
-              fontSize: '10px',
-              color: 'var(--text-offwhite)',
-              fontFamily: 'var(--font-mono)',
-              borderTop: '1px solid rgba(232,160,32,0.1)',
-            }}>
-              <span style={{ color: 'rgba(232,160,32,0.5)', fontSize: '8px', letterSpacing: '0.06em', alignSelf: 'center' }}>DOCKER</span>
-              <span>CPU {nas.docker.cpuPercent.toFixed(1)}%</span>
-              <span>RAM {nas.docker.ramPercent.toFixed(1)}%</span>
-              <span>↑{nas.docker.networkMbpsUp.toFixed(1)}</span>
-              <span>↓{nas.docker.networkMbpsDown.toFixed(1)}</span>
-            </div>
-          )}
-
-          {/* Image update LED — always visible inline (D-20) */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-            padding: '2px 0 4px 0',
-          }}>
-            <div style={{
-              width: '6px',
-              height: '6px',
-              borderRadius: '50%',
-              background: nas.imageUpdateAvailable ? 'var(--cockpit-amber)' : '#444',
-              animation: nas.imageUpdateAvailable ? 'ledPulseWarn 1.2s ease-in-out infinite' : 'none',
+              flexDirection: 'column',
+              gap: '2px',
+              alignItems: 'flex-end',
               flexShrink: 0,
-            }} />
-            <span style={{
-              fontSize: '9px',
-              color: nas.imageUpdateAvailable ? 'var(--cockpit-amber)' : '#555',
-              letterSpacing: '0.06em',
-              fontFamily: 'var(--font-mono)',
             }}>
-              {nas.imageUpdateAvailable ? 'IMAGE UPDATES' : 'IMAGES CURRENT'}
-            </span>
+              <span style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: '8px',
+                color: 'rgba(232,160,32,0.5)',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+              }}>DOCKER</span>
+              {isLive && nas && nas.docker ? (
+                <>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--cockpit-amber)' }}>
+                    CPU {nas.docker.cpuPercent.toFixed(1)}%
+                  </span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--cockpit-amber)' }}>
+                    RAM {nas.docker.ramPercent.toFixed(1)}%
+                  </span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--cockpit-amber)' }}>
+                    ↑{nas.docker.networkMbpsUp.toFixed(1)} ↓{nas.docker.networkMbpsDown.toFixed(1)}
+                  </span>
+                </>
+              ) : (
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: '#555' }}>--</span>
+              )}
+              {/* Image update LED — D-20; always rendered when NAS row visible */}
+              {isLive && nas && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '1px' }}>
+                  <div style={{
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    background: nas.imageUpdateAvailable ? 'var(--cockpit-amber)' : '#444',
+                    animation: nas.imageUpdateAvailable ? 'ledPulseWarn 1.2s ease-in-out infinite' : 'none',
+                    flexShrink: 0,
+                  }} />
+                  <span style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '9px',
+                    color: nas.imageUpdateAvailable ? 'var(--cockpit-amber)' : '#555',
+                    letterSpacing: '0.06em',
+                  }}>
+                    {nas.imageUpdateAvailable ? 'UPDATES' : 'CURRENT'}
+                  </span>
+                </div>
+              )}
+            </div>
+
           </div>
         </div>
       )}
