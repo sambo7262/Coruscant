@@ -5,7 +5,7 @@ import { getDb } from '../db.js'
 import { serviceConfig } from '../schema.js'
 import { decrypt } from '../crypto.js'
 
-const SEED = process.env.ENCRYPTION_SEED ?? 'coruscant-default-seed'
+const SEED = process.env.ENCRYPTION_KEY_SEED
 
 /**
  * Debug routes — LAN-only diagnostic endpoints.
@@ -21,6 +21,7 @@ export async function debugRoutes(fastify: FastifyInstance) {
     const db = getDb()
     const row = db.select().from(serviceConfig).where(eq(serviceConfig.serviceName, 'nas')).get()
 
+    if (!SEED) return reply.status(500).send({ error: 'ENCRYPTION_KEY_SEED not configured' })
     if (!row?.baseUrl) {
       return reply.status(404).send({ error: 'NAS not configured' })
     }
