@@ -137,10 +137,25 @@ export async function settingsRoutes(fastify: FastifyInstance) {
       return reply.send({ ok: true })
     }
 
-    // Encrypt API key if provided
-    const encryptedApiKey = apiKey !== '' ? encrypt(apiKey, seed) : ''
-
     const db = getDb()
+
+    // Encrypt new API key if provided.
+    // If apiKey is empty and an existing row already has an encrypted key, preserve it
+    // rather than overwriting with '' — otherwise a save without re-entering credentials
+    // would silently wipe the stored password (affects NAS DSM password, Plex token, etc.).
+    let encryptedApiKey: string
+    if (apiKey !== '') {
+      encryptedApiKey = encrypt(apiKey, seed)
+    } else {
+      // Check for an existing encrypted key to preserve
+      const existing = db
+        .select({ encryptedApiKey: serviceConfig.encryptedApiKey })
+        .from(serviceConfig)
+        .where(eq(serviceConfig.serviceName, serviceId))
+        .all()
+      encryptedApiKey = existing[0]?.encryptedApiKey ?? ''
+    }
+
     db.insert(serviceConfig)
       .values({
         serviceName: serviceId,

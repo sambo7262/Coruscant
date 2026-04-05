@@ -126,6 +126,37 @@ describe('Settings API', () => {
     })
   })
 
+  describe('POST /api/settings/:serviceId — preserve existing key on empty apiKey re-save', () => {
+    it('preserves existing encrypted key when re-saving with empty apiKey (NAS / Plex re-save flow)', async () => {
+      // Use radarr (arr adapter) — fails fast with ECONNREFUSED on a reserved port, no timeout
+      // This tests the settings persistence logic without triggering a slow network timeout
+      await app.inject({
+        method: 'POST',
+        url: '/api/settings/radarr',
+        payload: { baseUrl: 'http://127.0.0.1:1', apiKey: 'secretapikey' },
+      })
+
+      // Verify key was saved
+      const afterFirstSave = await app.inject({ method: 'GET', url: '/api/settings/radarr' })
+      const firstBody = JSON.parse(afterFirstSave.body)
+      expect(firstBody.hasApiKey).toBe(true)
+      expect(firstBody.baseUrl).toBe('http://127.0.0.1:1')
+
+      // Re-save with same URL but empty apiKey (simulates user clicking Save without re-entering the key)
+      await app.inject({
+        method: 'POST',
+        url: '/api/settings/radarr',
+        payload: { baseUrl: 'http://127.0.0.1:1', apiKey: '' },
+      })
+
+      // Key must still be preserved — not wiped to ''
+      const afterResave = await app.inject({ method: 'GET', url: '/api/settings/radarr' })
+      const resaveBody = JSON.parse(afterResave.body)
+      expect(resaveBody.hasApiKey).toBe(true)
+      expect(resaveBody.baseUrl).toBe('http://127.0.0.1:1')
+    })
+  })
+
   describe('GET /api/settings — list all services', () => {
     it('returns an array with all 10 known services', async () => {
       const res = await app.inject({ method: 'GET', url: '/api/settings' })

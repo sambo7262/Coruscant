@@ -101,9 +101,10 @@ export async function testConnectionRoutes(fastify: FastifyInstance) {
       }
 
       if (serviceId === 'plex') {
-        // Plex: GET / with X-Plex-Token header
+        // Plex: GET / with token as query param (most reliable — header-only fails on some PMS versions)
         const response = await axios.get(`${baseUrl}/`, {
-          headers: { 'X-Plex-Token': apiKey, 'Accept': 'application/json' },
+          params: { 'X-Plex-Token': apiKey },
+          headers: { 'Accept': 'application/json' },
           timeout,
         })
         const serverName = response.data?.MediaContainer?.friendlyName ?? 'Plex Server'
