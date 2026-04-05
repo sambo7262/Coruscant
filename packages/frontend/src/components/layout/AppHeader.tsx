@@ -353,9 +353,6 @@ export function AppHeader({ nas, connected, showBack = false, nasConfigured }: A
                   <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--cockpit-amber)' }}>
                     RAM {nas.docker.ramPercent.toFixed(1)}%
                   </span>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--cockpit-amber)' }}>
-                    ↑{nas.docker.networkMbpsUp.toFixed(1)} ↓{nas.docker.networkMbpsDown.toFixed(1)}
-                  </span>
                 </>
               ) : (
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: '#555' }}>--</span>
