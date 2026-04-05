@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "Checkpoint: 05-05 Task 2 (visual-verify at 800x480)"
-last_updated: "2026-04-05T05:53:29.977Z"
+stopped_at: Completed quick task 260405-1of (debug-docker-stats-api-discovery)
+last_updated: "2026-04-05T08:14:57.729Z"
 last_activity: 2026-04-05
 progress:
   total_phases: 11
-  completed_phases: 5
-  total_plans: 29
-  completed_plans: 29
+  completed_phases: 4
+  total_plans: 35
+  completed_plans: 32
   percent: 0
 ---
 
@@ -143,6 +143,7 @@ Recent decisions affecting current work:
 - [Phase 05-ui-v2-instrument-panel-polish]: Pi-hole card renamed NETWORK with Ubiquiti NOT CONFIGURED placeholder (D-15, D-16)
 - [Phase 05-ui-v2-instrument-panel-polish]: CardGrid rewritten as flat grid without tier section labels — reclaims 96px vertical space for 800x480
 - [Phase 05-ui-v2-instrument-panel-polish]: NAS header is always-visible with no expand/collapse mechanic — disk temps, Docker stats, and image update LED render inline (D-18 through D-22)
+- [Phase quick-260405-1of]: /debug/docker-stats now returns { discovery, attempts, attemptsWithType } — discovery holds raw SYNO.API.Info response revealing exact required params; attemptsWithType retries with type=all to resolve error 114 (missing required param)
 
 ### Roadmap Evolution
 
@@ -170,6 +171,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-05T08:00:43Z
-Stopped at: Completed quick task 260405-1ai (phase5-visual-fixes-and-crypto-error)
+Last session: 2026-04-05T08:14:50.013Z
+Stopped at: Completed quick task 260405-1of (debug-docker-stats-api-discovery)
 Resume file: None
