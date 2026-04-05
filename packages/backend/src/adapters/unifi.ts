@@ -1,7 +1,10 @@
 import axios from 'axios'
+import https from 'node:https'
 import type { ServiceStatus, UnifiDevice, UnifiMetrics } from '@coruscant/shared'
 
 const TIMEOUT_MS = 10_000
+// UniFi controllers use self-signed certs — same pattern as Plex adapter
+const httpsAgent = new https.Agent({ rejectUnauthorized: false })
 const PEAK_WINDOW_MS = 6 * 60 * 60 * 1000 // 6 hours
 
 // Module-level cache
@@ -88,6 +91,7 @@ async function resolveSiteId(baseUrl: string, apiKey: string): Promise<string> {
   const response = await axios.get(`${baseUrl}/proxy/network/integration/v1/sites`, {
     headers: { 'X-API-KEY': apiKey },
     timeout: TIMEOUT_MS,
+    httpsAgent,
   })
 
   const sites: Array<{ siteId: string; internalId: string; name: string }> =
@@ -129,7 +133,7 @@ export async function pollUnifi(baseUrl: string, apiKey: string): Promise<Servic
     const siteId = await resolveSiteId(baseUrl, apiKey)
 
     const headers = { 'X-API-KEY': apiKey }
-    const opts = { headers, timeout: TIMEOUT_MS }
+    const opts = { headers, timeout: TIMEOUT_MS, httpsAgent }
 
     const [devicesRes, clientsRes, statHealthRes] = await Promise.all([
       axios.get(`${baseUrl}/proxy/network/integration/v1/sites/${siteId}/devices`, opts),

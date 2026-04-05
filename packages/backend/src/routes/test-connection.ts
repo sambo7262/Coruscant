@@ -1,5 +1,8 @@
 import type { FastifyInstance } from 'fastify'
 import axios from 'axios'
+import https from 'node:https'
+
+const unifiHttpsAgent = new https.Agent({ rejectUnauthorized: false })
 
 const VALID_SERVICES = [
   'radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 'readarr', 'sabnzbd',
@@ -138,6 +141,7 @@ export async function testConnectionRoutes(fastify: FastifyInstance) {
         const res = await axios.get(`${baseUrl}/proxy/network/integration/v1/sites`, {
           headers: { 'X-API-KEY': apiKey },
           timeout: 10_000,
+          httpsAgent: unifiHttpsAgent,
         })
         const sites = res.data?.data ?? []
         const siteName = sites[0]?.name ?? 'Unknown'
