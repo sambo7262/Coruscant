@@ -188,6 +188,17 @@ function NasGaugeColumn({
   )
 }
 
+// Section label style for NAS tile column headers
+const NAS_SECTION_LABEL_STYLE: React.CSSProperties = {
+  fontSize: '9px',
+  color: 'rgba(232,160,32,0.6)',
+  fontFamily: 'var(--font-mono)',
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  textAlign: 'center',
+  marginBottom: '4px',
+}
+
 // NAS standalone tile instrument (D-21) — 3-column layout: disk LEDs | CPU/RAM/volume bars | Docker stats
 function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
   return (
@@ -195,6 +206,8 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
 
       {/* LEFT col — disk temp LED indicators: 4-per-row grid, last row centered */}
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+        {/* DISKS section label */}
+        <div style={NAS_SECTION_LABEL_STYLE}>DISKS</div>
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           {nasStatus.disks && (() => {
             const rows: typeof nasStatus.disks[] = []
@@ -234,12 +247,15 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
 
       {/* CENTER col — horizontal bars for CPU, RAM, HD volumes */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'center', height: '100%' }}>
+        {/* NAS device name label */}
+        <div style={{ ...NAS_SECTION_LABEL_STYLE, marginBottom: '2px' }}>{nasStatus.name ?? 'NAS'}</div>
         {[
           { label: 'CPU', value: nasStatus.cpu, valueText: `${Math.round(nasStatus.cpu)}%` },
           { label: 'RAM', value: nasStatus.ram, valueText: `${Math.round(nasStatus.ram)}%` },
           ...nasStatus.volumes.map((vol: NasVolume) => ({
-            label: vol.name === '/volume1' ? 'HD'
-              : vol.name.startsWith('/volume') ? `HD${vol.name.replace(/^\/volume/, '')}`
+            label: vol.name === 'volume1' || vol.name === '/volume1' ? 'HD'
+              : vol.name.match(/^\/?volume(\d+)$/) ? `HD${vol.name.match(/^\/?volume(\d+)$/)![1]}`
+              : vol.name.length <= 4 ? vol.name
               : vol.name.slice(0, 4),
             value: vol.usedPercent,
             valueText: `${Math.round(vol.usedPercent)}%`,
@@ -266,10 +282,10 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
       </div>
 
       {/* RIGHT col — Docker stats */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', justifyContent: 'center', height: '100%', paddingLeft: '8px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', justifyContent: 'center', alignItems: 'center', height: '100%', paddingLeft: '8px' }}>
         {nasStatus.docker ? (
           <>
-            <div style={{ fontSize: '11px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Docker</div>
+            <div style={{ ...NAS_SECTION_LABEL_STYLE, marginBottom: '2px', width: '100%' }}>DOCKER</div>
             <span className="text-glow" style={{ fontSize: '22px', lineHeight: 1.2, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textShadow: '0 0 6px var(--cockpit-amber)' }}>
               CPU {nasStatus.docker.cpuPercent.toFixed(1)}%
             </span>
@@ -556,8 +572,6 @@ function ThroughputBar({ label, value, peak, color }: { label: string; value: nu
 function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, unknown>; unifiService?: ServiceStatus }) {
   const qpm = typeof metrics.queriesPerMinute === 'number'
     ? metrics.queriesPerMinute.toFixed(1) : '--'
-  const load = typeof metrics.load1m === 'number'
-    ? metrics.load1m.toFixed(2) : '--'
   const mem = typeof metrics.memPercent === 'number'
     ? `${Math.round(metrics.memPercent as number)}%` : '--'
   const blocking = metrics.blockingActive === true ? 'BLOCKING' : 'DISABLED'
@@ -605,10 +619,6 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
           {mem}
         </span>
         <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>MEM</div>
-        <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1, textShadow: '0 0 8px var(--cockpit-amber)' }}>
-          {load}
-        </span>
-        <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>LOAD</div>
       </div>
       {/* RIGHT — Ubiquiti */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
@@ -640,14 +650,38 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
             {/* Vertical bars: UP / DOWN / CLIENTS filling space under ONLINE */}
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', alignItems: 'flex-end', flex: 1, paddingTop: '8px' }}>
               {[
-                { label: 'UP', value: um!.wanTxMbps, peak: um!.peakTxMbps, color: '#FF3B3B' },
-                { label: 'DOWN', value: um!.wanRxMbps, peak: um!.peakRxMbps, color: '#00c8ff' },
-                { label: 'CLIENTS', value: um!.clientCount, peak: um!.peakClients && um!.peakClients > 0 ? um!.peakClients : (um!.clientCount > 0 ? um!.clientCount : 1), color: '#4ADE80' },
-              ].map(({ label, value, peak, color }) => {
+                {
+                  label: 'UP',
+                  value: um!.wanTxMbps,
+                  peak: um!.peakTxMbps,
+                  color: '#FF3B3B',
+                  valueText: um!.wanTxMbps !== null ? `${um!.wanTxMbps.toFixed(1)}` : '0',
+                  unit: 'Mbps',
+                },
+                {
+                  label: 'DOWN',
+                  value: um!.wanRxMbps,
+                  peak: um!.peakRxMbps,
+                  color: '#00c8ff',
+                  valueText: um!.wanRxMbps !== null ? `${um!.wanRxMbps.toFixed(1)}` : '0',
+                  unit: 'Mbps',
+                },
+                {
+                  label: 'CLIENTS',
+                  value: um!.clientCount,
+                  peak: um!.peakClients && um!.peakClients > 0 ? um!.peakClients : (um!.clientCount > 0 ? um!.clientCount : 1),
+                  color: '#4ADE80',
+                  valueText: `${um!.clientCount}`,
+                  unit: '',
+                },
+              ].map(({ label, value, peak, color, valueText, unit }) => {
                 const effectivePeak = peak > 0 ? peak : 1
                 const fillPct = value !== null && value !== undefined ? Math.min((value / effectivePeak) * 100, 100) : 0
                 return (
                   <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flex: 1 }}>
+                    <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', color: 'rgba(200,200,200,0.5)', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                      {valueText}{unit ? ` ${unit}` : ''}
+                    </span>
                     <div style={{ width: '16px', height: '90px', background: '#222', borderRadius: '3px', position: 'relative', overflow: 'hidden' }}>
                       <div style={{
                         position: 'absolute',
@@ -975,7 +1009,11 @@ export function MediaStackRow({ service, index, lastArrEvent }: ServiceCardProps
       return { background: 'var(--cockpit-red)', boxShadow: '0 0 6px var(--cockpit-red)' }
     }
     if (service.status === 'warning') {
-      return { background: 'var(--cockpit-amber)', boxShadow: '0 0 6px rgba(232,160,32,0.6)' }
+      return {
+        background: 'var(--cockpit-amber)',
+        boxShadow: '0 0 6px rgba(232,160,32,0.6)',
+        animation: 'ledPulseWarn 1s ease-in-out infinite',
+      }
     }
     if (service.status === 'online') {
       if (downloading) {

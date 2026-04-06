@@ -97,11 +97,12 @@ export async function pollNas(baseUrl: string, username: string, password: strin
       return `${baseUrl}/webapi/entry.cgi?${params.toString()}`
     }
 
-    const [utilizationRes, storageRes, fanRes, dockerStats] = await Promise.all([
+    const [utilizationRes, storageRes, fanRes, dockerStats, systemInfoRes] = await Promise.all([
       axios.get(makeUrl('SYNO.Core.System.Utilization', 1, 'get', { type: 'current' }), { timeout: TIMEOUT_MS }),
       axios.get(makeUrl('SYNO.Core.System', 1, 'info', { type: 'storage' }), { timeout: TIMEOUT_MS }),
       axios.get(makeUrl('SYNO.Core.Hardware.FanSpeed', 1, 'get'), { timeout: TIMEOUT_MS }),
       fetchNasDockerStats(baseUrl, username, password).catch(() => undefined),
+      axios.get(makeUrl('SYNO.Core.System', 1, 'info'), { timeout: TIMEOUT_MS }).catch(() => null),
     ])
 
     // Check for session expiry in any response — if so, throw to trigger re-auth
@@ -111,6 +112,12 @@ export async function pollNas(baseUrl: string, username: string, password: strin
         err.code119 = true
         throw err
       }
+    }
+    // systemInfoRes may be null (caught error) — only check if present
+    if (systemInfoRes && isSessionExpired(systemInfoRes.data)) {
+      const err = new Error('DSM session expired') as Error & { code119: boolean }
+      err.code119 = true
+      throw err
     }
 
     const utilData = utilizationRes.data?.success ? utilizationRes.data.data : null
@@ -129,6 +136,12 @@ export async function pollNas(baseUrl: string, username: string, password: strin
     const network = utilData?.network?.[0]
     const networkMbpsUp = network ? (network.tx ?? 0) * 8 / 1_000_000 : 0
     const networkMbpsDown = network ? (network.rx ?? 0) * 8 / 1_000_000 : 0
+
+    // NAS server name from system info (general, not storage-specific)
+    const systemInfoData = systemInfoRes?.data?.success ? systemInfoRes.data.data : null
+    const nasName: string | undefined = typeof systemInfoData?.server_name === 'string' && systemInfoData.server_name
+      ? systemInfoData.server_name
+      : undefined
 
     // CPU temperature from storage info
     const cpuTempC: number | undefined = storageData?.temperature
@@ -159,6 +172,7 @@ export async function pollNas(baseUrl: string, username: string, password: strin
       networkMbpsUp,
       networkMbpsDown,
       cpuTempC,
+      ...(nasName !== undefined && { name: nasName }),
       volumes,
       ...(disks !== undefined && { disks }),
       ...(fans !== undefined && { fans }),

@@ -43,6 +43,7 @@ export interface NasStatus {
   networkMbpsUp: number   // megabits per second upload
   networkMbpsDown: number // megabits per second download
   cpuTempC?: number       // optional — from system temperature field
+  name?: string           // optional — DSM server_name (e.g. "TheRock")
   volumes: NasVolume[]
   disks?: NasDisk[]       // optional — only if DSM returns data
   fans?: NasFan[]         // optional — only if DSM returns fan data

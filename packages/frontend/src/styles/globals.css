@@ -164,6 +164,12 @@ body::after {
   50%       { opacity: 1.0; }
 }
 
+/* Purple queue LED — flashing for arr queued state */
+@keyframes ledFlashPurple {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 1.0; }
+}
+
 /* Arr webhook event flash — 10s hold then fade */
 @keyframes arrFlash {
   0%, 80%  { opacity: 1; }
