@@ -82,6 +82,28 @@ Phase ends when:
 - **D-17:** Glow on key numeric values: `text-shadow: 0 0 6px currentColor` on status numbers (CPU%, temps, client counts, throughput). Makes readings pop from 10ft.
 - **D-18:** OCR-A or existing monospace font for numeric readouts — verify current JetBrains Mono is sufficient or needs swap.
 
+### CSS Theme: Preview-First Approach
+
+- **D-34:** Phase 8 skinning begins with a **static theme preview page** (`theme-preview.html` in project root or served via the dev server) before any CSS changes are committed to the main app. The page renders the same set of components (NAS tile, media stack card, one metric tile, AppHeader strip) in 3 side-by-side variants. User selects direction; implementation proceeds against that choice only.
+
+- **D-35:** Three variants to build in the preview page, all using the established amber palette (`#E8A020`) — the accent color is NOT changing. The variants differ in background warmth and panel depth:
+
+  **Variant A — Deep Navy / Amber** (`#001133` background)
+  Current CONTEXT plan direction. Cool dark navy with amber instruments. Clean and modern.
+
+  **Variant B — Warm Dark / Amber** (`#0D0906` very dark warm charcoal)
+  Inspired by Image 3 (1970s aerospace analog panel) warmth + Image 4 contrast. Amber glows feel *natural* on this background — closest to the physical X-Wing cockpit interior material. Beveled panel edges, slightly warmer panel surface.
+
+  **Variant C — Tactical Dark / Amber** (`#000D1A` near-black navy)
+  Inspired by Image 4 (tactical radar display) but substituting amber for cyan. Stronger CRT bezel-style panel frames. Numbers lit from within with stronger `text-shadow` glow. Most dramatic at distance.
+
+- **D-36:** Reference images analyzed for this decision (uploaded 2026-04-06):
+  - Image 1: Retro arcade cockpit — CRT scan-lines, neon green — ruled out (wrong color temp)
+  - Image 2: Modern neon dashboard — cold cyan/magenta — ruled out (too futuristic/cold)
+  - Image 3: 1970s analog aerospace control panel — warm beige, mechanical beveled buttons — Variant B draws from this warmth
+  - Image 4: Tactical radar CRT display — dark navy, high contrast, CRT bezel — Variant C draws from this structure
+  - **Best 10ft readability:** Image 4. **Best X-Wing soul:** Image 3. Variants B and C target the intersection.
+
 ### Color + Indicator Polish
 
 - **D-19:** NAS CPU and RAM bars colored as cockpit warning indicators:
