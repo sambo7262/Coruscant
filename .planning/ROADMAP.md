@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: UI v2 — Instrument Panel Polish** - Second UI pass with real data: refine card metrics, layout density, interaction details, and visual hierarchy now that actual service data is flowing (completed 2026-04-05)
 - [ ] **Phase 6: Network Monitoring** - UniFi device cards, client counts, WAN throughput, API token auth (UniFi OS 5.x)
 - [x] **Phase 7: Notifications (Webhook Event Signaling)** - Arr webhook receivers with ephemeral card flash + header ticker, SABnzbd burst poll, Settings webhook URL tab (completed 2026-04-06)
-- [ ] **Phase 8: Logging, Polish + Performance** - Log viewer, SQLite pruning, poll interval tuning for real-time media feel
+- [x] **Phase 8: Logging, Polish + Performance** - Log viewer, SQLite pruning, poll interval tuning for real-time media feel (completed 2026-04-06)
 - [ ] **Phase 9: Local Weather** - Current conditions in AppHeader nav bar via self-hosted/no-key weather API
 - [ ] **Phase 10: Production Deploy + Hardening** - v1.0 tag, registry migration, final bug pass, git cleanup
 - [x] **Phase 11: Raspberry Pi Kiosk** - Complete (set up manually)
@@ -190,8 +190,8 @@ Plans:
 - [x] 08-01-PLAN.md — Backend: DB schema (app_logs, kv_store), pino transport, log API routes, SSE change detection, poll interval tuning, Tautulli Plex re-poll, UniFi high-water marks
 - [x] 08-02-PLAN.md — Theme preview page (3 background variants) + user selection checkpoint
 - [x] 08-03-PLAN.md — Frontend: log viewer UI (LogsPage), SSE hook extension, Settings LOGS tab
-- [ ] 08-04-PLAN.md — Frontend: download bar removal, text scale-up, background + depth + glow, NAS tile, CRT sweep, color indicators, UniFi bars
-- [ ] 08-05-PLAN.md — Visual and functional verification checkpoint
+- [x] 08-04-PLAN.md — Frontend: download bar removal, text scale-up, background + depth + glow, NAS tile, CRT sweep, color indicators, UniFi bars
+- [x] 08-05-PLAN.md — Visual and functional verification checkpoint (approved 2026-04-06)
 **UI hint**: yes
 ### Phase 9: Local Weather
 **Goal**: Current local weather conditions appear in the AppHeader top nav bar — pulled from a local or self-hosted weather source with no external cloud dependency
