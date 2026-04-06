@@ -2,6 +2,14 @@ import type { FastifyInstance } from 'fastify'
 import type { PlexStream, PlexServerStats } from '@coruscant/shared'
 import { pollManager } from '../poll-manager.js'
 
+// Events that warrant an immediate PMS re-poll to get fresh session data (D-06, D-07, D-08)
+const IMMEDIATE_REPOLL_EVENTS = new Set([
+  'playback.start', 'play', 'on_play',
+  'playback.stop', 'stop', 'on_stop', 'watched',
+  'playback.pause', 'pause', 'on_pause',
+  'playback.resume', 'resume', 'on_resume',
+])
+
 // In-memory session map — keyed by Tautulli session_key
 // Persists for the lifetime of the server process
 const activeSessions = new Map<string, PlexStream>()
@@ -107,6 +115,13 @@ export async function tautulliWebhookRoutes(fastify: FastifyInstance) {
     // Update PollManager and trigger SSE push
     const streams = [...activeSessions.values()]
     pollManager.updatePlexState(streams, serverStats)
+
+    // Trigger immediate PMS re-poll on playback events (D-06, D-07, D-08)
+    if (event && IMMEDIATE_REPOLL_EVENTS.has(event.toLowerCase())) {
+      pollManager.triggerPlexRepoll().catch(() => {
+        // Fire-and-forget — errors logged internally
+      })
+    }
 
     return reply.code(200).send({ success: true })
   })

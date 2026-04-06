@@ -1,43 +1,59 @@
 import axios from 'axios'
 import https from 'node:https'
+import { eq } from 'drizzle-orm'
 import type { ServiceStatus, UnifiDevice, UnifiMetrics } from '@coruscant/shared'
+import { getDb } from '../db.js'
+import { kvStore } from '../schema.js'
 
 const TIMEOUT_MS = 10_000
 // UniFi controllers use self-signed certs — same pattern as Plex adapter
 const httpsAgent = new https.Agent({ rejectUnauthorized: false })
-const PEAK_WINDOW_MS = 6 * 60 * 60 * 1000 // 6 hours
 
-// Module-level cache
+// Module-level cache — loaded lazily from kv_store on first access (D-38, D-39)
 let cachedSiteId: string | null = null
-let peakTxMbps = 0
-let peakRxMbps = 0
-let peakResetTimer: ReturnType<typeof setTimeout> | null = null
+let cachedPeakTx: number | null = null
+let cachedPeakRx: number | null = null
+let cachedPeakClients: number | null = null
 
-function schedulePeakReset(): void {
-  if (peakResetTimer !== null) {
-    clearTimeout(peakResetTimer)
-  }
-  peakResetTimer = setTimeout(() => {
-    peakTxMbps = 0
-    peakRxMbps = 0
-    schedulePeakReset()
-  }, PEAK_WINDOW_MS)
-  // Allow Node.js to exit even if this timer is pending
-  if (peakResetTimer.unref) {
-    peakResetTimer.unref()
+function getOrLoadPeak(key: string, cached: number | null): number {
+  if (cached !== null) return cached
+  try {
+    const row = getDb().select().from(kvStore).where(eq(kvStore.key, key)).get()
+    return row ? parseFloat(row.value) : 0
+  } catch {
+    return 0
   }
 }
 
-// Initialize peak reset timer at module load
-schedulePeakReset()
+function updateHighWaterMark(key: string, current: number, cached: number | null): number {
+  const stored = getOrLoadPeak(key, cached)
+  if (current > stored) {
+    try {
+      getDb()
+        .insert(kvStore)
+        .values({ key, value: String(current), updatedAt: new Date().toISOString() })
+        .onConflictDoUpdate({
+          target: kvStore.key,
+          set: { value: String(current), updatedAt: new Date().toISOString() },
+        })
+        .run()
+    } catch {
+      // Non-fatal — in-memory value still tracks correctly
+    }
+    return current
+  }
+  return stored
+}
 
 /**
  * Reset module-level cache. Call between tests or when credentials change.
+ * Clears in-memory caches but NOT kv_store entries — peaks persist across restarts.
  */
 export function resetUnifiCache(): void {
   cachedSiteId = null
-  peakTxMbps = 0
-  peakRxMbps = 0
+  cachedPeakTx = null
+  cachedPeakRx = null
+  cachedPeakClients = null
 }
 
 /**
@@ -187,9 +203,18 @@ export async function pollUnifi(baseUrl: string, apiKey: string): Promise<Servic
       }
     }
 
-    // Update rolling peaks
-    if (wanTxMbps !== null && wanTxMbps > peakTxMbps) peakTxMbps = wanTxMbps
-    if (wanRxMbps !== null && wanRxMbps > peakRxMbps) peakRxMbps = wanRxMbps
+    // Update kv_store-backed high-water marks (D-38, D-39)
+    if (wanTxMbps !== null) {
+      cachedPeakTx = updateHighWaterMark('unifi.network.tx_max', wanTxMbps, cachedPeakTx)
+    } else {
+      cachedPeakTx = getOrLoadPeak('unifi.network.tx_max', cachedPeakTx)
+    }
+    if (wanRxMbps !== null) {
+      cachedPeakRx = updateHighWaterMark('unifi.network.rx_max', wanRxMbps, cachedPeakRx)
+    } else {
+      cachedPeakRx = getOrLoadPeak('unifi.network.rx_max', cachedPeakRx)
+    }
+    cachedPeakClients = updateHighWaterMark('unifi.clients_max', clientCount, cachedPeakClients)
 
     const healthStatus = computeHealthStatus(devices)
 
@@ -197,8 +222,9 @@ export async function pollUnifi(baseUrl: string, apiKey: string): Promise<Servic
       clientCount,
       wanTxMbps,
       wanRxMbps,
-      peakTxMbps,
-      peakRxMbps,
+      peakTxMbps: cachedPeakTx ?? 0,
+      peakRxMbps: cachedPeakRx ?? 0,
+      peakClients: cachedPeakClients ?? 0,
       devices,
       healthStatus,
     }

@@ -110,8 +110,9 @@ export interface UnifiMetrics {
   clientCount: number         // from /clients totalCount
   wanTxMbps: number | null    // null if stat/health unavailable
   wanRxMbps: number | null
-  peakTxMbps: number          // rolling 6h peak for bar scaling
+  peakTxMbps: number          // kv_store-persisted high-water mark for bar scaling (D-38)
   peakRxMbps: number
+  peakClients?: number        // kv_store-persisted high-water mark for client bar gauge (D-39)
   devices: UnifiDevice[]
   healthStatus: 'online' | 'warning' | 'offline'  // derived from D-05 rollup
 }

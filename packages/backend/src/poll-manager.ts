@@ -7,15 +7,15 @@ import { pollNas, checkNasImageUpdates } from './adapters/nas.js'
 import { fetchPlexSessions, fetchPlexServerStats } from './adapters/plex.js'
 import { pollUnifi, resetUnifiCache } from './adapters/unifi.js'
 
-// Poll intervals (ms) — per D-27, D-28, D-24, D-26
-const ARR_INTERVAL_MS = 5_000              // D-27: 5 seconds (was 45_000)
-export const SABNZBD_INTERVAL_MS = 10_000  // D-28: 10 seconds (normal interval)
-export const SABNZBD_BURST_MS = 1_000      // D-14: 1 second burst interval on grab event
-const PIHOLE_INTERVAL_MS = 60_000   // D-24: 60 seconds
-const NAS_INTERVAL_MS = 3_000       // D-26: 3 seconds
-const PLEX_INTERVAL_MS = 5_000      // 5 second direct poll of PMS /status/sessions
-const UNIFI_INTERVAL_MS = 30_000    // D-14: 30 seconds
-const IMAGE_UPDATE_INTERVAL_MS = 12 * 60 * 60 * 1000 // D-18: 2x per day (12 hours)
+// Poll intervals (ms) — per D-01, D-02, D-27, D-28, D-24
+export const ARR_INTERVAL_MS = 5_000              // D-27: 5 seconds
+export const SABNZBD_INTERVAL_MS = 10_000         // D-28: 10 seconds (normal interval)
+export const SABNZBD_BURST_MS = 1_000             // D-14: 1 second burst interval on grab event
+export const PIHOLE_INTERVAL_MS = 60_000          // D-24: 60 seconds
+export const NAS_INTERVAL_MS = 1_000              // D-01: 1 second (was 3_000)
+export const PLEX_INTERVAL_MS = 5_000             // 5 second direct poll of PMS /status/sessions
+export const UNIFI_INTERVAL_MS = 3_000            // D-01: 3 seconds (was 30_000)
+export const IMAGE_UPDATE_INTERVAL_MS = 12 * 60 * 60 * 1000 // D-18: 2x per day (12 hours)
 
 // Arr service metadata
 const ARR_SERVICES: Record<string, { name: string }> = {
@@ -218,6 +218,23 @@ export class PollManager {
     }
     // Trigger an immediate SSE push so clients see the update instantly
     this.broadcastSnapshot()
+  }
+
+  /**
+   * Trigger an immediate re-poll of the Plex PMS session and stats endpoints.
+   * Called by Tautulli webhook on PlaybackStart/Stop/Pause events to ensure
+   * the SSE snapshot reflects current session state immediately. (D-06, D-07, D-08)
+   */
+  async triggerPlexRepoll(): Promise<void> {
+    if (!this.plexConfig) return
+    try {
+      const { baseUrl, token } = this.plexConfig
+      const { streams, totalBandwidthKbps } = await fetchPlexSessions(baseUrl, token)
+      const stats = await fetchPlexServerStats(baseUrl, token, totalBandwidthKbps)
+      this.updatePlexState(streams, stats)
+    } catch {
+      // Log but don't throw — fallback poll will catch it
+    }
   }
 
   /**

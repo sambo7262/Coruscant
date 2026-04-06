@@ -6,7 +6,8 @@ import type { PlexStream, PlexServerStats } from '@coruscant/shared'
 // Mock pollManager to capture updatePlexState calls
 vi.mock('../poll-manager.js', () => {
   const updatePlexState = vi.fn()
-  const pollManager = { updatePlexState }
+  const triggerPlexRepoll = vi.fn().mockResolvedValue(undefined)
+  const pollManager = { updatePlexState, triggerPlexRepoll }
   return { pollManager }
 })
 
