@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Coruscant — Theme Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== RESET ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+      background: #111;
+      color: #C8C8C8;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+    }
+
+    /* ===== PAGE HEADING ===== */
+    .page-heading {
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      color: rgba(232,160,32,0.6);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    /* ===== THREE-COLUMN LAYOUT ===== */
+    .variants {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    /* ===== VARIANT COLUMN ===== */
+    .variant {
+      position: relative;
+      border-radius: 4px;
+      overflow: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .variant-a { --bg: #001133; --sweep-opacity: rgba(255,255,255,0.025); }
+    .variant-b { --bg: #0D0906; --sweep-opacity: rgba(255,255,255,0.025); }
+    .variant-c { --bg: #000D1A; --sweep-opacity: rgba(255,255,255,0.040); }
+
+    .variant-a, .variant-b, .variant-c {
+      background: var(--bg);
+    }
+
+    /* ===== CRT SWEEP OVERLAY (D-37) ===== */
+    .crt-sweep {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(transparent, var(--sweep-opacity), transparent);
+      animation: crtSweep 10s linear infinite;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    @keyframes crtSweep {
+      0%   { transform: translateY(-100%); }
+      100% { transform: translateY(100vh); }
+    }
+
+    /* CRT scanline texture */
+    .variant::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 99;
+      background: repeating-linear-gradient(
+        to bottom,
+        transparent 0px,
+        transparent 1px,
+        rgba(0,0,0,0.12) 1px,
+        rgba(0,0,0,0.12) 2px
+      );
+    }
+
+    /* ===== VARIANT LABEL ===== */
+    .variant-label {
+      padding: 12px 14px 10px;
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: rgba(232,160,32,0.7);
+      border-bottom: 1px solid rgba(232,160,32,0.15);
+      background: rgba(0,0,0,0.2);
+      position: relative;
+      z-index: 1;
+    }
+    .variant-label span {
+      color: #E8A020;
+      font-weight: 600;
+    }
+    .variant-label small {
+      display: block;
+      font-size: 10px;
+      color: rgba(200,200,200,0.4);
+      margin-top: 2px;
+      letter-spacing: 0.04em;
+    }
+
+    /* ===== MOCK CONTENT AREA ===== */
+    .mock-content {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ===== SHARED PANEL/CARD SURFACE ===== */
+    --space-mid: #0E1520;
+
+    /* ===== APP HEADER STRIP ===== */
+    .mock-header {
+      background: rgba(14,21,32,0.95);
+      border: 1px solid rgba(232,160,32,0.20);
+      border-bottom: 1px solid rgba(232,160,32,0.30);
+      box-shadow: 0 1px 8px rgba(232,160,32,0.12);
+      padding: 0 12px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 2px;
+    }
+
+    .mock-header-title {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: #E8A020;
+      line-height: 1.2;
+    }
+
+    .mock-header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .mock-header-temp {
+      font-size: 12px;
+      color: var(--cockpit-amber, #E8A020);
+      letter-spacing: 0.04em;
+      text-shadow: 0 0 6px currentColor;
+    }
+
+    .mini-gauge-group {
+      display: flex;
+      gap: 6px;
+      align-items: flex-end;
+    }
+
+    .mini-gauge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .mini-gauge-label {
+      font-size: 9px;
+      color: rgba(232,160,32,0.55);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .mini-gauge-bar-track {
+      width: 4px;
+      height: 18px;
+      background: rgba(232,160,32,0.15);
+      border-radius: 1px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mini-gauge-bar-fill {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      border-radius: 1px;
+    }
+
+    .mini-gauge-value {
+      font-size: 10px;
+      color: #E8A020;
+    }
+
+    /* ===== CHAMFER CARD ===== */
+    .chamfer-card {
+      background: #0E1520;
+      border: 1px solid rgba(232,160,32,0.20);
+      border-radius: 2px;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+      clip-path: polygon(
+        8px 0%,
+        100% 0%,
+        100% 8px,
+        100% 100%,
+        calc(100% - 8px) 100%,
+        0px 100%,
+        0% calc(100% - 8px),
+        0% 0px
+      );
+      overflow: hidden;
+    }
+
+    .card-ribbon {
+      background: rgba(232,160,32,0.15);
+      border-bottom: 1px solid #E8A020;
+      padding: 5px 12px;
+    }
+
+    .card-ribbon-label {
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: #E8A020;
+      line-height: 1.2;
+    }
+
+    .card-body {
+      padding: 10px 12px;
+    }
+
+    /* ===== NAS TILE ===== */
+    .nas-row {
+      display: grid;
+      grid-template-columns: 60px 1fr 32px;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .nas-row:last-child { margin-bottom: 0; }
+
+    .nas-metric-label {
+      font-size: 12px;
+      color: rgba(200,200,200,0.55);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .gauge-bar-track {
+      height: 6px;
+      background: rgba(232,160,32,0.10);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .gauge-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.4s ease;
+    }
+
+    .nas-metric-value {
+      font-size: 12px;
+      text-align: right;
+      text-shadow: 0 0 6px currentColor;
+    }
+
+    .color-green  { color: #4ADE80; background: #4ADE80; }
+    .color-amber  { color: #E8A020; background: #E8A020; }
+    .color-red    { color: #FF3B3B; background: #FF3B3B; }
+
+    /* color helpers for fill bars */
+    .fill-green  { background: #4ADE80; box-shadow: 0 0 4px #4ADE80; }
+    .fill-amber  { background: #E8A020; box-shadow: 0 0 4px #E8A020; }
+    .fill-red    { background: #FF3B3B; box-shadow: 0 0 4px #FF3B3B; }
+
+    .disk-temps {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .disk-temp-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .disk-temp-label {
+      font-size: 9px;
+      color: rgba(200,200,200,0.4);
+      letter-spacing: 0.06em;
+    }
+
+    .disk-temp-value {
+      font-size: 11px;
+      color: #E8A020;
+      text-shadow: 0 0 6px currentColor;
+    }
+
+    /* ===== MEDIA STACK CARD ===== */
+    .led-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(232,160,32,0.06);
+    }
+
+    .led-row:last-child { border-bottom: none; }
+
+    .led-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .led-online {
+      background: #4ADE80;
+      box-shadow: 0 0 5px 1px rgba(74,222,128,0.6);
+      animation: ledBreathe 3s ease-in-out infinite;
+    }
+
+    .led-offline {
+      background: #FF3B3B;
+      box-shadow: 0 0 5px 1px rgba(255,59,59,0.5);
+      animation: ledFlashDown 0.4s ease-in-out infinite;
+    }
+
+    @keyframes ledBreathe {
+      0%, 100% { opacity: 0.7; }
+      50%       { opacity: 1.0; }
+    }
+
+    @keyframes ledFlashDown {
+      0%, 100% { opacity: 0.3; }
+      50%       { opacity: 1.0; }
+    }
+
+    .led-service-name {
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #C8C8C8;
+    }
+
+    .led-status-text {
+      font-size: 12px;
+      margin-left: auto;
+      color: rgba(200,200,200,0.4);
+    }
+
+    /* ===== METRIC TILE (Pi-hole / Network) ===== */
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .metric-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .metric-cell-label {
+      font-size: 12px;
+      color: rgba(200,200,200,0.45);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .metric-cell-value {
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      line-height: 1.2;
+      text-shadow: 0 0 6px currentColor;
+    }
+
+    .metric-cell-sub {
+      font-size: 12px;
+      color: rgba(200,200,200,0.4);
+      letter-spacing: 0.02em;
+    }
+
+    .network-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .network-arrow {
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .arrow-down { color: #00c8ff; }
+    .arrow-up   { color: #FF3B3B; }
+
+    .network-bar-track {
+      flex: 1;
+      height: 5px;
+      background: rgba(232,160,32,0.08);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .network-bar-fill-down {
+      height: 100%;
+      background: #00c8ff;
+      box-shadow: 0 0 4px #00c8ff;
+      border-radius: 2px;
+    }
+
+    .network-bar-fill-up {
+      height: 100%;
+      background: #FF3B3B;
+      box-shadow: 0 0 4px #FF3B3B;
+      border-radius: 2px;
+    }
+
+    .network-speed-label {
+      font-size: 10px;
+      min-width: 48px;
+      text-align: right;
+    }
+
+    /* ===== SELECTION GUIDE ===== */
+    .selection-guide {
+      margin-top: 24px;
+      max-width: 1200px;
+      width: 100%;
+      border: 1px solid rgba(232,160,32,0.20);
+      background: rgba(14,21,32,0.8);
+      padding: 16px 20px;
+      border-radius: 2px;
+    }
+
+    .selection-guide h2 {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: #E8A020;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .selection-guide p {
+      font-size: 12px;
+      color: rgba(200,200,200,0.6);
+      line-height: 1.6;
+    }
+
+    .selection-guide code {
+      font-family: inherit;
+      background: rgba(232,160,32,0.1);
+      border: 1px solid rgba(232,160,32,0.20);
+      padding: 1px 6px;
+      border-radius: 2px;
+      color: #E8A020;
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+
+  <p class="page-heading">CORUSCANT &rsaquo; THEME PREVIEW &rsaquo; SELECT BACKGROUND VARIANT</p>
+
+  <div class="variants">
+
+    <!-- ===== VARIANT A: DEEP NAVY / AMBER ===== -->
+    <div class="variant variant-a">
+      <div class="crt-sweep"></div>
+
+      <div class="variant-label">
+        <span>A &mdash; DEEP NAVY</span>
+        <small>#001133 &middot; Cool dark navy + amber instruments</small>
+      </div>
+
+      <div class="mock-content">
+
+        <!-- AppHeader Strip -->
+        <div class="mock-header">
+          <div class="mock-header-title">CORUSCANT</div>
+          <div class="mock-header-right">
+            <div class="mini-gauge-group">
+              <div class="mini-gauge">
+                <span class="mini-gauge-label">CPU</span>
+                <div class="mini-gauge-bar-track">
+                  <div class="mini-gauge-bar-fill fill-green" style="height:45%;bottom:0;position:absolute;left:0;right:0;border-radius:1px;"></div>
+                </div>
+                <span class="mini-gauge-value">45%</span>
+              </div>
+              <div class="mini-gauge">
+                <span class="mini-gauge-label">RAM</span>
+                <div class="mini-gauge-bar-track">
+                  <div class="mini-gauge-bar-fill fill-amber" style="height:62%;bottom:0;position:absolute;left:0;right:0;border-radius:1px;"></div>
+                </div>
+                <span class="mini-gauge-value">62%</span>
+              </div>
+            </div>
+            <span class="mock-header-temp">88&deg;F</span>
+          </div>
+        </div>
+
+        <!-- NAS Tile -->
+        <div class="chamfer-card">
+          <div class="card-ribbon">
+            <span class="card-ribbon-label">NAS</span>
+          </div>
+          <div class="card-body">
+            <div class="nas-row">
+              <span class="nas-metric-label">CPU</span>
+              <div class="gauge-bar-track">
+                <div class="gauge-bar-fill fill-green" style="width:45%"></div>
+              </div>
+              <span class="nas-metric-value color-green">45%</span>
+            </div>
+            <div class="nas-row">
+              <span class="nas-metric-label">RAM</span>
+              <div class="gauge-bar-track">
+                <div class="gauge-bar-fill fill-amber" style="width:62%"></div>
+              </div>
+              <span class="nas-metric-value color-amber">62%</span>
+            </div>
+            <div class="nas-row">
+              <span class="nas-metric-label">VOLUME</span>
+              <div class="gauge-bar-track">
+                <div class="gauge-bar-fill fill-green" style="width:38%"></div>
+              </div>
+              <span class="nas-metric-value color-green">38%</span>
+            </div>
+            <div class="disk-temps">
+              <div class="disk-temp-item">
+                <span class="disk-temp-label">DISK 1</span>
+                <span class="disk-temp-value">88&deg;F</span>
+              </div>
+              <div class="disk-temp-item">
+                <span class="disk-temp-label">DISK 2</span>
+                <span class="disk-temp-value">91&deg;F</span>
+              </div>
+              <div class="disk-temp-item">
+                <span class="disk-temp-label">DISK 3</span>
+                <span class="disk-temp-value">86&deg;F</span>
+              </div>
+              <div class="disk-temp-item">
+                <span class="disk-temp-label">DISK 4</span>
+                <span class="disk-temp-value">89&deg;F</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Media Stack Card -->
+        <div class="chamfer-card">
+          <div class="card-ribbon">
+            <span class="card-ribbon-label">MEDIA</span>
+          </div>
+          <div class="card-body">
+            <div class="led-row">
+              <div class="led-dot led-online"></div>
+              <span class="led-service-name">RADARR</span>
+              <span class="led-status-text">ONLINE</span>
+            </div>
+            <div class="led-row">
+              <div class="led-dot led-online"></div>
+              <span class="led-service-name">SONARR</span>
+              <span class="led-status-text">ONLINE</span>
+            </div>
+            <div class="led-row">
+              <div class="led-dot led-online"></div>
+              <span class="led-service-name">LIDARR</span>
+              <span class="led-status-text">ONLINE</span>
+            </div>
+            <div class="led-row">
+              <div class="led-dot led-offline"></div>
+              <span class="led-service-name">PROWLARR</span>
+              <span class="led-status-text" style="color:#FF3B3B">OFFLINE</span>
+            </div>
+            <div class="led-row">
+              <div class="led-dot led-online"></div>
+              <span class="led-service-name">BAZARR</span>
+              <span class="led-status-text">ONLINE</span>
+            </div>
+            <div class="led-row">
+              <div class="led-dot led-online"></div>
+              <span class="led-service-name">READARR</span>
+              <span class="led-status-text">ONLINE</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metric Tile (Network / Pi-hole) -->
+        <div class="chamfer-card">
+          <div class="card-ribbon">
+            <span class="card-ribbon-label">NETWORK</span>
+          </div>
+          <div class="card-body">
+            <div class="metric-grid">
+              <div class="metric-cell">
+                <span class="metric-cell-label">CLIENTS</span>
+                <span class="metric-cell-value color-green">24</span>
+                <span class="metric-cell-sub">online</span>
+              </div>
+              <div class="metric-cell">
+                <span class="metric-cell-label">DNS BLOCKED</span>
+                <span class="metric-cell-value" style="color:#E8A020;text-shadow:0 0 6px currentColor;">18.4%</span>
+                <span class="metric-cell-sub">of queries</span>
+              </div>
+            </div>
+            <div class="network-bar-row">
+              <span class="network-arrow arrow-down">↓↓</span>
+              <div class="network-bar-track">
+                <div class="network-bar-fill-down" style="width:55%"></div>
+              </div>
+              <span class="network-speed-label" style="color:#00c8ff;text-shadow:0 0 6px currentColor;">42.3 Mb/s</span>
+            </div>
+            <div class="network-bar-row">
+              <span class="network-arrow arrow-up">↑</span>
+              <div class="network-bar-track">
+                <div class="network-bar-fill-up" style="width:18%"></div>
+              </div>
+              <span class="network-speed-label" style="color:#FF3B3B;text-shadow:0 0 6px currentColor;">8.1 Mb/s</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /variant-a -->
+
+    <!-- ===== VARIANT B: WARM DARK / AMBER ===== -->
+    <div class="variant variant-b">
+      <div class="crt-sweep"></div>
+
+      <div class="variant-label">
+        <span>B &mdash; WARM DARK</span>
+        <small>#0D0906 &middot; Warm charcoal, X-Wing soul</small>
+      </div>
+
+      <div class="mock-content">
+
+        <!-- AppHeader Strip -->
+        <div class="mock-header">
+          <div class="mock-header-title">CORUSCANT</div>
+          <div class="mock-header-right">
+            <div class="mini-gauge-group">
+              <div class="mini-gauge">
+                <span class="mini-gauge-label">CPU</span>
+                <div class="mini-gauge-bar-track">
+                  <div class="mini-gauge-bar-fill fill-green" style="height:45%;bottom:0;position:absolute;left:0;right:0;border-radius:1px;"></div>
+                </div>
+                <span class="mini-gauge-value">45%</span>
+              </div>
+              <div class="mini-gauge">
+                <span class="mini-gauge-label">RAM</span>
+                <div class="mini-gauge-bar-track">
+                  <div class="mini-gauge-bar-fill fill-amber" style="height:62%;bottom:0;position:absolute;left:0;right:0;border-radius:1px;"></div>
+                </div>
+                <span class="mini-gauge-value">62%</span>
+              </div>
+            </div>
+            <span class="mock-header-temp">88&deg;F</span>
+          </div>
+        </div>
+
+        <!-- NAS Tile -->
+        <div class="chamfer-card">
+          <div class="card-ribbon">
+            <span class="card-ribbon-label">NAS</span>
+          </div>
+          <div class="card-body">
+            <div class="nas-row">
+              <span class="nas-metric-label">CPU</span>
+              <div class="gauge-bar-track">
+                <div class="gauge-bar-fill fill-green" style="width:45%"></div>
+              </div>
+              <span class="nas-metric-value color-green">45%</span>
+            </div>
+            <div class="nas-row">
+              <span class="nas-metric-label">RAM</span>
+              <div class="gauge-bar-track">
+                <div class="gauge-bar-fill fill-amber" style="width:62%"></div>
+              </div>
+              <span class="nas-metric-value color-amber">62%</span>
+            </div>
+            <div class="nas-row">
+              <span class="nas-metric-label">VOLUME</span>
+              <div class="gauge-bar-track">
+                <div class="gauge-bar-fill fill-green" style="width:38%"></div>
+              </div>
+              <span class="nas-metric-value color-green">38%</span>
+            </div>
+            <div class="disk-temps">
+              <div class="disk-temp-item">
+                <span class="disk-temp-label">DISK 1</span>
+                <span class="disk-temp-value">88&deg;F</span>
+              </div>
+              <div class="disk-temp-item">
+                <span class="disk-temp-label">DISK 2</span>
+                <span class="disk-temp-value">91&deg;F</span>
+              </div>
+              <div class="disk-temp-item">
+                <span class="disk-temp-label">DISK 3</span>
+                <span class="disk-temp-value">86&deg;F</span>
+              </div>
+              <div class="disk-temp-item">
+                <span class="disk-temp-label">DISK 4</span>
+                <span class="disk-temp-value">89&deg;F</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Media Stack Card -->
+        <div class="chamfer-card">
+          <div class="card-ribbon">
+            <span class="card-ribbon-label">MEDIA</span>
+          </div>
+          <div class="card-body">
+            <div class="led-row">
+              <div class="led-dot led-online"></div>
+              <span class="led-service-name">RADARR</span>
+              <span class="led-status-text">ONLINE</span>
+            </div>
+            <div class="led-row">
+              <div class="led-dot led-online"></div>
+              <span class="led-service-name">SONARR</span>
+              <span class="led-status-text">ONLINE</span>
+            </div>
+            <div class="led-row">
+              <div class="led-dot led-online"></div>
+              <span class="led-service-name">LIDARR</span>
+              <span class="led-status-text">ONLINE</span>
+            </div>
+            <div class="led-row">
+              <div class="led-dot led-offline"></div>
+              <span class="led-service-name">PROWLARR</span>
+              <span class="led-status-text" style="color:#FF3B3B">OFFLINE</span>
+            </div>
+            <div class="led-row">
+              <div class="led-dot led-online"></div>
+              <span class="led-service-name">BAZARR</span>
+              <span class="led-status-text">ONLINE</span>
+            </div>
+            <div class="led-row">
+              <div class="led-dot led-online"></div>
+              <span class="led-service-name">READARR</span>
+              <span class="led-status-text">ONLINE</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metric Tile (Network / Pi-hole) -->
+        <div class="chamfer-card">
+          <div class="card-ribbon">
+            <span class="card-ribbon-label">NETWORK</span>
+          </div>
+          <div class="card-body">
+            <div class="metric-grid">
+              <div class="metric-cell">
+                <span class="metric-cell-label">CLIENTS</span>
+                <span class="metric-cell-value color-green">24</span>
+                <span class="metric-cell-sub">online</span>
+              </div>
+              <div class="metric-cell">
+                <span class="metric-cell-label">DNS BLOCKED</span>
+                <span class="metric-cell-value" style="color:#E8A020;text-shadow:0 0 6px currentColor;">18.4%</span>
+                <span class="metric-cell-sub">of queries</span>
+              </div>
+            </div>
+            <div class="network-bar-row">
+              <span class="network-arrow arrow-down">↓↓</span>
+              <div class="network-bar-track">
+                <div class="network-bar-fill-down" style="width:55%"></div>
+              </div>
+              <span class="network-speed-label" style="color:#00c8ff;text-shadow:0 0 6px currentColor;">42.3 Mb/s</span>
+            </div>
+            <div class="network-bar-row">
+              <span class="network-arrow arrow-up">↑</span>
+              <div class="network-bar-track">
+                <div class="network-bar-fill-up" style="width:18%"></div>
+              </div>
+              <span class="network-speed-label" style="color:#FF3B3B;text-shadow:0 0 6px currentColor;">8.1 Mb/s</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /variant-b -->
+
+    <!-- ===== VARIANT C: TACTICAL DARK / AMBER ===== -->
+    <div class="variant variant-c">
+      <div class="crt-sweep"></div>
+
+      <div class="variant-label">
+        <span>C &mdash; TACTICAL DARK</span>
+        <small>#000D1A &middot; Near-black navy, strong CRT glow</small>
+      </div>
+
+      <div class="mock-content">
+
+        <!-- AppHeader Strip -->
+        <div class="mock-header">
+          <div class="mock-header-title">CORUSCANT</div>
+          <div class="mock-header-right">
+            <div class="mini-gauge-group">
+              <div class="mini-gauge">
+                <span class="mini-gauge-label">CPU</span>
+                <div class="mini-gauge-bar-track">
+                  <div class="mini-gauge-bar-fill fill-green" style="height:45%;bottom:0;position:absolute;left:0;right:0;border-radius:1px;"></div>
+                </div>
+                <span class="mini-gauge-value">45%</span>
+              </div>
+              <div class="mini-gauge">
+                <span class="mini-gauge-label">RAM</span>
+                <div class="mini-gauge-bar-track">
+                  <div class="mini-gauge-bar-fill fill-amber" style="height:62%;bottom:0;position:absolute;left:0;right:0;border-radius:1px;"></div>
+                </div>
+                <span class="mini-gauge-value">62%</span>
+              </div>
+            </div>
+            <span class="mock-header-temp">88&deg;F</span>
+          </div>
+        </div>
+
+        <!-- NAS Tile -->
+        <div class="chamfer-card">
+          <div class="card-ribbon">
+            <span class="card-ribbon-label">NAS</span>
+          </div>
+          <div class="card-body">
+            <div class="nas-row">
+              <span class="nas-metric-label">CPU</span>
+              <div class="gauge-bar-track">
+                <div class="gauge-bar-fill fill-green" style="width:45%"></div>
+              </div>
+              <span class="nas-metric-value color-green">45%</span>
+            </div>
+            <div class="nas-row">
+              <span class="nas-metric-label">RAM</span>
+              <div class="gauge-bar-track">
+                <div class="gauge-bar-fill fill-amber" style="width:62%"></div>
+              </div>
+              <span class="nas-metric-value color-amber">62%</span>
+            </div>
+            <div class="nas-row">
+              <span class="nas-metric-label">VOLUME</span>
+              <div class="gauge-bar-track">
+                <div class="gauge-bar-fill fill-green" style="width:38%"></div>
+              </div>
+              <span class="nas-metric-value color-green">38%</span>
+            </div>
+            <div class="disk-temps">
+              <div class="disk-temp-item">
+                <span class="disk-temp-label">DISK 1</span>
+                <span class="disk-temp-value">88&deg;F</span>
+              </div>
+              <div class="disk-temp-item">
+                <span class="disk-temp-label">DISK 2</span>
+                <span class="disk-temp-value">91&deg;F</span>
+              </div>
+              <div class="disk-temp-item">
+                <span class="disk-temp-label">DISK 3</span>
+                <span class="disk-temp-value">86&deg;F</span>
+              </div>
+              <div class="disk-temp-item">
+                <span class="disk-temp-label">DISK 4</span>
+                <span class="disk-temp-value">89&deg;F</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Media Stack Card -->
+        <div class="chamfer-card">
+          <div class="card-ribbon">
+            <span class="card-ribbon-label">MEDIA</span>
+          </div>
+          <div class="card-body">
+            <div class="led-row">
+              <div class="led-dot led-online"></div>
+              <span class="led-service-name">RADARR</span>
+              <span class="led-status-text">ONLINE</span>
+            </div>
+            <div class="led-row">
+              <div class="led-dot led-online"></div>
+              <span class="led-service-name">SONARR</span>
+              <span class="led-status-text">ONLINE</span>
+            </div>
+            <div class="led-row">
+              <div class="led-dot led-online"></div>
+              <span class="led-service-name">LIDARR</span>
+              <span class="led-status-text">ONLINE</span>
+            </div>
+            <div class="led-row">
+              <div class="led-dot led-offline"></div>
+              <span class="led-service-name">PROWLARR</span>
+              <span class="led-status-text" style="color:#FF3B3B">OFFLINE</span>
+            </div>
+            <div class="led-row">
+              <div class="led-dot led-online"></div>
+              <span class="led-service-name">BAZARR</span>
+              <span class="led-status-text">ONLINE</span>
+            </div>
+            <div class="led-row">
+              <div class="led-dot led-online"></div>
+              <span class="led-service-name">READARR</span>
+              <span class="led-status-text">ONLINE</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metric Tile (Network / Pi-hole) -->
+        <div class="chamfer-card">
+          <div class="card-ribbon">
+            <span class="card-ribbon-label">NETWORK</span>
+          </div>
+          <div class="card-body">
+            <div class="metric-grid">
+              <div class="metric-cell">
+                <span class="metric-cell-label">CLIENTS</span>
+                <span class="metric-cell-value color-green">24</span>
+                <span class="metric-cell-sub">online</span>
+              </div>
+              <div class="metric-cell">
+                <span class="metric-cell-label">DNS BLOCKED</span>
+                <span class="metric-cell-value" style="color:#E8A020;text-shadow:0 0 6px currentColor;">18.4%</span>
+                <span class="metric-cell-sub">of queries</span>
+              </div>
+            </div>
+            <div class="network-bar-row">
+              <span class="network-arrow arrow-down">↓↓</span>
+              <div class="network-bar-track">
+                <div class="network-bar-fill-down" style="width:55%"></div>
+              </div>
+              <span class="network-speed-label" style="color:#00c8ff;text-shadow:0 0 6px currentColor;">42.3 Mb/s</span>
+            </div>
+            <div class="network-bar-row">
+              <span class="network-arrow arrow-up">↑</span>
+              <div class="network-bar-track">
+                <div class="network-bar-fill-up" style="width:18%"></div>
+              </div>
+              <span class="network-speed-label" style="color:#FF3B3B;text-shadow:0 0 6px currentColor;">8.1 Mb/s</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /variant-c -->
+
+  </div><!-- /variants -->
+
+  <div class="selection-guide">
+    <h2>Selection Guide</h2>
+    <p>
+      Open this file in a browser and view at normal kiosk distance (10+ ft if available).
+      Look at each column and note which background has the best cockpit feel and readability.
+      <br><br>
+      <strong style="color:#E8A020;">Variant A (#001133)</strong> &mdash; Cool deep navy. Clean and modern. Strong contrast with amber.<br>
+      <strong style="color:#E8A020;">Variant B (#0D0906)</strong> &mdash; Warm dark charcoal. Amber glows feel natural. Closest to physical X-Wing cockpit material warmth.<br>
+      <strong style="color:#E8A020;">Variant C (#000D1A)</strong> &mdash; Near-black navy. Most dramatic at 10ft. Stronger CRT glow effect. High contrast.<br>
+      <br>
+      Reply with your selection: <code>A</code>, <code>B</code>, or <code>C</code>.
+      The selected background hex will become <code>--space-deep</code> in Plan 04.
+    </p>
+  </div>
+
+</body>
+</html>
