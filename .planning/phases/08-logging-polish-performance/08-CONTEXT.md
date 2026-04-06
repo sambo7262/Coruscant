@@ -72,6 +72,11 @@ Phase ends when:
 ### 10ft Readability
 
 - **D-14:** Text sizes scaled up across the dashboard for 10+ ft kiosk viewing distance. Targets TBD by planner based on available vertical space after download bar removal — maximize without triggering scroll.
+- **D-14b:** **Metric audit pass required after text scaling.** Once the right text size is established, each tile must be reviewed for metric visibility:
+  - **Remove** any metric that becomes too small to read at 10ft at the new scale, or that gets crowded out by larger text
+  - **Add** any metric that now has room to breathe at the larger scale
+  - Rule: **visible and legible beats numerous**. Fewer bold numbers > many unreadable ones.
+  - This is a deliberate checkpoint in the plan — not an afterthought. Planner should create a task for this audit after the text-scaling task completes.
 - **D-15:** Background swap: replace pure black (`#0a0a0f`) with deep navy (`#001133` or `#0A0E17`). Solves glare blending at kiosk distance; confirmed by cockpit reference imagery.
 - **D-16:** Panel depth: `box-shadow: inset 0 0 20px rgba(0,0,0,0.5)` on tile cards — "recessed hardware panel" feel.
 - **D-17:** Glow on key numeric values: `text-shadow: 0 0 6px currentColor` on status numbers (CPU%, temps, client counts, throughput). Makes readings pop from 10ft.
