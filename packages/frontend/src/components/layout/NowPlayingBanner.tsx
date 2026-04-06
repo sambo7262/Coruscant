@@ -38,7 +38,7 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
           bottom: 0,
           left: 0,
           right: 0,
-          height: '40px',
+          height: '48px',
           zIndex: 30,
           background: 'var(--bg-panel)',
           borderTop: '1px solid rgba(232,160,32,0.2)',
@@ -51,7 +51,7 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
         {/* Left: PLEX label */}
         <span style={{
           fontFamily: 'var(--font-mono)',
-          fontSize: '11px',
+          fontSize: '22px',
           color: 'var(--cockpit-amber)',
           letterSpacing: '0.08em',
           flexShrink: 0,
@@ -64,7 +64,8 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
         <span
           style={{
             flex: 1,
-            fontSize: '12px',
+            fontSize: '22px',
+            fontWeight: 600,
             color: '#666666',
             fontFamily: 'var(--font-mono)',
             letterSpacing: '0.08em',
@@ -77,17 +78,17 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
         {plexServerStats && (
           <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
             {plexServerStats.processCpuPercent != null && (
-              <span style={{ fontSize: '11px', color: '#4ADE80', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px #4ADE80' }}>
+              <span style={{ fontSize: '22px', color: '#4ADE80', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px #4ADE80' }}>
                 CPU {plexServerStats.processCpuPercent.toFixed(1)}%
               </span>
             )}
             {plexServerStats.processRamPercent != null && (
-              <span style={{ fontSize: '11px', color: '#00c8ff', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px #00c8ff' }}>
+              <span style={{ fontSize: '22px', color: '#00c8ff', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px #00c8ff' }}>
                 RAM {plexServerStats.processRamPercent.toFixed(1)}%
               </span>
             )}
             {plexServerStats.bandwidthMbps != null && (
-              <span style={{ fontSize: '11px', color: '#C8C8C8', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px rgba(200,200,200,0.4)' }}>
+              <span style={{ fontSize: '22px', color: '#C8C8C8', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px rgba(200,200,200,0.4)' }}>
                 {plexServerStats.bandwidthMbps.toFixed(1)}M
               </span>
             )}
@@ -135,7 +136,7 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
           borderTop: '1px solid rgba(232, 160, 32, 0.30)',
         }}
       >
-        {/* Collapsed strip — 40px (D-02 viewport budget) */}
+        {/* Collapsed strip — 48px (D-02 viewport budget) */}
         <div
           onClick={() => setExpanded(!expanded)}
           role="button"
@@ -145,7 +146,7 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
             if (e.key === 'Enter' || e.key === ' ') setExpanded(!expanded)
           }}
           style={{
-            height: '40px',
+            height: '48px',
             display: 'flex',
             alignItems: 'center',
             padding: '0 12px',
@@ -157,7 +158,7 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
           {/* Left: PLEX label — always visible (D-29) */}
           <span style={{
             fontFamily: 'var(--font-mono)',
-            fontSize: '11px',
+            fontSize: '22px',
             color: 'var(--cockpit-amber)',
             letterSpacing: '0.08em',
             flexShrink: 0,
@@ -187,7 +188,8 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
                 className="text-body"
                 style={{
                   color: 'var(--text-offwhite)',
-                  fontSize: '11px',
+                  fontSize: '22px',
+                  fontWeight: 600,
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -236,17 +238,17 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
           {plexServerStats && (
             <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
               {plexServerStats.processCpuPercent != null && (
-                <span style={{ fontSize: '11px', color: '#4ADE80', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px #4ADE80' }}>
+                <span style={{ fontSize: '22px', color: '#4ADE80', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px #4ADE80' }}>
                   CPU {plexServerStats.processCpuPercent.toFixed(1)}%
                 </span>
               )}
               {plexServerStats.processRamPercent != null && (
-                <span style={{ fontSize: '11px', color: '#00c8ff', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px #00c8ff' }}>
+                <span style={{ fontSize: '22px', color: '#00c8ff', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px #00c8ff' }}>
                   RAM {plexServerStats.processRamPercent.toFixed(1)}%
                 </span>
               )}
               {plexServerStats.bandwidthMbps != null && (
-                <span style={{ fontSize: '11px', color: '#C8C8C8', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px rgba(200,200,200,0.4)' }}>
+                <span style={{ fontSize: '22px', color: '#C8C8C8', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px rgba(200,200,200,0.4)' }}>
                   {plexServerStats.bandwidthMbps.toFixed(1)}M
                 </span>
               )}

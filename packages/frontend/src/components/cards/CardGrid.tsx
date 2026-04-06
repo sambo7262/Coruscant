@@ -37,34 +37,37 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
   const hasAnyActivity = activeArr.length > 0 || sabHasActivity
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', minHeight: '120px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', minHeight: 'auto' }}>
       {/* Divider */}
       <div style={{ borderTop: '1px solid rgba(232,160,32,0.08)', margin: '4px 0' }} />
 
-      {/* DOWNLOADS sub-label */}
-      <div style={{ fontSize: '22px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '3px', fontWeight: 600 }}>
+      {/* DOWNLOADS sub-label — small proportional header */}
+      <div style={{ fontSize: '11px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '3px', fontWeight: 600 }}>
         DOWNLOADS
       </div>
 
-      {!hasAnyActivity && (
-        <span style={{ fontSize: '9px', color: '#333', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          IDLE
-        </span>
-      )}
-
-      {/* Active arr download rows — large title + count */}
+      {/* Active arr download rows — title + progress bar, no count */}
       {activeArr.map(s => {
         const m = s.metrics as Record<string, unknown>
-        const count = typeof m.activeDownloads === 'number' ? m.activeDownloads : 0
-        const activeTitle = typeof m.activeTitle === 'string' && m.activeTitle ? m.activeTitle : s.name.slice(0, 7)
+        const activeTitle = typeof m.activeTitle === 'string' && m.activeTitle ? m.activeTitle : s.name.slice(0, 7).toUpperCase()
+        const downloadProgress = typeof m.downloadProgress === 'number' ? m.downloadProgress : null
         return (
-          <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
-            <span style={{ fontSize: '22px', color: 'var(--cockpit-purple)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600, textShadow: '0 0 8px var(--cockpit-purple)' }}>
+          <div key={s.id} style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginBottom: '4px' }}>
+            <span style={{ fontSize: '22px', color: 'var(--cockpit-purple)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600, textShadow: '0 0 8px var(--cockpit-purple)' }}>
               {activeTitle}
             </span>
-            <span style={{ fontSize: '14px', color: 'var(--cockpit-purple)', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
-              x{count}
-            </span>
+            {downloadProgress !== null && (
+              <div style={{ height: '12px', background: 'rgba(232,160,32,0.15)', borderRadius: '3px', overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%',
+                  width: `${Math.min(Math.max(downloadProgress, 5), 100)}%`,
+                  background: 'var(--cockpit-amber)',
+                  borderRadius: '3px',
+                  transition: 'width 1s ease',
+                  boxShadow: '0 0 6px var(--cockpit-amber)',
+                }} />
+              </div>
+            )}
           </div>
         )
       })}
