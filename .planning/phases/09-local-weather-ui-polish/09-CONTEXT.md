@@ -91,6 +91,7 @@ Phase ends when:
   - **Animated metric count-up** — key numeric values (CPU%, client counts, throughput) animate from previous value to new value on update (CSS counter or JS tween, short 300–500ms duration)
   - **Animated weather SVGs** — per D-06
   - **DOWNLOADS title marquee** — per D-11
+- **D-20:** **Text sharpness pass** — Audit all text rendering across the dashboard and reduce blur. Root causes to check: `backdropFilter: blur()` on header/panels bleeding into text layers; `-webkit-font-smoothing` set to `antialiased` vs `subpixel-antialiased`; any `filter: blur()` on parent containers that affect child text. Goal: crisp, sharp text on all tiles and the header. Sharper text = higher contrast = reads better from kiosk distance.
 
 ### Claude's Discretion
 
@@ -156,6 +157,7 @@ Phase ends when:
 - **Webhook logs legible** — "can we make sure we can see easily in logs when we get webhooks and we capture the event legibly."
 - **Settings side rail** — "a siderail for each tile, and then within each side rail 'section' like media, we have the existing sliding tab structure. just thins things out a bit there."
 - **Living/breathing goal** — user explicitly wants the dashboard to feel alive. Weather SVG animations, metric count-ups, LED over-pulse on state change, and entrance stagger all serve this.
+- **Text sharpness** — "reduce the blur of the text a little bit across the board — that would help things pop too if the text was sharper." Audit `backdropFilter`, `font-smoothing`, and any blur on parent containers.
 
 </specifics>
 
