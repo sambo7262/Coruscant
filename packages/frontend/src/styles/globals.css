@@ -158,6 +158,12 @@ body::after {
   50%       { opacity: 1.0; }
 }
 
+/* Arr webhook event flash — 10s hold then fade */
+@keyframes arrFlash {
+  0%, 80%  { opacity: 1; }
+  100%     { opacity: 0; }
+}
+
 /* Reduced motion preference — D-44 / DASH-08 accessibility */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

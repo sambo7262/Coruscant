@@ -1,12 +1,43 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Settings, List } from 'lucide-react'
-import type { NasStatus } from '@coruscant/shared'
+import type { NasStatus, ArrWebhookEvent } from '@coruscant/shared'
 
 interface AppHeaderProps {
   nas: NasStatus | null
   connected: boolean
   showBack?: boolean
   nasConfigured?: boolean
+  lastArrEvent?: ArrWebhookEvent | null
+}
+
+const EVENT_COLORS: Record<string, string> = {
+  grab: '#ffaa00',
+  download_complete: '#c084fc',
+  health_issue: '#ff4444',
+  update_available: '#00ff88',
+}
+
+function buildTickerText(event: ArrWebhookEvent): string {
+  const svc = event.service.toUpperCase()
+  const verb: Record<string, string> = {
+    grab: 'GRABBED',
+    download_complete: 'IMPORTED',
+    health_issue: 'HEALTH ISSUE',
+    update_available: 'UPDATE AVAILABLE',
+  }
+  // D-08: Prowlarr indexer health uses special copy
+  let eventVerb = verb[event.eventCategory] ?? ''
+  if (event.eventCategory === 'health_issue' && event.rawEventType === 'Health') {
+    if (event.title?.toLowerCase().includes('indexer')) {
+      eventVerb = 'INDEXER DOWN'
+    }
+  }
+  // D-13: Title portion only for grab and download_complete
+  if (event.title && (event.eventCategory === 'grab' || event.eventCategory === 'download_complete')) {
+    return `${svc} \u25B8 ${eventVerb} \u25B8 ${event.title}`
+  }
+  return `${svc} \u25B8 ${eventVerb}`
 }
 
 /** Map a Fahrenheit temp to fill color for the bar.
@@ -100,11 +131,22 @@ function GaugeColumn({
   )
 }
 
-export function AppHeader({ nas, connected, showBack = false, nasConfigured }: AppHeaderProps) {
+export function AppHeader({ nas, connected, showBack = false, nasConfigured, lastArrEvent }: AppHeaderProps) {
   // D-18: no expand/collapse mechanic — all NAS data always visible
   const isLive = nasConfigured !== false && nas !== null
   const isStale = nasConfigured !== false && nas === null
   const isUnconfigured = nasConfigured === false
+
+  const [ticker, setTicker] = useState<{ text: string; color: string } | null>(null)
+
+  useEffect(() => {
+    if (!lastArrEvent || lastArrEvent.eventCategory === 'unknown') return
+    const text = buildTickerText(lastArrEvent)
+    const color = EVENT_COLORS[lastArrEvent.eventCategory] ?? 'transparent'
+    setTicker({ text, color })
+    const timer = setTimeout(() => setTicker(null), 10_000)
+    return () => clearTimeout(timer)
+  }, [lastArrEvent])
 
   return (
     <header
@@ -116,7 +158,7 @@ export function AppHeader({ nas, connected, showBack = false, nasConfigured }: A
         zIndex: 10,
         background: 'rgba(13, 13, 13, 0.95)',
         backdropFilter: 'blur(4px)',
-        borderBottom: '1px solid rgba(232, 160, 32, 0.30)',
+        borderBottom: `1px solid ${ticker ? ticker.color : 'rgba(232, 160, 32, 0.30)'}`,
         boxShadow: '0 1px 8px rgba(232, 160, 32, 0.15)',
       }}
     >
@@ -153,83 +195,118 @@ export function AppHeader({ nas, connected, showBack = false, nasConfigured }: A
           )}
         </div>
 
-        {/* Center: connection status indicators (hidden when showBack) */}
-        {!showBack && (
+        {/* Center+Right: ticker overlay when active, or normal content */}
+        {!showBack && ticker ? (
+          /* Ticker overlay — covers center + right columns (gridColumn 2/3) per D-12 */
           <div
+            aria-live="polite"
             style={{
+              gridColumn: '2 / 4',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '8px',
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: '12px',
+              fontWeight: 400,
+              color: 'var(--cockpit-amber)',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              padding: '0 12px',
+              opacity: 1,
+              transition: 'opacity 0.4s ease-out',
             }}
           >
-            {/* Disconnected indicator */}
-            {!connected && (
-              <span
-                title="Connection lost. Reconnecting..."
-                style={{
-                  display: 'inline-block',
-                  width: '6px',
-                  height: '6px',
-                  borderRadius: '50%',
-                  backgroundColor: 'var(--cockpit-amber)',
-                  boxShadow: '0 0 5px 2px rgba(232, 160, 32, 0.6)',
-                  animation: 'ledPulseWarn 1s ease-in-out infinite',
-                  flexShrink: 0,
-                }}
-              />
-            )}
-
-            {/* NAS NOT CONFIGURED state */}
-            {isUnconfigured && (
-              <span
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '12px',
-                  color: '#666666',
-                  letterSpacing: '0.06em',
-                }}
-              >
-                NAS NOT CONFIGURED
+            {ticker.text.split('\u25B8').map((segment, i, arr) => (
+              <span key={i}>
+                {segment}
+                {i < arr.length - 1 && (
+                  <span style={{ color: 'rgba(232, 160, 32, 0.5)' }}>{'\u25B8'}</span>
+                )}
               </span>
-            )}
-          </div>
-        )}
-
-        {/* Right: nav icons (hidden when showBack) */}
-        {!showBack ? (
-          <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
-            <Link
-              to="/settings"
-              aria-label="Open Settings"
-              style={{
-                color: 'var(--cockpit-amber)',
-                width: '40px',
-                height: '40px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Settings size={20} />
-            </Link>
-            <Link
-              to="/logs"
-              aria-label="Open Logs"
-              style={{
-                color: 'var(--cockpit-amber)',
-                width: '40px',
-                height: '40px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <List size={20} />
-            </Link>
+            ))}
           </div>
         ) : (
-          <div />
+          <>
+            {/* Center: connection status indicators (hidden when showBack) */}
+            {!showBack && (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                {/* Disconnected indicator */}
+                {!connected && (
+                  <span
+                    title="Connection lost. Reconnecting..."
+                    style={{
+                      display: 'inline-block',
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      backgroundColor: 'var(--cockpit-amber)',
+                      boxShadow: '0 0 5px 2px rgba(232, 160, 32, 0.6)',
+                      animation: 'ledPulseWarn 1s ease-in-out infinite',
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
+
+                {/* NAS NOT CONFIGURED state */}
+                {isUnconfigured && (
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '12px',
+                      color: '#666666',
+                      letterSpacing: '0.06em',
+                    }}
+                  >
+                    NAS NOT CONFIGURED
+                  </span>
+                )}
+              </div>
+            )}
+
+            {/* Right: nav icons (hidden when showBack) */}
+            {!showBack ? (
+              <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+                <Link
+                  to="/settings"
+                  aria-label="Open Settings"
+                  style={{
+                    color: 'var(--cockpit-amber)',
+                    width: '40px',
+                    height: '40px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Settings size={20} />
+                </Link>
+                <Link
+                  to="/logs"
+                  aria-label="Open Logs"
+                  style={{
+                    color: 'var(--cockpit-amber)',
+                    width: '40px',
+                    height: '40px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <List size={20} />
+                </Link>
+              </div>
+            ) : (
+              <div />
+            )}
+          </>
         )}
       </div>
 

@@ -1,4 +1,4 @@
-import type { DashboardSnapshot } from '@coruscant/shared'
+import type { DashboardSnapshot, ArrWebhookEvent } from '@coruscant/shared'
 import { ServiceCard, MediaStackRow } from './ServiceCard.js'
 
 const ARR_IDS = new Set(['radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 'readarr'])
@@ -12,9 +12,10 @@ const DOWNLOAD_IDS = new Set(['sabnzbd'])
 
 interface CardGridProps {
   snapshot: DashboardSnapshot | null
+  lastArrEvent?: ArrWebhookEvent | null
 }
 
-export function CardGrid({ snapshot }: CardGridProps) {
+export function CardGrid({ snapshot, lastArrEvent }: CardGridProps) {
   if (!snapshot) {
     // Skeleton state: two placeholder cards
     return (
@@ -77,12 +78,12 @@ export function CardGrid({ snapshot }: CardGridProps) {
           <div style={{ display: 'flex', padding: '6px 4px', gap: '0' }}>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1px' }}>
               {leftColArr.map((service) => (
-                <MediaStackRow key={service.id} service={service} index={globalIndex++} />
+                <MediaStackRow key={service.id} service={service} index={globalIndex++} lastArrEvent={lastArrEvent} />
               ))}
             </div>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1px' }}>
               {rightColArr.map((service) => (
-                <MediaStackRow key={service.id} service={service} index={globalIndex++} />
+                <MediaStackRow key={service.id} service={service} index={globalIndex++} lastArrEvent={lastArrEvent} />
               ))}
             </div>
           </div>

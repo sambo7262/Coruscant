@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import type { DashboardSnapshot } from '@coruscant/shared'
+import type { DashboardSnapshot, ArrWebhookEvent } from '@coruscant/shared'
 
 export function useDashboardSSE() {
   const [snapshot, setSnapshot] = useState<DashboardSnapshot | null>(null)
   const [connected, setConnected] = useState(false)
+  const [lastArrEvent, setLastArrEvent] = useState<ArrWebhookEvent | null>(null)
 
   useEffect(() => {
     let es: EventSource | null = null
@@ -15,6 +16,10 @@ export function useDashboardSSE() {
       es.addEventListener('dashboard-update', (e: MessageEvent) => {
         setSnapshot(JSON.parse(e.data) as DashboardSnapshot)
         setConnected(true)
+      })
+
+      es.addEventListener('arr-event', (e: MessageEvent) => {
+        setLastArrEvent(JSON.parse(e.data) as ArrWebhookEvent)
       })
 
       es.onerror = () => {
@@ -33,5 +38,5 @@ export function useDashboardSSE() {
     }
   }, [])
 
-  return { snapshot, connected }
+  return { snapshot, connected, lastArrEvent }
 }
