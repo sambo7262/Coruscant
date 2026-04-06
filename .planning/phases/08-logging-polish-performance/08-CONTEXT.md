@@ -97,6 +97,13 @@ Phase ends when:
   **Variant C — Tactical Dark / Amber** (`#000D1A` near-black navy)
   Inspired by Image 4 (tactical radar display) but substituting amber for cyan. Stronger CRT bezel-style panel frames. Numbers lit from within with stronger `text-shadow` glow. Most dramatic at distance.
 
+- **D-37:** **CRT scan-line sweep effect.** A semi-transparent horizontal bar drifts slowly down the full viewport on a continuous loop, simulating a CRT electron beam refresh. Applied as a fixed-position overlay on the root layout element — no interaction with card content. Subtle by design: barely visible, just enough to give the screen a "living display" feel at kiosk distance.
+  - Implementation: CSS `@keyframes` animating `translateY(-100%)` → `translateY(100vh)` on a `::after` pseudo-element or dedicated overlay `<div>`
+  - Bar: `height: 3-6px`, `background: linear-gradient(transparent, rgba(255,255,255,0.025), transparent)` — nearly invisible up close, visible as a sweep at distance
+  - Speed: slow sweep (~8–12s per pass) — not distracting, just ambient
+  - `pointer-events: none` — never blocks interaction
+  - Intensity is a candidate for the theme preview variants (Variant C likely carries stronger CRT fuzz; Variant B subtler)
+
 - **D-36:** Reference images analyzed for this decision (uploaded 2026-04-06):
   - Image 1: Retro arcade cockpit — CRT scan-lines, neon green — ruled out (wrong color temp)
   - Image 2: Modern neon dashboard — cold cyan/magenta — ruled out (too futuristic/cold)
