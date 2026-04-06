@@ -343,9 +343,9 @@ function ArrInstrument({ service, metrics }: { service: ServiceStatus; metrics: 
         <div>
           <div
             style={{
-              height: '4px',
+              height: '12px',
               background: 'rgba(139,92,246,0.15)',
-              borderRadius: '2px',
+              borderRadius: '3px',
               overflow: 'hidden',
               marginBottom: '4px',
             }}
@@ -492,9 +492,9 @@ function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
       {hasActivity && (
         <div style={{
           margin: '4px 0 2px',
-          height: '3px',
+          height: '12px',
           background: 'rgba(232,160,32,0.15)',
-          borderRadius: '2px',
+          borderRadius: '3px',
           overflow: 'hidden',
         }}>
           <div style={{
@@ -519,8 +519,8 @@ function ThroughputBar({ label, value, peak, color }: { label: string; value: nu
       <span style={{ fontSize: '8px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)', width: '14px' }}>
         {label}
       </span>
-      <div style={{ flex: 1, height: '4px', background: '#222', borderRadius: '2px' }}>
-        <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: '2px', transition: 'width 0.3s ease' }} />
+      <div style={{ flex: 1, height: '12px', background: '#222', borderRadius: '3px' }}>
+        <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: '3px', transition: 'width 0.3s ease', boxShadow: `0 0 6px ${color}` }} />
       </div>
       <span style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', width: '32px', textAlign: 'right', color: color, textShadow: '0 0 6px currentColor' }}>
         {display}
