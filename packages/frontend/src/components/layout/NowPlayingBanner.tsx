@@ -174,7 +174,7 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
             whiteSpace: 'nowrap',
             textOverflow: 'ellipsis',
             position: 'relative',
-            height: '20px',
+            height: '28px',
             display: 'flex',
             alignItems: 'center',
           }}>
