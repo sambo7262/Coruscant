@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 4: Rich Service Integrations** - Pi-hole, Plex (Now Playing banner), and Synology NAS CPU/RAM/storage/disk/fans
 - [x] **Phase 5: UI v2 — Instrument Panel Polish** - Second UI pass with real data: refine card metrics, layout density, interaction details, and visual hierarchy now that actual service data is flowing (completed 2026-04-05)
 - [ ] **Phase 6: Network Monitoring** - UniFi device cards, client counts, WAN throughput, API token auth (UniFi OS 5.x)
-- [ ] **Phase 7: Notifications (Pushover Inbox)** - Coruscant as a Pushover receiver — display arr/service alerts in a dashboard inbox
+- [ ] **Phase 7: Notifications (Webhook Event Signaling)** - Arr webhook receivers with ephemeral card flash + header ticker, SABnzbd burst poll, Settings webhook URL tab
 - [ ] **Phase 8: Logging, Polish + Performance** - Log viewer, SQLite pruning, poll interval tuning for real-time media feel
 - [ ] **Phase 9: Local Weather** - Current conditions in AppHeader nav bar via self-hosted/no-key weather API
 - [ ] **Phase 10: Production Deploy + Hardening** - v1.0 tag, registry migration, final bug pass, git cleanup
@@ -148,23 +148,27 @@ Plans:
 - [ ] 06-03-PLAN.md — Frontend: UBIQUITI card section, settings tab, device detail view, visual verification
 **UI hint**: yes
 
-### Phase 7: Notifications (Pushover Inbox)
-**Goal**: Coruscant acts as a Pushover *receiver* — displaying incoming notifications from the existing arr/service stack in a dashboard inbox panel, so alerts from all apps appear in one place alongside service health
+### Phase 7: Notifications (Webhook Event Signaling)
+**Goal**: Arr apps POST webhook events directly to Coruscant, which broadcasts ephemeral card flash animations and AppHeader ticker overlays for 10 seconds per event, activates SABnzbd burst polling on grab events, and provides copy-able webhook URLs in a Settings Notifications tab
 **Depends on**: Phase 6
 **Requirements**: NOTIF-01, NOTIF-02, NOTIF-03, CFG-02
 **Notes**:
-- Direction: Coruscant RECEIVES Pushover messages (inbox/client), does not send them
-- User already has a Pushover setup pushing arr notifications to their phone — Coruscant taps into that same stream
-- Approach TBD (discuss before planning): two options:
-  1. Poll Pushover API frequently for latest messages and render them in a notification feed
-  2. Leverage existing arr notification pipeline — arr services POST to a Coruscant webhook endpoint that stores and surfaces alerts internally (no Pushover API polling needed)
-- Option 2 (local webhook receiver) is likely simpler: no external API dependency, no polling rate limits, reuses the existing arr → Pushover notification config by adding Coruscant as a second destination
+- Phase name legacy: originally "Pushover Inbox" but reframed during discuss-phase as webhook event signaling (D-01)
+- No Pushover API polling, no inbox view, no notification history UI
+- Events are ephemeral — flash/ticker state exists only in memory; page refresh clears all
+- SABnzbd burst poll (1s) activates on grab, deactivates on import or queue-empty
+- Threshold alert sending (NOTIF-02 to NOTIF-06 from REQUIREMENTS.md) deferred to Phase 8
 **Success Criteria** (what must be TRUE):
-  1. Dashboard shows a notification feed/inbox with recent alerts received from the arr stack and other configured services
-  2. Unread/new alerts are visually distinct; user can dismiss/clear them
-  3. Notifications persist across page reloads (stored in SQLite)
-  4. User configures which notification sources feed the inbox in Settings
-**Plans**: TBD — run /gsd:discuss-phase 7 before planning
+  1. All 7 arr services (Radarr, Sonarr, Lidarr, Bazarr, Prowlarr, Readarr, SABnzbd) can POST to `/api/webhooks/{service}` and receive 200
+  2. Webhook events produce a 10-second colored card flash on the matching MediaStackRow label and a ticker overlay in the AppHeader
+  3. SABnzbd poll interval switches to 1 second on grab and returns to 10 seconds on import-complete or queue-empty
+  4. Settings Notifications tab lists all 7 arr services with copy-able webhook URLs
+**Plans:** 2 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — Backend: shared types, arr webhook routes, PollManager event handling + burst poll, SSE arr-event emission, unit tests
+- [ ] 07-02-PLAN.md — Frontend: SSE hook extension, card flash animation, AppHeader ticker overlay, Settings Notifications tab, visual verification
+**UI hint**: yes
 
 ### Phase 8: Logging, Polish + Performance
 **Goal**: The user can inspect and manage application logs, the app is visually polished end-to-end, and polling intervals are tuned for real-time feel — especially for media (Plex streams, SABnzbd active downloads)
@@ -213,7 +217,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 4. Rich Service Integrations | 5/5 | Complete | 2026-04-05 |
 | 5. UI v2 — Instrument Panel Polish | 8/8 | Complete | 2026-04-05 |
 | 6. Network Monitoring | 2/3 | In Progress|  |
-| 7. Notifications (Pushover Inbox) | 0/? | Not started | - |
+| 7. Notifications (Webhook Event Signaling) | 0/2 | Planned | - |
 | 8. Logging, Polish + Performance | 0/? | Not started | - |
 | 9. Local Weather | 0/? | Not started | - |
 | 10. Production Deploy + Hardening | 0/? | Not started | - |
