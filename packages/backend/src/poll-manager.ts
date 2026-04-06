@@ -1,4 +1,4 @@
-import type { DashboardSnapshot, ServiceStatus, NasStatus, PlexStream, PlexServerStats } from '@coruscant/shared'
+import type { DashboardSnapshot, ServiceStatus, NasStatus, PlexStream, PlexServerStats, ArrWebhookEvent } from '@coruscant/shared'
 import { pollArr } from './adapters/arr.js'
 import { pollBazarr } from './adapters/bazarr.js'
 import { pollSabnzbd } from './adapters/sabnzbd.js'
@@ -8,8 +8,9 @@ import { fetchPlexSessions, fetchPlexServerStats } from './adapters/plex.js'
 import { pollUnifi, resetUnifiCache } from './adapters/unifi.js'
 
 // Poll intervals (ms) — per D-27, D-28, D-24, D-26
-const ARR_INTERVAL_MS = 5_000       // D-27: 5 seconds (was 45_000)
-const SABNZBD_INTERVAL_MS = 10_000  // D-28: 10 seconds (unchanged)
+const ARR_INTERVAL_MS = 5_000              // D-27: 5 seconds (was 45_000)
+export const SABNZBD_INTERVAL_MS = 10_000  // D-28: 10 seconds (normal interval)
+export const SABNZBD_BURST_MS = 1_000      // D-14: 1 second burst interval on grab event
 const PIHOLE_INTERVAL_MS = 60_000   // D-24: 60 seconds
 const NAS_INTERVAL_MS = 3_000       // D-26: 3 seconds
 const PLEX_INTERVAL_MS = 5_000      // 5 second direct poll of PMS /status/sessions
@@ -67,6 +68,41 @@ function idToTier(id: string): 'status' | 'activity' | 'rich' {
   return 'status'
 }
 
+/**
+ * Classify a raw arr eventType string into a normalized event category.
+ * Exported for unit testing.
+ */
+export function classifyArrEvent(rawEventType: string): ArrWebhookEvent['eventCategory'] {
+  switch (rawEventType.toLowerCase()) {
+    case 'grab': return 'grab'
+    case 'download': return 'download_complete'
+    case 'health': return 'health_issue'
+    case 'applicationupdate': return 'update_available'
+    default: return 'unknown'
+  }
+}
+
+/**
+ * Extract a display title from an arr webhook payload body.
+ * Supports movie/series/artist/author structures and Prowlarr health messages.
+ * Exported for unit testing.
+ */
+export function extractArrTitle(body: Record<string, unknown>): string | undefined {
+  const movie = body.movie as Record<string, unknown> | undefined
+  const series = body.series as Record<string, unknown> | undefined
+  const artist = body.artist as Record<string, unknown> | undefined
+  const author = body.author as Record<string, unknown> | undefined
+  return (
+    (typeof movie?.title === 'string' ? movie.title : undefined) ??
+    (typeof series?.title === 'string' ? series.title : undefined) ??
+    (typeof artist?.name === 'string' ? artist.name : undefined) ??
+    (typeof author?.authorName === 'string' ? author.authorName : undefined) ??
+    // D-08: Prowlarr health events include message field, e.g. "Indexer NZBGeek is unavailable"
+    (typeof body.message === 'string' ? body.message : undefined) ??
+    undefined
+  )
+}
+
 export class PollManager {
   private timers: Map<string, ReturnType<typeof setInterval>> = new Map()
   private state: Map<string, ServiceStatus> = new Map()
@@ -82,6 +118,13 @@ export class PollManager {
 
   // SSE broadcast subscribers — called by updatePlexState to push immediate snapshots
   private broadcastListeners: Array<() => void> = []
+
+  // Arr event subscribers — called by handleArrEvent to push arr-event SSE messages
+  private arrEventListeners: Array<(event: ArrWebhookEvent) => void> = []
+
+  // SABnzbd burst poll state — activated on grab events, deactivated on download_complete
+  private sabnzbdConfig: { baseUrl: string; apiKey: string } | null = null
+  private burstPollActive: boolean = false
 
   constructor() {
     // Initialize all services as unconfigured
@@ -114,6 +157,47 @@ export class PollManager {
       } catch {
         // Never let a broadcast error crash the manager
       }
+    }
+  }
+
+  /**
+   * Register a callback to be invoked when an arr webhook event arrives.
+   * Used by SSE route to push named arr-event messages to connected clients.
+   * Returns an unsubscribe function.
+   */
+  onArrEvent(listener: (event: ArrWebhookEvent) => void): () => void {
+    this.arrEventListeners.push(listener)
+    return () => {
+      const idx = this.arrEventListeners.indexOf(listener)
+      if (idx !== -1) this.arrEventListeners.splice(idx, 1)
+    }
+  }
+
+  /**
+   * Called by the arr webhook route when an arr app posts a webhook event.
+   * Classifies the event, logs it, broadcasts it to SSE clients, and activates
+   * or deactivates SABnzbd burst polling based on event category.
+   */
+  handleArrEvent(service: string, body: Record<string, unknown>): void {
+    const rawEventType = typeof body.eventType === 'string' ? body.eventType : 'unknown'
+    const eventCategory = classifyArrEvent(rawEventType)
+    const title = extractArrTitle(body)
+
+    // D-03: Log via structured JSON (pollManager singleton has no fastify.log access)
+    console.log(JSON.stringify({ level: 'info', service, eventCategory, rawEventType, title, msg: 'arr_webhook_received' }))
+
+    const event: ArrWebhookEvent = { service, eventCategory, title, rawEventType }
+    for (const listener of this.arrEventListeners) {
+      try { listener(event) } catch { /* never crash on listener error */ }
+    }
+
+    // D-14: Activate burst poll on grab
+    if (eventCategory === 'grab') {
+      this.activateSabnzbdBurstPoll()
+    }
+    // D-15: Deactivate burst poll on download_complete
+    if (eventCategory === 'download_complete') {
+      this.deactivateSabnzbdBurstPoll()
     }
   }
 
@@ -166,10 +250,21 @@ export class PollManager {
         this.plexServerStats = undefined
         this.plexConfig = null
       }
+      // Clear SABnzbd burst state when SABnzbd config removed
+      if (serviceId === 'sabnzbd') {
+        this.sabnzbdConfig = null
+        this.burstPollActive = false
+      }
       return
     }
 
     const { baseUrl, apiKey, username } = config
+
+    // Cache SABnzbd config for burst poll access; reset burst state on reconfigure
+    if (serviceId === 'sabnzbd') {
+      this.sabnzbdConfig = { baseUrl, apiKey }
+      this.burstPollActive = false  // Reset burst state on reconfigure
+    }
 
     // Plex uses direct 5-second polling of PMS /status/sessions.
     if (serviceId === 'plex') {
@@ -295,6 +390,62 @@ export class PollManager {
   }
 
   /**
+   * Activate 1-second burst polling for SABnzbd after a grab event (D-14).
+   * No-op if SABnzbd is not configured or already in burst mode.
+   */
+  private activateSabnzbdBurstPoll(): void {
+    if (!this.sabnzbdConfig) return  // SABnzbd not configured — nothing to burst
+    if (this.burstPollActive) return  // Already in burst mode
+
+    this.burstPollActive = true
+    const existing = this.timers.get('sabnzbd')
+    if (existing) { clearInterval(existing); this.timers.delete('sabnzbd') }
+
+    const { baseUrl, apiKey } = this.sabnzbdConfig
+    const doBurstPoll = async () => {
+      try {
+        const result = await pollSabnzbd(baseUrl, apiKey)
+        this.state.set('sabnzbd', result)
+        // D-15 fallback: queue-empty detection ends burst mode
+        const metrics = result.metrics as Record<string, unknown> | undefined
+        const queueCount = typeof metrics?.queueCount === 'number' ? metrics.queueCount : -1
+        if (queueCount === 0) {
+          this.deactivateSabnzbdBurstPoll()
+        }
+      } catch { /* adapter handles errors internally */ }
+    }
+
+    const timer = setInterval(doBurstPoll, SABNZBD_BURST_MS)  // D-14: 1-second burst interval
+    this.timers.set('sabnzbd', timer)
+  }
+
+  /**
+   * Deactivate burst polling for SABnzbd and restore normal interval (D-15).
+   * No-op if not currently in burst mode.
+   */
+  deactivateSabnzbdBurstPoll(): void {
+    if (!this.burstPollActive) return
+    this.burstPollActive = false
+
+    // Stop burst timer
+    const existing = this.timers.get('sabnzbd')
+    if (existing) { clearInterval(existing); this.timers.delete('sabnzbd') }
+
+    // Restart at normal interval if config exists
+    if (this.sabnzbdConfig) {
+      const { baseUrl, apiKey } = this.sabnzbdConfig
+      const doPoll = async () => {
+        try {
+          const result = await pollSabnzbd(baseUrl, apiKey)
+          this.state.set('sabnzbd', result)
+        } catch { /* adapter handles errors internally */ }
+      }
+      const timer = setInterval(doPoll, SABNZBD_INTERVAL_MS)
+      this.timers.set('sabnzbd', timer)
+    }
+  }
+
+  /**
    * Returns a DashboardSnapshot from current cached state.
    * Returns live NAS data, Plex streams, and server stats (no stubs).
    */
@@ -321,6 +472,8 @@ export class PollManager {
       clearInterval(this.imageUpdateTimer)
       this.imageUpdateTimer = null
     }
+
+    this.burstPollActive = false
   }
 }
 

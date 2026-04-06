@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify'
+import type { ArrWebhookEvent } from '@coruscant/shared'
 import { pollManager } from '../poll-manager.js'
 
 export async function sseRoutes(fastify: FastifyInstance) {
@@ -25,9 +26,19 @@ export async function sseRoutes(fastify: FastifyInstance) {
 
     const interval = setInterval(send, 5000)
 
+    // Subscribe to broadcast events (e.g. Plex webhook triggers immediate push)
+    const unsubscribeBroadcast = pollManager.onBroadcast(() => { send() })
+
+    // Subscribe to arr webhook events — push named arr-event messages to client
+    const unsubscribeArr = pollManager.onArrEvent((event: ArrWebhookEvent) => {
+      reply.raw.write(`event: arr-event\ndata: ${JSON.stringify(event)}\n\n`)
+    })
+
     await new Promise<void>((resolve) => {
       const cleanup = () => {
         clearInterval(interval)
+        unsubscribeBroadcast()
+        unsubscribeArr()
         resolve()
       }
       request.raw.on('close', cleanup)
