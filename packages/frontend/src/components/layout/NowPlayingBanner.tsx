@@ -73,7 +73,26 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
           NO ACTIVE STREAMS
         </span>
 
-        {/* server stats shown in Plex tile — not duplicated here */}
+        {/* Plex server stats */}
+        {plexServerStats && (
+          <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
+            {plexServerStats.processCpuPercent != null && (
+              <span style={{ fontSize: '11px', color: '#4ADE80', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px #4ADE80' }}>
+                CPU {plexServerStats.processCpuPercent.toFixed(1)}%
+              </span>
+            )}
+            {plexServerStats.processRamPercent != null && (
+              <span style={{ fontSize: '11px', color: '#00c8ff', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px #00c8ff' }}>
+                RAM {plexServerStats.processRamPercent.toFixed(1)}%
+              </span>
+            )}
+            {plexServerStats.bandwidthMbps != null && (
+              <span style={{ fontSize: '11px', color: '#C8C8C8', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px rgba(200,200,200,0.4)' }}>
+                {plexServerStats.bandwidthMbps.toFixed(1)}M
+              </span>
+            )}
+          </div>
+        )}
       </div>
     )
   }
@@ -213,7 +232,26 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
             </AnimatePresence>
           </div>
 
-          {/* server stats shown in Plex tile — not duplicated here */}
+          {/* Plex server stats in collapsed strip */}
+          {plexServerStats && (
+            <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
+              {plexServerStats.processCpuPercent != null && (
+                <span style={{ fontSize: '11px', color: '#4ADE80', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px #4ADE80' }}>
+                  CPU {plexServerStats.processCpuPercent.toFixed(1)}%
+                </span>
+              )}
+              {plexServerStats.processRamPercent != null && (
+                <span style={{ fontSize: '11px', color: '#00c8ff', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px #00c8ff' }}>
+                  RAM {plexServerStats.processRamPercent.toFixed(1)}%
+                </span>
+              )}
+              {plexServerStats.bandwidthMbps != null && (
+                <span style={{ fontSize: '11px', color: '#C8C8C8', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px rgba(200,200,200,0.4)' }}>
+                  {plexServerStats.bandwidthMbps.toFixed(1)}M
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Expanded drawer (D-16) */}
@@ -235,8 +273,6 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
               {streams.map((stream, i) => (
                 <StreamRow key={`${stream.user}-${stream.title}-${i}`} stream={stream} />
               ))}
-
-              {/* server stats shown in Plex tile — not duplicated here */}
             </motion.div>
           )}
         </AnimatePresence>

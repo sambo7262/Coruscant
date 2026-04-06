@@ -195,7 +195,7 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
 
       {/* LEFT col — disk temp LED indicators: 4-per-row grid, last row centered */}
       <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
-        <div style={{ width: '100%' }}>
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           {nasStatus.disks && (() => {
             const rows: typeof nasStatus.disks[] = []
             for (let i = 0; i < nasStatus.disks.length; i += 4) rows.push(nasStatus.disks.slice(i, i + 4))
@@ -232,58 +232,58 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
         </div>
       </div>
 
-      {/* CENTER col — vertical bars */}
-      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-        <NasGaugeColumn
-          label="CPU"
-          fillPct={nasStatus.cpu}
-          valueText={`${Math.round(nasStatus.cpu)}%`}
-          color={getBarColor(nasStatus.cpu)}
-          barWidth="6px"
-          barHeight="45px"
-        />
-        <NasGaugeColumn
-          label="RAM"
-          fillPct={nasStatus.ram}
-          valueText={`${Math.round(nasStatus.ram)}%`}
-          color={getBarColor(nasStatus.ram)}
-          barWidth="6px"
-          barHeight="45px"
-        />
-        {nasStatus.volumes.map((vol: NasVolume) => (
-          <NasGaugeColumn
-            key={vol.name}
-            label={vol.name === '/volume1' ? 'HD' : vol.name.replace(/^\/volume/, 'V').slice(0, 4)}
-            fillPct={vol.usedPercent}
-            valueText={`${Math.round(vol.usedPercent)}%`}
-            color={getBarColor(vol.usedPercent)}
-            barWidth="6px"
-            barHeight="45px"
-          />
-        ))}
+      {/* CENTER col — horizontal bars for CPU, RAM, HD volumes */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'center', height: '100%' }}>
+        {[
+          { label: 'CPU', value: nasStatus.cpu, valueText: `${Math.round(nasStatus.cpu)}%` },
+          { label: 'RAM', value: nasStatus.ram, valueText: `${Math.round(nasStatus.ram)}%` },
+          ...nasStatus.volumes.map((vol: NasVolume) => ({
+            label: vol.name === '/volume1' ? 'HD' : vol.name.replace(/^\/volume/, 'V').slice(0, 4),
+            value: vol.usedPercent,
+            valueText: `${Math.round(vol.usedPercent)}%`,
+          })),
+        ].map(({ label, value, valueText }) => {
+          const color = getBarColor(value)
+          return (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'rgba(232,160,32,0.6)', width: '26px', flexShrink: 0 }}>{label}</span>
+              <div style={{ flex: 1, height: '14px', background: `rgba(232,160,32,0.15)`, borderRadius: '3px', overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%',
+                  width: `${Math.min(Math.max(value, 0), 100)}%`,
+                  background: color,
+                  borderRadius: '3px',
+                  transition: 'width 0.6s ease',
+                  boxShadow: `0 0 6px ${color}`,
+                }} />
+              </div>
+              <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color, textShadow: `0 0 6px ${color}`, width: '32px', textAlign: 'right', flexShrink: 0 }}>{valueText}</span>
+            </div>
+          )
+        })}
       </div>
 
       {/* RIGHT col — Docker stats */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', justifyContent: 'center', height: '100%' }}>
         {nasStatus.docker ? (
           <>
-            <div style={{ fontSize: '9px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Docker</div>
-            <span className="text-glow" style={{ fontSize: '16px', lineHeight: 1.2, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textShadow: '0 0 6px var(--cockpit-amber)' }}>
+            <div style={{ fontSize: '11px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Docker</div>
+            <span className="text-glow" style={{ fontSize: '22px', lineHeight: 1.2, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textShadow: '0 0 6px var(--cockpit-amber)' }}>
               CPU {nasStatus.docker.cpuPercent.toFixed(1)}%
             </span>
-            <span className="text-glow" style={{ fontSize: '16px', lineHeight: 1.2, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textShadow: '0 0 6px var(--cockpit-amber)' }}>
+            <span className="text-glow" style={{ fontSize: '22px', lineHeight: 1.2, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textShadow: '0 0 6px var(--cockpit-amber)' }}>
               RAM {nasStatus.docker.ramPercent.toFixed(1)}%
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
               {nasStatus.imageUpdateAvailable === true ? (
                 <>
                   <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#E8A020', boxShadow: '0 0 4px #E8A020', flexShrink: 0 }} />
-                  <span style={{ fontSize: '8px', color: '#E8A020', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>IMG UPDATE</span>
+                  <span style={{ fontSize: '10px', color: '#E8A020', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Update Available</span>
                 </>
               ) : (
                 <>
                   <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#444', flexShrink: 0 }} />
-                  <span style={{ fontSize: '8px', color: '#444', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>IMG OK</span>
+                  <span style={{ fontSize: '10px', color: '#444', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>No Update Available</span>
                 </>
               )}
             </div>
@@ -627,32 +627,35 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
                 {healthLabel}
               </span>
             </div>
-            {/* Row 2: Client bar gauge — green progress bar (D-39) */}
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '2px' }}>
-                <span style={{ fontSize: '8px', color: 'rgba(74,222,128,0.6)', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>CLIENTS</span>
-                <span style={{ fontSize: '13px', color: '#4ADE80', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px #4ADE80' }}>{um!.clientCount}</span>
-              </div>
-              <div style={{ height: '12px', background: '#222', borderRadius: '3px' }}>
-                <div style={{
-                  width: `${um!.peakClients && um!.peakClients > 0
-                    ? Math.min((um!.clientCount / um!.peakClients) * 100, 100)
-                    : (um!.clientCount > 0 ? 100 : 0)}%`,
-                  height: '100%',
-                  background: '#4ADE80',
-                  borderRadius: '3px',
-                  boxShadow: '0 0 6px #4ADE80',
-                  transition: 'width 0.3s ease',
-                }} />
-              </div>
-              <div style={{ textAlign: 'right', fontSize: '7px', color: 'rgba(74,222,128,0.4)', fontFamily: 'var(--font-mono)', marginTop: '1px' }}>
-                MAX {um!.peakClients ?? um!.clientCount}
-              </div>
+            {/* Vertical bars: UP / DOWN / CLIENTS filling space under ONLINE */}
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', alignItems: 'flex-end', flex: 1, paddingTop: '8px' }}>
+              {[
+                { label: 'UP', value: um!.wanTxMbps, peak: um!.peakTxMbps, color: '#FF3B3B' },
+                { label: 'DOWN', value: um!.wanRxMbps, peak: um!.peakRxMbps, color: '#00c8ff' },
+                { label: 'CLIENTS', value: um!.clientCount, peak: um!.peakClients && um!.peakClients > 0 ? um!.peakClients : (um!.clientCount > 0 ? um!.clientCount : 1), color: '#4ADE80' },
+              ].map(({ label, value, peak, color }) => {
+                const effectivePeak = peak > 0 ? peak : 1
+                const fillPct = value !== null && value !== undefined ? Math.min((value / effectivePeak) * 100, 100) : 0
+                return (
+                  <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flex: 1 }}>
+                    <div style={{ width: '16px', height: '60px', background: '#222', borderRadius: '3px', position: 'relative', overflow: 'hidden' }}>
+                      <div style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: `${fillPct}%`,
+                        background: color,
+                        borderRadius: '3px',
+                        transition: 'height 0.3s ease',
+                        boxShadow: `0 0 6px ${color}`,
+                      }} />
+                    </div>
+                    <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'rgba(200,200,200,0.5)', letterSpacing: '0.04em', textAlign: 'center' }}>{label}</span>
+                  </div>
+                )
+              })}
             </div>
-            {/* Row 3: TX bar — red, bars only no trailing numbers (D-20) */}
-            <ThroughputBar label="TX" value={um!.wanTxMbps} peak={um!.peakTxMbps} color="#FF3B3B" />
-            {/* Row 4: RX bar — blue, bars only no trailing numbers (D-20) */}
-            <ThroughputBar label="RX" value={um!.wanRxMbps} peak={um!.peakRxMbps} color="#00c8ff" />
           </>
         )}
       </div>

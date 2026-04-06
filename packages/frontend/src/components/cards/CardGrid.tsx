@@ -37,12 +37,12 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
   const hasAnyActivity = activeArr.length > 0 || sabHasActivity
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', minHeight: '120px' }}>
       {/* Divider */}
       <div style={{ borderTop: '1px solid rgba(232,160,32,0.08)', margin: '4px 0' }} />
 
       {/* DOWNLOADS sub-label */}
-      <div style={{ fontSize: '9px', color: 'rgba(232,160,32,0.5)', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '3px' }}>
+      <div style={{ fontSize: '22px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '3px', fontWeight: 600 }}>
         DOWNLOADS
       </div>
 
@@ -52,17 +52,17 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
         </span>
       )}
 
-      {/* Active arr download rows — title + count only, no progress bar */}
+      {/* Active arr download rows — large title + count */}
       {activeArr.map(s => {
         const m = s.metrics as Record<string, unknown>
         const count = typeof m.activeDownloads === 'number' ? m.activeDownloads : 0
         const activeTitle = typeof m.activeTitle === 'string' && m.activeTitle ? m.activeTitle : s.name.slice(0, 7)
         return (
           <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
-            <span style={{ fontSize: '9px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: '22px', color: 'var(--cockpit-purple)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600, textShadow: '0 0 8px var(--cockpit-purple)' }}>
               {activeTitle}
             </span>
-            <span style={{ fontSize: '9px', color: 'var(--cockpit-purple)', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
+            <span style={{ fontSize: '14px', color: 'var(--cockpit-purple)', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
               x{count}
             </span>
           </div>
@@ -72,16 +72,17 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
       {/* SABnzbd row */}
       {sabHasActivity && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ fontSize: '8px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0, width: '44px' }}>
+          <span style={{ fontSize: '11px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0, width: '44px' }}>
             SAB
           </span>
-          <div style={{ flex: 1, height: '3px', background: 'rgba(232,160,32,0.15)', borderRadius: '2px', overflow: 'hidden' }}>
+          <div style={{ flex: 1, height: '16px', background: 'rgba(232,160,32,0.15)', borderRadius: '3px', overflow: 'hidden' }}>
             <div style={{
               height: '100%',
               width: `${Math.min(Math.max(sabProgressPercent, 5), 100)}%`,
               background: 'var(--cockpit-amber)',
-              borderRadius: '2px',
+              borderRadius: '3px',
               transition: 'width 1s ease',
+              boxShadow: '0 0 6px var(--cockpit-amber)',
             }} />
           </div>
           <span style={{ fontSize: '9px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
