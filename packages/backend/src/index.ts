@@ -15,6 +15,8 @@ import { tautulliWebhookRoutes } from './routes/tautulli-webhook.js'
 import { arrWebhookRoutes } from './routes/arr-webhooks.js'
 import { debugRoutes } from './routes/debug.js'
 import { logRoutes } from './routes/logs.js'
+import { weatherSettingsRoutes } from './routes/weather-settings.js'
+import { startWeatherPoller } from './weather-poller.js'
 import { healthProbe, serviceConfig, appLogs, kvStore } from './schema.js'
 import { pollManager } from './poll-manager.js'
 import { decrypt } from './crypto.js'
@@ -50,6 +52,7 @@ await fastify.register(tautulliWebhookRoutes)
 await fastify.register(arrWebhookRoutes)
 await fastify.register(debugRoutes)
 await fastify.register(logRoutes)
+await fastify.register(weatherSettingsRoutes)
 
 // Serve compiled Vite bundle in production (D-23)
 const frontendDist = join(__dirname, '../../frontend/dist')
@@ -105,6 +108,9 @@ try {
   fastify.log.warn({ err }, 'Failed to load service configs for polling')
 }
 
+// Start weather poller (15-minute interval; no-op if not configured)
+const stopWeather = startWeatherPoller()
+
 // Nightly log prune at 3am — deletes entries older than retention_days (D-26, D-27)
 schedule('0 3 * * *', () => {
   try {
@@ -118,6 +124,17 @@ schedule('0 3 * * *', () => {
     fastify.log.error({ err, service: 'system' }, 'Nightly log prune failed')
   }
 })
+
+// Graceful shutdown
+const shutdown = async (signal: string) => {
+  fastify.log.info({ signal }, 'Graceful shutdown initiated')
+  stopWeather()
+  pollManager.stopAll()
+  await fastify.close()
+  process.exit(0)
+}
+process.on('SIGTERM', () => { void shutdown('SIGTERM') })
+process.on('SIGINT', () => { void shutdown('SIGINT') })
 
 // Start server — host 0.0.0.0 is MANDATORY in Docker (research Pitfall 3)
 await fastify.listen({ port: PORT, host: '0.0.0.0' })

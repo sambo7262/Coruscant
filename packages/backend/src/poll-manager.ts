@@ -1,4 +1,7 @@
-import type { DashboardSnapshot, ServiceStatus, NasStatus, PlexStream, PlexServerStats, ArrWebhookEvent } from '@coruscant/shared'
+import type { DashboardSnapshot, ServiceStatus, NasStatus, PlexStream, PlexServerStats, ArrWebhookEvent, WeatherData } from '@coruscant/shared'
+import { eq } from 'drizzle-orm'
+import { getDb } from './db.js'
+import { kvStore } from './schema.js'
 import { pollArr } from './adapters/arr.js'
 import { pollBazarr } from './adapters/bazarr.js'
 import { pollSabnzbd } from './adapters/sabnzbd.js'
@@ -464,14 +467,19 @@ export class PollManager {
 
   /**
    * Returns a DashboardSnapshot from current cached state.
-   * Returns live NAS data, Plex streams, and server stats (no stubs).
+   * Returns live NAS data, Plex streams, server stats, and weather data (no stubs).
    */
   getSnapshot(): DashboardSnapshot {
+    const db = getDb()
+    const weatherRow = db.select().from(kvStore).where(eq(kvStore.key, 'weather.current')).get()
+    const weather: WeatherData | null = weatherRow ? JSON.parse(weatherRow.value) as WeatherData : null
+
     return {
       services: [...this.state.values()],
       nas: this.nasData,
       streams: this.plexStreams,
       plexServerStats: this.plexServerStats,
+      weather,
       timestamp: new Date().toISOString(),
     }
   }

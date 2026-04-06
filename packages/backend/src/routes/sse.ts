@@ -19,6 +19,7 @@ function snapshotFingerprint(snapshot: DashboardSnapshot): string {
     nas: snapshot.nas,
     streams: snapshot.streams,
     plexServerStats: snapshot.plexServerStats,
+    weather: snapshot.weather,
   })
 }
 
