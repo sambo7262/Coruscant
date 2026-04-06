@@ -16,6 +16,23 @@ interface CardGridProps {
   nasStatus?: NasStatus | null
 }
 
+/** Clean NZB/torrent filename into a human-readable title.
+ *  "Movie.Name.2024.1080p.WEB-DL.DDP5.1.x264-GROUP.mkv" → "Movie Name"
+ *  Strips: year (4 digits), quality tags, codec, group, extension.
+ */
+function cleanFilename(filename: string): string {
+  // Remove file extension
+  let name = filename.replace(/\.\w{2,4}$/, '')
+  // Replace dots and underscores with spaces
+  name = name.replace(/[._]/g, ' ')
+  // Truncate at first 4-digit year (e.g. 2024) or common quality tag
+  name = name.replace(/\s+(19|20)\d{2}\b.*$/i, '')
+  name = name.replace(/\s+(480|720|1080|2160|4k)\s*p?\b.*$/i, '')
+  name = name.replace(/\s+(web|bluray|bdrip|hdtv|dvdrip|webrip|web-dl)\b.*$/i, '')
+  // Trim
+  return name.trim() || filename
+}
+
 /** Inline download activity section inside the Media tile */
 function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
   const arrServices = snapshot.services.filter(s => DOWNLOAD_ARR_IDS.includes(s.id))
@@ -37,13 +54,20 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
 
   const hasAnyActivity = activeArr.length > 0 || sabHasActivity
 
-  // Derive active title: first arr activeTitle, then SABnzbd currentFilename
+  // Derive active title: three-tier lookup
+  // Priority 1: arr service actively downloading with a title
+  // Priority 2: any arr service with an activeTitle (may not be in "downloading" state yet)
+  // Priority 3: clean the SABnzbd filename as last resort
   const activeTitle = (() => {
     for (const s of activeArr) {
       const m = s.metrics as Record<string, unknown>
       if (typeof m.activeTitle === 'string' && m.activeTitle) return m.activeTitle
     }
-    return sabCurrentFilename
+    for (const s of arrServices) {
+      const m = s.metrics as Record<string, unknown> | undefined
+      if (typeof m?.activeTitle === 'string' && m.activeTitle) return m.activeTitle
+    }
+    return sabCurrentFilename ? cleanFilename(sabCurrentFilename) : ''
   })()
 
   return (
@@ -77,8 +101,8 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
                 boxShadow: '0 0 6px var(--cockpit-amber)',
               }} />
             </div>
-            <span style={{ fontSize: '9px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
-              {sabSpeedMBs.toFixed(1)} MB/s
+            <span style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', flexShrink: 0, textShadow: '0 0 8px var(--cockpit-amber)' }}>
+              {sabSpeedMBs.toFixed(1)} <span style={{ fontSize: '11px', fontWeight: 400 }}>MB/s</span>
             </span>
           </div>
         </div>
