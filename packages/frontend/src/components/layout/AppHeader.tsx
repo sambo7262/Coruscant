@@ -53,6 +53,7 @@ export function AppHeader({ connected, showBack = false, lastArrEvent }: AppHead
 
   return (
     <header
+      className="app-header-blur"
       style={{
         position: 'fixed',
         top: 0,
@@ -60,7 +61,6 @@ export function AppHeader({ connected, showBack = false, lastArrEvent }: AppHead
         right: 0,
         zIndex: 10,
         background: 'rgba(13, 13, 13, 0.95)',
-        backdropFilter: 'blur(4px)',
         borderBottom: `1px solid ${ticker ? ticker.color : 'rgba(232, 160, 32, 0.30)'}`,
         boxShadow: '0 1px 8px rgba(232, 160, 32, 0.15)',
       }}
@@ -87,12 +87,13 @@ export function AppHeader({ connected, showBack = false, lastArrEvent }: AppHead
                 color: 'var(--cockpit-amber)',
                 cursor: 'pointer',
                 textDecoration: 'none',
+                fontSize: '28px',
               }}
             >
               ← CORUSCANT
             </Link>
           ) : (
-            <span className="text-display" style={{ color: 'var(--cockpit-amber)' }}>
+            <span className="text-display" style={{ color: 'var(--cockpit-amber)', fontSize: '28px' }}>
               CORUSCANT
             </span>
           )}
@@ -147,12 +148,12 @@ export function AppHeader({ connected, showBack = false, lastArrEvent }: AppHead
                     title="Connection lost. Reconnecting..."
                     style={{
                       display: 'inline-block',
-                      width: '6px',
-                      height: '6px',
+                      width: '10px',
+                      height: '10px',
                       borderRadius: '50%',
-                      backgroundColor: 'var(--cockpit-amber)',
-                      boxShadow: '0 0 5px 2px rgba(232, 160, 32, 0.6)',
-                      animation: 'ledPulseWarn 1s ease-in-out infinite',
+                      backgroundColor: '#ff4444',
+                      boxShadow: '0 0 8px 3px rgba(255, 68, 68, 0.7)',
+                      animation: 'ledFlashDown 0.4s ease-in-out infinite',
                       flexShrink: 0,
                     }}
                   />
@@ -175,7 +176,7 @@ export function AppHeader({ connected, showBack = false, lastArrEvent }: AppHead
                     justifyContent: 'center',
                   }}
                 >
-                  <Settings size={20} />
+                  <Settings size={26} />
                 </Link>
                 <Link
                   to="/logs"
@@ -189,7 +190,7 @@ export function AppHeader({ connected, showBack = false, lastArrEvent }: AppHead
                     justifyContent: 'center',
                   }}
                 >
-                  <List size={20} />
+                  <List size={26} />
                 </Link>
               </div>
             ) : (

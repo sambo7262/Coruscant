@@ -120,6 +120,7 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
 
       <motion.div
         key="banner"
+        className="banner-blur-bg"
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 40, opacity: 0 }}
@@ -132,7 +133,6 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
           right: 0,
           zIndex: expanded ? 30 : 20,
           background: 'rgba(13, 13, 13, 0.95)',
-          backdropFilter: 'blur(8px)',
           borderTop: '1px solid rgba(232, 160, 32, 0.30)',
         }}
       >

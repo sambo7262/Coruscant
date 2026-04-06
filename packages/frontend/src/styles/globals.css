@@ -194,6 +194,32 @@ body::after {
   z-index: 10000;
 }
 
+/* Backdrop blur isolation — D-20 text sharpness (ISSUE-02, ISSUE-03) */
+/* Moves blur to ::before pseudo so it doesn't bleed into child text rendering */
+.app-header-blur {
+  position: relative;
+}
+.app-header-blur::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: -1;
+}
+
+.banner-blur-bg {
+  position: relative;
+}
+.banner-blur-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: -1;
+}
+
 /* Reduced motion preference — D-44 / DASH-08 accessibility */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
