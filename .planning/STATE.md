@@ -4,7 +4,7 @@ milestone: v1.0
 milestone_name: milestone
 status: executing
 stopped_at: Completed 08-03-PLAN.md
-last_updated: "2026-04-06T12:56:20.886Z"
+last_updated: "2026-04-06T12:59:22.005Z"
 last_activity: 2026-04-06
 progress:
   total_phases: 12
@@ -166,6 +166,7 @@ Recent decisions affecting current work:
 - [Phase 08-logging-polish-performance]: UniFi peaks stored in kv_store with lazy in-memory cache — peaks survive server restarts, cache cleared on reconfiguration
 - [Phase 08]: LogEntry interface exported from useDashboardSSE.ts — co-located with the hook that produces it, avoids duplicate type definitions
 - [Phase 08]: LOGS tab in SettingsPage follows isNotificationsTab special-tab detection pattern (isLogsTab flag)
+- [Phase 08-logging-polish-performance]: User selected Variant C (#000D1A Tactical Dark) as --space-deep background token — confirmed before Plan 04 CSS changes
 
 ### Roadmap Evolution
 
