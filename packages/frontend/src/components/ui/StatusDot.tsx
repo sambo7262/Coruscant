@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import type { ServiceStatus } from '@coruscant/shared'
 
 const STATUS_COLORS: Record<ServiceStatus['status'], string> = {
@@ -26,6 +27,27 @@ interface StatusDotProps {
 }
 
 export function StatusDot({ status }: StatusDotProps) {
+  const prevStatusRef = useRef<ServiceStatus['status']>(status)
+  const [pulsing, setPulsing] = useState(false)
+
+  useEffect(() => {
+    if (prevStatusRef.current !== status) {
+      prevStatusRef.current = status
+      setPulsing(true)
+    }
+  }, [status])
+
+  const handleAnimationEnd = () => {
+    setPulsing(false)
+  }
+
+  // When over-pulsing, override animation with the over-pulse burst
+  const animationStyle = pulsing
+    ? 'ledOverPulse 0.6s ease-out'
+    : STATUS_ANIMATIONS[status] === 'none'
+    ? undefined
+    : STATUS_ANIMATIONS[status]
+
   return (
     <span
       aria-hidden="true"
@@ -36,9 +58,11 @@ export function StatusDot({ status }: StatusDotProps) {
         borderRadius: '50%',
         backgroundColor: STATUS_COLORS[status],
         boxShadow: STATUS_GLOW[status],
-        animation: STATUS_ANIMATIONS[status] === 'none' ? undefined : STATUS_ANIMATIONS[status],
+        animation: animationStyle,
+        color: STATUS_COLORS[status], // currentColor for ledOverPulse box-shadow
         flexShrink: 0,
       }}
+      onAnimationEnd={pulsing ? handleAnimationEnd : undefined}
     />
   )
 }

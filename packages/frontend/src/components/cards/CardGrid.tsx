@@ -1,5 +1,7 @@
+import { motion } from 'framer-motion'
 import type { DashboardSnapshot, ArrWebhookEvent, NasStatus } from '@coruscant/shared'
 import { ServiceCard, MediaStackRow } from './ServiceCard.js'
+import { useAnimatedNumber } from '../../hooks/useAnimatedNumber.js'
 
 const ARR_IDS = new Set(['radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 'readarr'])
 
@@ -51,6 +53,10 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
   const sabProgressPercent = typeof sabMetrics?.progressPercent === 'number' ? sabMetrics.progressPercent : 0
   const sabHasActivity = sabSpeedMBs > 0 || sabQueueCount > 0
   const sabCurrentFilename = typeof sabMetrics?.currentFilename === 'string' ? sabMetrics.currentFilename : ''
+
+  // Animated speed — count-up tween on value change (D-19)
+  // Multiply by 10 to retain one decimal of precision in the integer animation
+  const animSpeedTimes10 = useAnimatedNumber(Math.round(sabSpeedMBs * 10))
 
   const hasAnyActivity = activeArr.length > 0 || sabHasActivity
 
@@ -117,7 +123,7 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
               }} />
             </div>
             <span style={{ fontSize: '22px', fontWeight: 600, color: '#00c8ff', fontFamily: 'var(--font-mono)', flexShrink: 0, textShadow: '0 0 8px #00c8ff' }}>
-              {sabSpeedMBs.toFixed(1)} <span style={{ fontSize: '11px', fontWeight: 400 }}>MB/s</span>
+              {(animSpeedTimes10 / 10).toFixed(1)} <span style={{ fontSize: '11px', fontWeight: 400 }}>MB/s</span>
             </span>
           </div>
         </div>
@@ -187,8 +193,11 @@ export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
 
         {/* Media tile — arr LED rows + download activity section */}
         {arrServices.length > 0 && (
-          <div
+          <motion.div
             className="chamfer-card"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: globalIndex * 0.08, duration: 0.3, ease: 'easeOut' }}
             style={{
               background: 'var(--bg-panel)',
               border: '1px solid var(--border-rest)',
@@ -219,7 +228,7 @@ export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
             <div style={{ padding: '0 4px 6px 4px' }}>
               <DownloadActivity snapshot={snapshot} />
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Network tile — Pi-hole with Ubiquiti */}

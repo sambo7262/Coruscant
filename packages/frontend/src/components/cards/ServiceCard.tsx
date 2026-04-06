@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import type { ServiceStatus, UnifiMetrics, ArrWebhookEvent, NasStatus, NasVolume } from '@coruscant/shared'
 import { StatusDot } from '../ui/StatusDot.js'
 import { StaleIndicator } from '../ui/StaleIndicator.js'
+import { useAnimatedNumber } from '../../hooks/useAnimatedNumber.js'
 
 // Event flash colors for arr webhook events — used by MediaStackRow flash
 const EVENT_COLORS: Record<string, string> = {
@@ -201,6 +202,11 @@ const NAS_SECTION_LABEL_STYLE: React.CSSProperties = {
 
 // NAS standalone tile instrument (D-21) — 3-column layout: disk LEDs | CPU/RAM/volume bars | Docker stats
 function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
+  const animCpu = useAnimatedNumber(nasStatus.cpu)
+  const animRam = useAnimatedNumber(nasStatus.ram)
+  const animDockerCpu = useAnimatedNumber(nasStatus.docker?.cpuPercent ?? 0)
+  const animDockerRam = useAnimatedNumber(nasStatus.docker?.ramPercent ?? 0)
+
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '0 8px', alignItems: 'stretch' }}>
 
@@ -250,8 +256,8 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
         {/* NAS device name label */}
         <div style={{ ...NAS_SECTION_LABEL_STYLE, marginBottom: '2px' }}>{nasStatus.name || 'TheRock'}</div>
         {[
-          { label: 'CPU', value: nasStatus.cpu, valueText: `${Math.round(nasStatus.cpu)}%` },
-          { label: 'RAM', value: nasStatus.ram, valueText: `${Math.round(nasStatus.ram)}%` },
+          { label: 'CPU', value: nasStatus.cpu, valueText: `${animCpu}%` },
+          { label: 'RAM', value: nasStatus.ram, valueText: `${animRam}%` },
           ...nasStatus.volumes.map((vol: NasVolume, idx: number) => ({
             label: idx === 0 ? 'HD' : `HD${idx + 1}`,
             value: vol.usedPercent,
@@ -284,10 +290,10 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
           <>
             <div style={{ ...NAS_SECTION_LABEL_STYLE, marginBottom: '2px', width: '100%' }}>DOCKER</div>
             <span className="text-glow" style={{ fontSize: '22px', lineHeight: 1.2, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textShadow: '0 0 6px var(--cockpit-amber)' }}>
-              CPU {nasStatus.docker.cpuPercent.toFixed(1)}%
+              CPU {animDockerCpu}%
             </span>
             <span className="text-glow" style={{ fontSize: '22px', lineHeight: 1.2, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textShadow: '0 0 6px var(--cockpit-amber)' }}>
-              RAM {nasStatus.docker.ramPercent.toFixed(1)}%
+              RAM {animDockerRam}%
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
               {nasStatus.imageUpdateAvailable === true ? (
@@ -567,14 +573,29 @@ function ThroughputBar({ label, value, peak, color }: { label: string; value: nu
 
 // NETWORK card: Pi-hole section + Ubiquiti section (D-15, D-16)
 function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, unknown>; unifiService?: ServiceStatus }) {
-  const qpm = typeof metrics.queriesPerMinute === 'number'
-    ? metrics.queriesPerMinute.toFixed(1) : '--'
-  const mem = typeof metrics.memPercent === 'number'
-    ? `${Math.round(metrics.memPercent as number)}%` : '--'
+  const rawQpm = typeof metrics.queriesPerMinute === 'number' ? metrics.queriesPerMinute : 0
+  const rawPercentBlocked = typeof metrics.percentBlocked === 'number' ? metrics.percentBlocked : 0
+  const rawMem = typeof metrics.memPercent === 'number' ? metrics.memPercent : 0
+
+  const animQpm = useAnimatedNumber(rawQpm)
+  const animPercentBlocked = useAnimatedNumber(rawPercentBlocked * 10) // multiply by 10 for sub-integer resolution
+  const animMem = useAnimatedNumber(rawMem)
+
+  const um = unifiService?.metrics as unknown as UnifiMetrics | undefined
+  const rawClientCount = typeof um?.clientCount === 'number' ? um.clientCount : 0
+  const animClientCount = useAnimatedNumber(rawClientCount)
+
+  const hasQpmData = typeof metrics.queriesPerMinute === 'number'
+  const hasPercentData = typeof metrics.percentBlocked === 'number'
+  const hasMemData = typeof metrics.memPercent === 'number'
+
+  const qpmDisplay = hasQpmData ? animQpm.toString() : '--'
+  const percentBlockedDisplay = hasPercentData ? (animPercentBlocked / 10).toFixed(1) : '--'
+  const memDisplay = hasMemData ? `${animMem}%` : '--'
+
   const blocking = metrics.blockingActive === true ? 'BLOCKING' : 'DISABLED'
 
   const unifiConfigured = unifiService?.configured !== false && unifiService?.metrics != null
-  const um = unifiService?.metrics as unknown as UnifiMetrics | undefined
   const healthToLed = um?.healthStatus === 'online' ? 'online' as const
     : um?.healthStatus === 'warning' ? 'warning' as const
     : 'offline' as const
@@ -601,19 +622,19 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
         </span>
         <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>BLOCKING</div>
         <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1, textShadow: '0 0 8px var(--cockpit-amber)' }}>
-          {qpm}
+          {qpmDisplay}
         </span>
         <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>QPM</div>
-        {typeof metrics.percentBlocked === 'number' && (
+        {hasPercentData && (
           <>
             <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1, textShadow: '0 0 8px var(--cockpit-amber)' }}>
-              {(metrics.percentBlocked as number).toFixed(1)}%
+              {percentBlockedDisplay}%
             </span>
             <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>BLOCKED</div>
           </>
         )}
         <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1, textShadow: '0 0 8px var(--cockpit-amber)' }}>
-          {mem}
+          {memDisplay}
         </span>
         <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>MEM</div>
       </div>
@@ -668,7 +689,7 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
                   value: um!.clientCount,
                   peak: um!.peakClients && um!.peakClients > 0 ? um!.peakClients : (um!.clientCount > 0 ? um!.clientCount : 1),
                   color: '#4ADE80',
-                  valueText: `${um!.clientCount}`,
+                  valueText: `${animClientCount}`,
                   unit: '',
                 },
               ].map(({ label, value, peak, color, valueText, unit }) => {
@@ -799,7 +820,7 @@ export function ServiceCard({ service, index, allServices, nasStatus }: ServiceC
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, ease: 'easeOut', delay: index * 0.05 }}
+        transition={{ duration: 0.3, ease: 'easeOut', delay: index * 0.08 }}
         className="chamfer-card"
         style={{
           position: 'relative',
@@ -861,7 +882,7 @@ export function ServiceCard({ service, index, allServices, nasStatus }: ServiceC
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: 'easeOut', delay: index * 0.05 }}
+      transition={{ duration: 0.3, ease: 'easeOut', delay: index * 0.08 }}
       whileTap={{ scale: 0.97 }}
       onClick={handleClick}
       role="button"
@@ -980,6 +1001,17 @@ export function MediaStackRow({ service, index, lastArrEvent }: ServiceCardProps
   const [flashColor, setFlashColor] = useState<string | null>(null)
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // LED over-pulse state — brief intensity burst on status transition (D-19)
+  const prevStatusRef = useRef(service.status)
+  const [ledPulsing, setLedPulsing] = useState(false)
+
+  useEffect(() => {
+    if (prevStatusRef.current !== service.status) {
+      prevStatusRef.current = service.status
+      setLedPulsing(true)
+    }
+  }, [service.status])
+
   useEffect(() => {
     if (!lastArrEvent || lastArrEvent.service !== service.id) return
     if (lastArrEvent.eventCategory === 'unknown') return
@@ -1044,7 +1076,7 @@ export function MediaStackRow({ service, index, lastArrEvent }: ServiceCardProps
     <motion.div
       initial={{ opacity: 0, x: -8 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.2, ease: 'easeOut', delay: index * 0.04 }}
+      transition={{ duration: 0.2, ease: 'easeOut', delay: index * 0.08 }}
       whileTap={{ scale: 0.97 }}
       onClick={handleClick}
       role="button"
@@ -1091,7 +1123,7 @@ export function MediaStackRow({ service, index, lastArrEvent }: ServiceCardProps
           }}
         />
       )}
-      {/* 10px LED dot */}
+      {/* 10px LED dot — over-pulse on status transition (D-19) */}
       <div
         style={{
           width: '10px',
@@ -1099,7 +1131,9 @@ export function MediaStackRow({ service, index, lastArrEvent }: ServiceCardProps
           borderRadius: '50%',
           flexShrink: 0,
           ...getLedStyle(),
+          ...(ledPulsing ? { animation: 'ledOverPulse 0.6s ease-out' } : {}),
         }}
+        onAnimationEnd={ledPulsing ? () => setLedPulsing(false) : undefined}
       />
       {/* Service label */}
       <span
