@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 09-01-PLAN.md — weather backend pipeline
-last_updated: "2026-04-06T20:31:06.668Z"
+status: verifying
+stopped_at: Completed 09-04-PLAN.md — weather frontend + living animations — awaiting Task 3 human-verify checkpoint
+last_updated: "2026-04-06T21:00:45.734Z"
 last_activity: 2026-04-06
 progress:
   total_phases: 13
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 49
-  completed_plans: 45
+  completed_plans: 46
   percent: 0
 ---
 
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 Phase: 09 (local-weather-ui-polish) — EXECUTING
 Plan: 4 of 4
 Phase: 09 (production-deploy-and-hardening) — NEXT
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-04-06
 
 Progress: [░░░░░░░░░░] 0%
@@ -85,6 +85,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 09-local-weather-ui-polish P02 | 12min | 2 tasks | 5 files |
 | Phase 09-local-weather-ui-polish P03 | 265 | 1 tasks | 1 files |
 | Phase 09-local-weather-ui-polish P01 | 15min | 2 tasks | 10 files |
+| Phase 09-local-weather-ui-polish P04 | 15min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -177,6 +178,8 @@ Recent decisions affecting current work:
 - [Phase 09-local-weather-ui-polish]: Open-Meteo used for both weather data and geocoding — no API key required, stays within privacy constraint
 - [Phase 09-local-weather-ui-polish]: On fetch failure, weather.current kvStore key is NOT overwritten — frontend detects stale via fetched_at age
 - [Phase 09-local-weather-ui-polish]: vitest weather-poller: shared get mock + advanceTimersByTimeAsync(0) to avoid runAllTimersAsync infinite loop
+- [Phase 09-local-weather-ui-polish]: StatusDot upgraded with prevStatusRef + pulsing state for LED over-pulse on status transition — all StatusDot users get over-pulse for free
+- [Phase 09-local-weather-ui-polish]: Entrance stagger unified to 0.08s delay multiplier across all tiles (NAS/NETWORK/MEDIA tiles and MediaStackRow) — was mix of 0.04/0.05
 
 ### Roadmap Evolution
 
@@ -214,6 +217,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06T20:31:06.662Z
-Stopped at: Completed 09-01-PLAN.md — weather backend pipeline
+Last session: 2026-04-06T21:00:45.728Z
+Stopped at: Completed 09-04-PLAN.md — weather frontend + living animations — awaiting Task 3 human-verify checkpoint
 Resume file: None

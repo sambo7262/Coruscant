@@ -20,7 +20,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 6: Network Monitoring** - UniFi device cards, client counts, WAN throughput, API token auth (UniFi OS 5.x)
 - [x] **Phase 7: Notifications (Webhook Event Signaling)** - Arr webhook receivers with ephemeral card flash + header ticker, SABnzbd burst poll, Settings webhook URL tab (completed 2026-04-06)
 - [x] **Phase 8: Logging, Polish + Performance** - Log viewer, SQLite pruning, poll interval tuning for real-time media feel (completed 2026-04-06)
-- [ ] **Phase 9: Local Weather** - Current conditions in AppHeader nav bar via self-hosted/no-key weather API
+- [x] **Phase 9: Local Weather** - Current conditions in AppHeader nav bar via self-hosted/no-key weather API (completed 2026-04-06)
 - [ ] **Phase 10: Production Deploy + Hardening** - v1.0 tag, registry migration, final bug pass, git cleanup
 - [x] **Phase 11: Raspberry Pi Kiosk** - Complete (set up manually)
 
@@ -209,13 +209,13 @@ Plans:
   3. User sets location (lat/lon) once in Settings; weather persists across restarts
   4. If weather fetch fails, header shows last-known value with a stale indicator rather than crashing
   5. All Claude-identified UI micro-issues resolved and signed off
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 
 Plans:
 - [x] 09-01-PLAN.md — Weather backend: shared types, adapter, poller, settings route, SSE integration, unit tests
 - [x] 09-02-PLAN.md — UI polish: disconnect dot, header sizing, text sharpness, DOWNLOADS tile fixes, speed colors, webhook log format
 - [x] 09-03-PLAN.md — Settings page side-rail restructure with section groupings
-- [ ] 09-04-PLAN.md — Weather frontend widget, living/breathing animations, visual verification checkpoint
+- [x] 09-04-PLAN.md — Weather frontend widget, living/breathing animations, visual verification checkpoint
 **UI hint**: yes
 
 ## Progress
@@ -233,7 +233,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 6. Network Monitoring | 2/3 | In Progress|  |
 | 7. Notifications (Webhook Event Signaling) | 2/2 | Complete   | 2026-04-06 |
 | 8. Logging, Polish + Performance | 2/5 | In Progress|  |
-| 9. Local Weather + UI Final Polish | 3/4 | In Progress|  |
+| 9. Local Weather + UI Final Polish | 4/4 | Complete   | 2026-04-06 |
 | 10. Production Deploy + Hardening | 0/? | Not started | - |
 | 11. Raspberry Pi Kiosk | — | Complete (manual) | 2026-04-05 |
 
