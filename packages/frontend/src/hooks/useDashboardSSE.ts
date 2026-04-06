@@ -1,10 +1,20 @@
 import { useState, useEffect } from 'react'
 import type { DashboardSnapshot, ArrWebhookEvent } from '@coruscant/shared'
 
+export interface LogEntry {
+  id?: number
+  timestamp: string
+  level: string
+  service: string
+  message: string
+  payload?: string | null
+}
+
 export function useDashboardSSE() {
   const [snapshot, setSnapshot] = useState<DashboardSnapshot | null>(null)
   const [connected, setConnected] = useState(false)
   const [lastArrEvent, setLastArrEvent] = useState<ArrWebhookEvent | null>(null)
+  const [lastLogEntry, setLastLogEntry] = useState<LogEntry | null>(null)
 
   useEffect(() => {
     let es: EventSource | null = null
@@ -20,6 +30,10 @@ export function useDashboardSSE() {
 
       es.addEventListener('arr-event', (e: MessageEvent) => {
         setLastArrEvent(JSON.parse(e.data) as ArrWebhookEvent)
+      })
+
+      es.addEventListener('log-entry', (e: MessageEvent) => {
+        setLastLogEntry(JSON.parse(e.data) as LogEntry)
       })
 
       es.onerror = () => {
@@ -38,5 +52,5 @@ export function useDashboardSSE() {
     }
   }, [])
 
-  return { snapshot, connected, lastArrEvent }
+  return { snapshot, connected, lastArrEvent, lastLogEntry }
 }

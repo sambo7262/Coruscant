@@ -11,7 +11,7 @@ import { LogsPage } from './pages/LogsPage.js'
 import { useDashboardSSE } from './hooks/useDashboardSSE.js'
 
 export default function App() {
-  const { snapshot, connected, lastArrEvent } = useDashboardSSE()
+  const { snapshot, connected, lastArrEvent, lastLogEntry } = useDashboardSSE()
   const location = useLocation()
   const showBack = location.pathname !== '/'
   const isDashboard = location.pathname === '/'
@@ -42,7 +42,7 @@ export default function App() {
           <Route path="/" element={<DashboardPage snapshot={snapshot} lastArrEvent={lastArrEvent} />} />
           <Route path="/services/:serviceId" element={<ServiceDetailPage snapshot={snapshot} />} />
           <Route path="/settings" element={<SettingsPage snapshot={snapshot} />} />
-          <Route path="/logs" element={<LogsPage />} />
+          <Route path="/logs" element={<LogsPage lastLogEntry={lastLogEntry} />} />
         </Routes>
       </main>
       <NowPlayingBanner
