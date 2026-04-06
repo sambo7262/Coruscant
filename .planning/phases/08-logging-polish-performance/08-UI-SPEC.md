@@ -1,7 +1,7 @@
 ---
 phase: 8
 slug: logging-polish-performance
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: 2026-04-06
@@ -61,6 +61,8 @@ All tokens already declared in `globals.css`. Phase 8 modifies the dominant back
 
 **Glow on key numerics (D-17):** `text-shadow: 0 0 6px currentColor` on CPU%, RAM%, temp readings, client count, throughput values, and log entry count. Apply in inline style or a `.text-glow` utility class.
 
+**Post-rescale focal point:** After the text scale-up (D-14) is applied, the primary visual anchor on the dashboard is the NAS tile CPU/RAM display numerics — the largest display-role elements on screen at 24px semibold with `.text-glow`.
+
 ---
 
 ## Spacing Scale
@@ -77,9 +79,10 @@ Declared values (must be multiples of 4). Matches established project pattern �
 | 2xl | 48px | Not commonly used; reserved for major layout breaks if needed |
 | 3xl | 64px | Not used on 800x480 kiosk viewport |
 
+**Touch Target Constraints:** On the 800x480 kiosk viewport, all interactive elements (log filter dropdowns, action buttons) must have a minimum tap area height of 44px. This is enforced via padding — not a spacing token exception.
+
 **Exceptions:**
 - NAS header height target: ~95% of tile card container height (D-12) — achieved via `flex: 1` fill, not a fixed pixel exception
-- Touch targets on 800x480 kiosk: minimum 44px tap area height for log filter dropdowns and action buttons
 - Inline download progress row (SABnzbd replacement for download bar): max 1 line, fits within existing tile metrics area
 
 ---
@@ -93,7 +96,7 @@ All roles pre-declared in `globals.css`. Phase 8 scales up for 10ft kiosk readab
 | Display | 24px (+4 from 20px) | 600 (semibold) | 1.2 | 0.08em | Tile major metric values (CPU%, stream count, client count, temp readings) |
 | Heading | 18px (+2 from 16px) | 600 (semibold) | 1.2 | 0.08em | Tile header labels (NAS, PLEX, NETWORK), log viewer column headers, Settings tab headings |
 | Body | 15px (+1 from 14px) | 400 (regular) | 1.5 | 0 | Log entry message text, Settings form labels, inline SABnzbd download line |
-| Label | 13px (+1 from 12px) | 400 (regular) | 1.4 | 0 | Metric sub-labels (CPU, RAM, DISK, TEMP), log timestamps, service tags in log viewer |
+| Label | 12px (unchanged from 12px) | 400 (regular) | 1.4 | 0 | Metric sub-labels (CPU, RAM, DISK, TEMP), log timestamps, service tags in log viewer |
 
 **Constraint:** All size increases are subject to the 800x480 no-scroll test (D-13). If display at 24px causes scroll, reduce to 22px. Planner must include a viewport budget verification task after text-scaling task.
 
@@ -111,7 +114,7 @@ The dedicated SABnzbd DOWNLOADS section is removed entirely. Freed ~25% of 800px
 
 - All remaining tiles grow proportionally via CSS grid `fr` units or `flex: 1`
 - NAS header elements must fill ~95% of tile container height (D-12)
-- SABnzbd tile face shows: `[filename truncated...] [XX%]` left-aligned, `[X.X MB/s]` right-aligned — one line max, label role font (13px)
+- SABnzbd tile face shows: `[filename truncated...] [XX%]` left-aligned, `[X.X MB/s]` right-aligned — one line max, label role font (12px)
 
 ### NAS as Own Instrument Tile (D-21)
 
@@ -136,7 +139,7 @@ NAS becomes a standalone tile with an amber ribbon header (`background: rgba(232
 ```
 
 **Table columns:**
-- `TIME` — 9-char fixed-width `HH:mm:ss`, label role (13px), `--text-offwhite`
+- `TIME` — 9-char fixed-width `HH:mm:ss`, label role (12px), `--text-offwhite`
 - `LEVEL` — colored chip badge, label role, uppercase: INFO (dim amber chip), WARN (amber chip), ERROR (red chip). Fixed 48px width.
 - `SERVICE` — amber tag badge, label role, uppercase, max 10 chars truncated. Fixed 88px width.
 - `MESSAGE` — body role (15px), `--text-offwhite`, wraps on narrow viewport; truncates with `…` at single line on 800px kiosk width
@@ -173,6 +176,18 @@ z-index: 10000
 ```
 
 Speed: 10s per pass (slow, ambient — not distracting). Subject to `prefers-reduced-motion: reduce` override (existing rule in `globals.css` covers this automatically).
+
+---
+
+## New CSS: UniFi Client Count Green Bar Gauge (D-39)
+
+Replace the numeric client count in the UniFi tile with a horizontal green bar gauge. Same layout position and height as the RX/TX throughput bars.
+
+**Bar fill:** `width: (currentClients / clientsMax) * 100%` — fills from left.
+**Color:** fixed `#4ADE80` (`--cockpit-green`). No threshold color changes — client count is not a warning metric.
+**Max:** rolling high-water mark, same pattern as D-38 network bars. Key in `kv_store`: `unifi.clients_max`. Initialized on first observed count; updated immediately if current count exceeds stored max. Persisted to SQLite so max survives server restarts.
+**No raw number displayed.** The bar alone communicates load at kiosk distance.
+**Glow:** `box-shadow: 0 0 4px #4ADE80` on the bar fill — consistent with other live gauges.
 
 ---
 
@@ -229,7 +244,7 @@ Components rendered in preview: NAS tile, media stack card, one metric tile, App
 | Level filter change | Immediate client-side re-filter of loaded entries; no API call |
 | Service filter change | Immediate client-side re-filter of loaded entries; no API call |
 | EXPORT LOGS | Downloads JSON or CSV of current filtered view. No confirmation modal. Filename: `coruscant-logs-{YYYY-MM-DD}.json` |
-| PURGE LOGS | Opens confirmation modal. Modal copy: **"DELETE LOGS"** / "Delete all logs older than {N} days? This cannot be undone." / [CANCEL] [CONFIRM DELETE] buttons. On confirm: POST `/api/logs/purge` — log viewer refreshes to reflect deleted entries |
+| PURGE LOGS | Opens confirmation modal. Modal copy: **"DELETE LOGS"** / "Delete all logs older than {N} days? This cannot be undone." / [KEEP LOGS] [CONFIRM DELETE] buttons. On confirm: POST `/api/logs/purge` — log viewer refreshes to reflect deleted entries |
 | LOAD MORE | Appends next 500 entries to bottom of list. Button label updates to "SHOWING {N} ENTRIES — LOAD MORE" |
 | Live tail | New SSE `log-entry` events prepend entries to top of list. If user has scrolled down, entries are added silently (no auto-scroll) |
 
@@ -248,8 +263,8 @@ When SABnzbd is actively downloading, the SABnzbd tile body shows one additional
 [filename-truncated...  XX%]     [X.X MB/s]
 ```
 
-- Left: filename truncated to ~24 chars with `…`, then space, then `XX%` — all `--text-offwhite`, label role (13px)
-- Right: download speed in amber, label role (13px)
+- Left: filename truncated to ~24 chars with `…`, then space, then `XX%` — all `--text-offwhite`, label role (12px)
+- Right: download speed in amber, label role (12px)
 - This line only renders when `sabnzbd.speed > 0`; hidden when idle
 
 ### NowPlayingBanner — Plex Real-Time (D-06/D-07/D-08)
@@ -271,7 +286,7 @@ No interaction contract change — existing banner behavior is preserved. The un
 | Purge button | `PURGE LOGS` | D-33; triggers confirmation modal |
 | Purge modal heading | `DELETE LOGS` | Destructive verb; amber/red border on modal |
 | Purge modal body | `Delete all logs older than {N} days? This cannot be undone.` | D-33 — explicit scope, irreversibility stated |
-| Purge modal cancel | `CANCEL` | Default dismiss |
+| Purge modal cancel | `KEEP LOGS` | Specific noun-bearing dismiss — communicates what is preserved |
 | Purge modal confirm | `CONFIRM DELETE` | Destructive action — red background, white text |
 | Load more button | `LOAD MORE ({N} ENTRIES SHOWN)` | D-31 — state-bearing label |
 | Settings Logs tab label | `LOGS` | Matches tab style: SERVICES / NOTIFICATIONS / LOGS |
@@ -307,17 +322,18 @@ No third-party component registries are used. All components are bespoke React+C
 | Color indicators | NAS bar color thresholds; UniFi multi-arrow; Plex stat colors; panel inset shadow |
 | Log viewer | Full `LogsPage.tsx` replacement: table, filter bar, export, purge modal, live SSE tail |
 | Settings | New LOGS tab with retention input |
-| UniFi max scaling | Rolling high-water mark in `kv_store` SQLite table; no UI controls in Phase 8 |
+| UniFi max scaling | Rolling high-water mark in `kv_store` SQLite table for RX/TX max and client count max; no UI controls in Phase 8 |
+| UniFi client bar | Green bar gauge replacing numeric client count; same high-water mark pattern as network bars (D-39) |
 
 ---
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
+- [x] Dimension 1 Copywriting: FLAG (non-blocking — "SAVE FAILED" has no solution path; all other copy specific)
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
 
-**Approval:** pending
+**Approval:** approved 2026-04-05
