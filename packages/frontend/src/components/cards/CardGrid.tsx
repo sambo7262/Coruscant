@@ -75,14 +75,13 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
           <span style={{ fontSize: '8px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0, width: '44px' }}>
             SAB
           </span>
-          <div style={{ flex: 1, height: '12px', background: 'rgba(232,160,32,0.15)', borderRadius: '3px', overflow: 'hidden' }}>
+          <div style={{ flex: 1, height: '3px', background: 'rgba(232,160,32,0.15)', borderRadius: '2px', overflow: 'hidden' }}>
             <div style={{
               height: '100%',
               width: `${Math.min(Math.max(sabProgressPercent, 5), 100)}%`,
               background: 'var(--cockpit-amber)',
-              borderRadius: '3px',
+              borderRadius: '2px',
               transition: 'width 1s ease',
-              boxShadow: '0 0 6px var(--cockpit-amber)',
             }} />
           </div>
           <span style={{ fontSize: '9px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
@@ -151,7 +150,7 @@ export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
       )}
 
       {/* Row 2: 2-column — Media tile left, Network tile right */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', alignItems: 'stretch' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', alignItems: 'start' }}>
 
         {/* Media tile — arr LED rows + download activity section */}
         {arrServices.length > 0 && (
@@ -167,7 +166,7 @@ export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
           >
             {/* 20px amber header strip with MEDIA label */}
             <div style={{ height: '20px', background: 'var(--cockpit-amber)', flexShrink: 0, display: 'flex', alignItems: 'center', paddingLeft: '6px' }}>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: '#1a1a1a', letterSpacing: '0.08em', fontWeight: 600 }}>MEDIA</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: '#1a1a1a', letterSpacing: '0.08em', fontWeight: 600 }}>MEDIA</span>
             </div>
             {/* Two-column layout: L = Radarr/Sonarr/Lidarr, R = Prowlarr/Bazarr/Readarr */}
             <div style={{ display: 'flex', padding: '6px 4px 2px 4px', gap: '0' }}>
