@@ -22,3 +22,18 @@ export const serviceConfig = sqliteTable('service_config', {
   enabled: integer('enabled', { mode: 'boolean' }).notNull().default(false),
   updatedAt: text('updated_at').notNull(),
 })
+
+export const appLogs = sqliteTable('app_logs', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  timestamp: text('timestamp').notNull(),
+  level: text('level').notNull(),
+  service: text('service').notNull().default('system'),
+  message: text('message').notNull(),
+  payload: text('payload'),
+})
+
+export const kvStore = sqliteTable('kv_store', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+  updatedAt: text('updated_at').notNull(),
+})

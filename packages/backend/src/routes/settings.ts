@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import { eq } from 'drizzle-orm'
 import { getDb } from '../db.js'
-import { serviceConfig } from '../schema.js'
+import { serviceConfig, kvStore } from '../schema.js'
 import { encrypt, decrypt } from '../crypto.js'
 import { pollManager } from '../poll-manager.js'
 
@@ -201,4 +201,53 @@ export async function settingsRoutes(fastify: FastifyInstance) {
 
     return reply.send({ ok: true })
   })
+
+  /**
+   * GET /api/settings/logs-retention — read log retention setting.
+   * Returns { retentionDays: number } (default 7 if not set).
+   */
+  fastify.get('/api/settings/logs-retention', async (_request, reply) => {
+    const db = getDb()
+    const row = db.select().from(kvStore).where(eq(kvStore.key, 'logs.retention_days')).get()
+    const retentionDays = row ? parseInt(row.value, 10) : 7
+    return reply.send({ retentionDays })
+  })
+
+  /**
+   * POST /api/settings/logs-retention — persist log retention setting.
+   * Body: { retentionDays: number } (1-365 range)
+   * Returns { success: true, retentionDays: number }
+   */
+  fastify.post<{ Body: { retentionDays?: number } }>(
+    '/api/settings/logs-retention',
+    async (request, reply) => {
+      const retentionDays = request.body.retentionDays
+      if (
+        typeof retentionDays !== 'number' ||
+        !Number.isInteger(retentionDays) ||
+        retentionDays < 1 ||
+        retentionDays > 365
+      ) {
+        return reply.code(400).send({ error: 'retentionDays must be an integer between 1 and 365' })
+      }
+
+      const db = getDb()
+      db.insert(kvStore)
+        .values({
+          key: 'logs.retention_days',
+          value: String(retentionDays),
+          updatedAt: new Date().toISOString(),
+        })
+        .onConflictDoUpdate({
+          target: kvStore.key,
+          set: {
+            value: String(retentionDays),
+            updatedAt: new Date().toISOString(),
+          },
+        })
+        .run()
+
+      return reply.send({ success: true, retentionDays })
+    },
+  )
 }

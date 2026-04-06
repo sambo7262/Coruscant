@@ -1,8 +1,11 @@
+import pino from 'pino'
 import Fastify from 'fastify'
 import staticPlugin from '@fastify/static'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { existsSync, mkdirSync } from 'node:fs'
+import { schedule } from 'node-cron'
+import { eq, lt } from 'drizzle-orm'
 import { initDb, getDb } from './db.js'
 import { healthRoutes } from './routes/health.js'
 import { sseRoutes } from './routes/sse.js'
@@ -11,9 +14,11 @@ import { testConnectionRoutes } from './routes/test-connection.js'
 import { tautulliWebhookRoutes } from './routes/tautulli-webhook.js'
 import { arrWebhookRoutes } from './routes/arr-webhooks.js'
 import { debugRoutes } from './routes/debug.js'
-import { healthProbe, serviceConfig } from './schema.js'
+import { logRoutes } from './routes/logs.js'
+import { healthProbe, serviceConfig, appLogs, kvStore } from './schema.js'
 import { pollManager } from './poll-manager.js'
 import { decrypt } from './crypto.js'
+import { SqliteLogStream } from './log-transport.js'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 
@@ -26,7 +31,15 @@ if (dataDir && !existsSync(dataDir)) {
   mkdirSync(dataDir, { recursive: true })
 }
 
-const fastify = Fastify({ logger: true })
+const fastify = Fastify({
+  logger: {
+    stream: pino.multistream([
+      { stream: process.stdout },
+      { stream: new SqliteLogStream() },
+    ]),
+    level: 'info',
+  },
+})
 
 // Register API routes
 await fastify.register(healthRoutes)
@@ -36,6 +49,7 @@ await fastify.register(testConnectionRoutes)
 await fastify.register(tautulliWebhookRoutes)
 await fastify.register(arrWebhookRoutes)
 await fastify.register(debugRoutes)
+await fastify.register(logRoutes)
 
 // Serve compiled Vite bundle in production (D-23)
 const frontendDist = join(__dirname, '../../frontend/dist')
@@ -90,6 +104,20 @@ try {
 } catch (err) {
   fastify.log.warn({ err }, 'Failed to load service configs for polling')
 }
+
+// Nightly log prune at 3am — deletes entries older than retention_days (D-26, D-27)
+schedule('0 3 * * *', () => {
+  try {
+    const db = getDb()
+    const row = db.select().from(kvStore).where(eq(kvStore.key, 'logs.retention_days')).get()
+    const retentionDays = row ? parseInt(row.value, 10) : 7
+    const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000).toISOString()
+    const result = db.delete(appLogs).where(lt(appLogs.timestamp, cutoff)).run()
+    fastify.log.info({ service: 'system', msg: 'log_prune_complete', cutoff, deleted: result.changes })
+  } catch (err) {
+    fastify.log.error({ err, service: 'system' }, 'Nightly log prune failed')
+  }
+})
 
 // Start server — host 0.0.0.0 is MANDATORY in Docker (research Pitfall 3)
 await fastify.listen({ port: PORT, host: '0.0.0.0' })

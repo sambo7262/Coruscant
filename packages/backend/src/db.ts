@@ -47,6 +47,22 @@ export function initDb(): void {
       enabled INTEGER NOT NULL DEFAULT 0,
       updated_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS app_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+      timestamp TEXT NOT NULL,
+      level TEXT NOT NULL,
+      service TEXT NOT NULL DEFAULT 'system',
+      message TEXT NOT NULL,
+      payload TEXT
+    );
+    CREATE INDEX IF NOT EXISTS idx_app_logs_timestamp ON app_logs(timestamp);
+    CREATE INDEX IF NOT EXISTS idx_app_logs_level ON app_logs(level);
+    CREATE INDEX IF NOT EXISTS idx_app_logs_service ON app_logs(service);
+    CREATE TABLE IF NOT EXISTS kv_store (
+      key TEXT PRIMARY KEY NOT NULL,
+      value TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
   `)
 
   // Phase 4 migration: add username column if it doesn't exist yet.
