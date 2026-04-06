@@ -73,20 +73,7 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
           NO ACTIVE STREAMS
         </span>
 
-        {/* Right: server stats — shows CPU/RAM/BW even in idle so the block is always visible */}
-        {plexServerStats && (
-          <div style={{
-            display: 'flex',
-            gap: '8px',
-            flexShrink: 0,
-            fontSize: '10px',
-            fontFamily: 'var(--font-mono)',
-          }}>
-            <span style={{ color: '#4ADE80' }}>CPU {(plexServerStats.processCpuPercent ?? 0).toFixed(0)}%</span>
-            <span style={{ color: '#00c8ff' }}>RAM {(plexServerStats.processRamPercent ?? 0).toFixed(0)}%</span>
-            <span style={{ color: '#C8C8C8' }}>{(plexServerStats.bandwidthMbps ?? 0).toFixed(1)} Mbps</span>
-          </div>
-        )}
+        {/* server stats shown in Plex tile — not duplicated here */}
       </div>
     )
   }
@@ -226,20 +213,7 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
             </AnimatePresence>
           </div>
 
-          {/* Right: Plex server stats (D-24) — always visible in collapsed state */}
-          {plexServerStats && (
-            <div style={{
-              display: 'flex',
-              gap: '8px',
-              flexShrink: 0,
-              fontSize: '10px',
-              fontFamily: 'var(--font-mono)',
-            }}>
-              <span style={{ color: '#4ADE80' }}>CPU {(plexServerStats.processCpuPercent ?? 0).toFixed(0)}%</span>
-              <span style={{ color: '#00c8ff' }}>RAM {(plexServerStats.processRamPercent ?? 0).toFixed(0)}%</span>
-              <span style={{ color: '#C8C8C8' }}>{(plexServerStats.bandwidthMbps ?? 0).toFixed(1)} Mbps</span>
-            </div>
-          )}
+          {/* server stats shown in Plex tile — not duplicated here */}
         </div>
 
         {/* Expanded drawer (D-16) */}
@@ -262,41 +236,7 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
                 <StreamRow key={`${stream.user}-${stream.title}-${i}`} stream={stream} />
               ))}
 
-              {/* Plex Server Stats — also in expanded state for detail (D-10) */}
-              {plexServerStats && (
-                <div
-                  style={{
-                    borderTop: '1px solid rgba(232,160,32,0.2)',
-                    paddingTop: '8px',
-                    marginTop: '8px',
-                    paddingBottom: '12px',
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: '12px',
-                      color: 'var(--cockpit-amber)',
-                      letterSpacing: '0.08em',
-                      marginBottom: '4px',
-                      fontFamily: 'var(--font-mono)',
-                    }}
-                  >
-                    PLEX SERVER
-                  </div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: '16px',
-                      fontSize: '14px',
-                      fontFamily: 'var(--font-mono)',
-                    }}
-                  >
-                    <span style={{ color: '#4ADE80' }}>CPU {(plexServerStats.processCpuPercent ?? 0).toFixed(1)}%</span>
-                    <span style={{ color: '#00c8ff' }}>RAM {(plexServerStats.processRamPercent ?? 0).toFixed(1)}%</span>
-                    <span style={{ color: '#C8C8C8' }}>BW {(plexServerStats.bandwidthMbps ?? 0).toFixed(1)} Mbps</span>
-                  </div>
-                </div>
-              )}
+              {/* server stats shown in Plex tile — not duplicated here */}
             </motion.div>
           )}
         </AnimatePresence>

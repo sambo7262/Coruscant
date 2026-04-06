@@ -193,27 +193,41 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '0 8px', alignItems: 'flex-start' }}>
 
-      {/* LEFT col — disk temp LED indicators */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        {nasStatus.disks && nasStatus.disks.map((disk, idx) => {
-          const tempC = disk.tempC
-          const dotColor = tempC > 55 ? '#FF3B3B' : tempC >= 45 ? '#E8A020' : '#4ADE80'
-          const tempF = Math.round(tempC * 9 / 5 + 32)
-          return (
-            <div key={disk.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-              <div style={{
-                width: '8px', height: '8px', borderRadius: '50%',
-                background: dotColor, boxShadow: `0 0 4px ${dotColor}`,
-              }} />
-              <span style={{ fontSize: '9px', color: dotColor, fontFamily: 'var(--font-mono)', lineHeight: 1 }}>
-                {tempF}°F
-              </span>
-              <span style={{ fontSize: '7px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', textTransform: 'uppercase', lineHeight: 1 }}>
-                DISK {idx + 1}
-              </span>
+      {/* LEFT col — disk temp LED indicators: 4-per-row grid, last row centered */}
+      <div>
+        {nasStatus.disks && (() => {
+          const rows: typeof nasStatus.disks[] = []
+          for (let i = 0; i < nasStatus.disks.length; i += 4) rows.push(nasStatus.disks.slice(i, i + 4))
+          return rows.map((row, rowIdx) => (
+            <div key={rowIdx} style={{
+              display: 'flex',
+              justifyContent: row.length < 4 ? 'center' : 'flex-start',
+              gap: '6px',
+              marginBottom: rowIdx < rows.length - 1 ? '6px' : 0,
+            }}>
+              {row.map((disk, colIdx) => {
+                const idx = rowIdx * 4 + colIdx
+                const tempC = disk.tempC
+                const dotColor = tempC > 55 ? '#FF3B3B' : tempC >= 45 ? '#E8A020' : '#4ADE80'
+                const tempF = Math.round(tempC * 9 / 5 + 32)
+                return (
+                  <div key={disk.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                    <div style={{
+                      width: '10px', height: '10px', borderRadius: '50%',
+                      background: dotColor, boxShadow: `0 0 6px ${dotColor}`,
+                    }} />
+                    <span style={{ fontSize: '9px', color: dotColor, fontFamily: 'var(--font-mono)', lineHeight: 1 }}>
+                      {tempF}°
+                    </span>
+                    <span style={{ fontSize: '7px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', textTransform: 'uppercase', lineHeight: 1 }}>
+                      D{idx + 1}
+                    </span>
+                  </div>
+                )
+              })}
             </div>
-          )
-        })}
+          ))
+        })()}
       </div>
 
       {/* CENTER col — vertical bars reduced 25% */}
@@ -339,33 +353,30 @@ function ArrInstrument({ service, metrics }: { service: ServiceStatus; metrics: 
           </span>
         </div>
       ) : downloading && activeDownloads > 0 ? (
-        /* Active download: pulsing purple bar + label */
-        <div>
-          <div
-            style={{
-              height: '12px',
-              background: 'rgba(139,92,246,0.15)',
-              borderRadius: '3px',
-              overflow: 'hidden',
-              marginBottom: '4px',
-            }}
-          >
-            <div
-              style={{
-                height: '100%',
-                width: `${Math.min(Math.max(downloadProgress, 5), 100)}%`,
-                background: 'var(--cockpit-purple)',
-                borderRadius: '2px',
-                animation: 'arrDownloadPulsePurple 1.4s ease-in-out infinite',
-              }}
-            />
-          </div>
+        /* Active download: show clean title */
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
           <span
             className="text-label"
-            style={{ color: 'var(--cockpit-purple)', fontSize: '9px', textTransform: 'uppercase' }}
+            style={{
+              color: 'var(--cockpit-purple)',
+              fontSize: '10px',
+              textTransform: 'uppercase',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: '100%',
+              textShadow: '0 0 6px var(--cockpit-purple)',
+            }}
           >
-            {`DOWNLOADING  ${downloadQuality} x${activeDownloads}`}
+            {typeof metrics.activeTitle === 'string' && metrics.activeTitle
+              ? metrics.activeTitle
+              : `x${activeDownloads}`}
           </span>
+          {downloadQuality && (
+            <span className="text-label" style={{ color: 'rgba(139,92,246,0.6)', fontSize: '8px', textTransform: 'uppercase' }}>
+              {downloadQuality}
+            </span>
+          )}
         </div>
       ) : (
         /* Idle */
@@ -492,7 +503,7 @@ function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
       {hasActivity && (
         <div style={{
           margin: '4px 0 2px',
-          height: '12px',
+          height: '16px',
           background: 'rgba(232,160,32,0.15)',
           borderRadius: '3px',
           overflow: 'hidden',
@@ -512,7 +523,8 @@ function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
 
 // Throughput bar for TX/RX display in NETWORK card UBIQUITI section (D-02, D-03)
 function ThroughputBar({ label, value, peak, color }: { label: string; value: number | null; peak: number; color: string }) {
-  const pct = value !== null && peak > 0 ? Math.min((value / peak) * 100, 100) : 0
+  const effectivePeak = peak > 0 ? peak : 100  // fallback to 100 Mbps until peaks are established
+  const pct = value !== null ? Math.min((value / effectivePeak) * 100, 100) : 0
   const display = value !== null ? `${value >= 1 ? Math.round(value) : value.toFixed(1)}M` : '—'
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -591,27 +603,41 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
           </span>
         ) : (
           <>
-            {/* Row 1: Health LED + status label */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            {/* Row 1: Health LED + status label — styled like Pi-hole BLOCKING */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <StatusDot status={healthToLed} />
-              <span style={{ fontSize: '14px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)' }}>
+              <span className="text-glow" style={{
+                fontSize: '20px',
+                fontWeight: 600,
+                letterSpacing: '0.08em',
+                fontFamily: 'var(--font-mono)',
+                lineHeight: 1.1,
+                color: healthToLed === 'online' ? 'var(--cockpit-green)' : healthToLed === 'warning' ? 'var(--cockpit-amber)' : 'var(--cockpit-red)',
+                textShadow: `0 0 8px ${healthToLed === 'online' ? 'var(--cockpit-green)' : healthToLed === 'warning' ? 'var(--cockpit-amber)' : 'var(--cockpit-red)'}`,
+              }}>
                 {healthLabel}
               </span>
             </div>
-            {/* Row 2: Client bar gauge — green, no raw number (D-39) */}
+            {/* Row 2: Client bar gauge — green progress bar (D-39) */}
             <div>
-              <span style={{ fontSize: '8px', color: 'rgba(74,222,128,0.6)', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>CLIENTS</span>
-              <div style={{ height: '4px', background: '#222', borderRadius: '2px', marginTop: '1px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '2px' }}>
+                <span style={{ fontSize: '8px', color: 'rgba(74,222,128,0.6)', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>CLIENTS</span>
+                <span style={{ fontSize: '13px', color: '#4ADE80', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px #4ADE80' }}>{um!.clientCount}</span>
+              </div>
+              <div style={{ height: '12px', background: '#222', borderRadius: '3px' }}>
                 <div style={{
                   width: `${um!.peakClients && um!.peakClients > 0
                     ? Math.min((um!.clientCount / um!.peakClients) * 100, 100)
                     : (um!.clientCount > 0 ? 100 : 0)}%`,
                   height: '100%',
                   background: '#4ADE80',
-                  borderRadius: '2px',
-                  boxShadow: '0 0 4px #4ADE80',
+                  borderRadius: '3px',
+                  boxShadow: '0 0 6px #4ADE80',
                   transition: 'width 0.3s ease',
                 }} />
+              </div>
+              <div style={{ textAlign: 'right', fontSize: '7px', color: 'rgba(74,222,128,0.4)', fontFamily: 'var(--font-mono)', marginTop: '1px' }}>
+                MAX {um!.peakClients ?? um!.clientCount}
               </div>
             </div>
             {/* Row 3: TX bar + arrow indicator — red (D-20) */}
