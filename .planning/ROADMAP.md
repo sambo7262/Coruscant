@@ -184,9 +184,15 @@ Plans:
   4. Plex stream state updates feel immediate (≤3s lag from stream start to banner appearance)
   5. SABnzbd download progress updates smoothly in near-real-time during active downloads
   6. No visible polling artifacts (flicker, stale-data flash) at normal kiosk viewing distance
-**Plans**: TBD — run /gsd:discuss-phase 8 before planning (poll interval discussion needed)
-**UI hint**: yes
+**Plans:** 5 plans
 
+Plans:
+- [ ] 08-01-PLAN.md — Backend: DB schema (app_logs, kv_store), pino transport, log API routes, SSE change detection, poll interval tuning, Tautulli Plex re-poll, UniFi high-water marks
+- [ ] 08-02-PLAN.md — Theme preview page (3 background variants) + user selection checkpoint
+- [ ] 08-03-PLAN.md — Frontend: log viewer UI (LogsPage), SSE hook extension, Settings LOGS tab
+- [ ] 08-04-PLAN.md — Frontend: download bar removal, text scale-up, background + depth + glow, NAS tile, CRT sweep, color indicators, UniFi bars
+- [ ] 08-05-PLAN.md — Visual and functional verification checkpoint
+**UI hint**: yes
 ### Phase 9: Local Weather
 **Goal**: Current local weather conditions appear in the AppHeader top nav bar — pulled from a local or self-hosted weather source with no external cloud dependency
 **Depends on**: Phase 8
@@ -218,7 +224,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 5. UI v2 — Instrument Panel Polish | 8/8 | Complete | 2026-04-05 |
 | 6. Network Monitoring | 2/3 | In Progress|  |
 | 7. Notifications (Webhook Event Signaling) | 2/2 | Complete   | 2026-04-06 |
-| 8. Logging, Polish + Performance | 0/? | Not started | - |
+| 8. Logging, Polish + Performance | 0/5 | Planned | - |
 | 9. Local Weather | 0/? | Not started | - |
 | 10. Production Deploy + Hardening | 0/? | Not started | - |
 | 11. Raspberry Pi Kiosk | — | Complete (manual) | 2026-04-05 |
