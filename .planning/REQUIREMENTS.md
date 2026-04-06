@@ -54,7 +54,7 @@
 
 ### Notifications
 
-- [ ] **NOTIF-01**: User can configure Pushover application token and user key in settings
+- [x] **NOTIF-01**: User can configure Pushover application token and user key in settings
 - [ ] **NOTIF-02**: System sends Pushover notification when any monitored service transitions to offline/critical state
 - [ ] **NOTIF-03**: User can configure per-service numeric thresholds (e.g., NAS storage volume > 85%, NAS CPU > 90%, SABnzbd queue errors)
 - [ ] **NOTIF-04**: System sends Pushover notification when a configured threshold is breached
@@ -150,7 +150,7 @@ These are isolated in their own phase due to complexity, OAuth requirements, and
 | NET-02 | Phase 5 | Complete |
 | NET-03 | Phase 5 | Pending |
 | NET-04 | Phase 5 | Complete |
-| NOTIF-01 | Phase 6 | Pending |
+| NOTIF-01 | Phase 6 | Complete |
 | NOTIF-02 | Phase 6 | Pending |
 | NOTIF-03 | Phase 6 | Pending |
 | NOTIF-04 | Phase 6 | Pending |

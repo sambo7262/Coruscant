@@ -166,7 +166,7 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 07-01-PLAN.md — Backend: shared types, arr webhook routes, PollManager event handling + burst poll, SSE arr-event emission, unit tests
+- [x] 07-01-PLAN.md — Backend: shared types, arr webhook routes, PollManager event handling + burst poll, SSE arr-event emission, unit tests
 - [ ] 07-02-PLAN.md — Frontend: SSE hook extension, card flash animation, AppHeader ticker overlay, Settings Notifications tab, visual verification
 **UI hint**: yes
 
