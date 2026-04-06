@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import type { ServiceStatus, UnifiMetrics, ArrWebhookEvent } from '@coruscant/shared'
@@ -625,6 +625,7 @@ export function MediaStackRow({ service, index, lastArrEvent }: ServiceCardProps
 
   // Flash state — triggered by arr webhook events for this service
   const [flashColor, setFlashColor] = useState<string | null>(null)
+  const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (!lastArrEvent || lastArrEvent.service !== service.id) return
@@ -632,9 +633,9 @@ export function MediaStackRow({ service, index, lastArrEvent }: ServiceCardProps
     if (!ARR_FLASH_IDS.has(service.id)) return
     const color = EVENT_COLORS[lastArrEvent.eventCategory]
     if (!color) return
+    if (flashTimerRef.current) clearTimeout(flashTimerRef.current)
     setFlashColor(color)
-    const timer = setTimeout(() => setFlashColor(null), 10_000)
-    return () => clearTimeout(timer)
+    flashTimerRef.current = setTimeout(() => setFlashColor(null), 10_000)
   }, [lastArrEvent, service.id])
 
   // D-11 LED color logic for arr services

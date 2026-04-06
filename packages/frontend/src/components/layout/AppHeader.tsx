@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Settings, List } from 'lucide-react'
 import type { NasStatus, ArrWebhookEvent } from '@coruscant/shared'
@@ -138,14 +138,15 @@ export function AppHeader({ nas, connected, showBack = false, nasConfigured, las
   const isUnconfigured = nasConfigured === false
 
   const [ticker, setTicker] = useState<{ text: string; color: string } | null>(null)
+  const tickerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (!lastArrEvent || lastArrEvent.eventCategory === 'unknown') return
     const text = buildTickerText(lastArrEvent)
     const color = EVENT_COLORS[lastArrEvent.eventCategory] ?? 'transparent'
+    if (tickerTimerRef.current) clearTimeout(tickerTimerRef.current)
     setTicker({ text, color })
-    const timer = setTimeout(() => setTicker(null), 10_000)
-    return () => clearTimeout(timer)
+    tickerTimerRef.current = setTimeout(() => setTicker(null), 10_000)
   }, [lastArrEvent])
 
   return (
