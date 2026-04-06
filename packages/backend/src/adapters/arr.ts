@@ -43,7 +43,7 @@ export async function pollArr(
     axios.get(`${baseUrl}/api/${version}/queue`, {
       headers,
       timeout: TIMEOUT_MS,
-      params: { page: 1, pageSize: 1 },
+      params: { page: 1, pageSize: 10 },
     }),
   ])
 
@@ -67,16 +67,52 @@ export async function pollArr(
   let queueCount = 0
   let downloading = false
   let activeDownloads = 0
+  let activeTitle = ''
+  let downloadQuality = ''
+  let downloadProgress = 0
 
   if (queueResult.status === 'fulfilled') {
     const queueData = queueResult.value.data as {
       totalRecords?: number
-      records?: Array<{ status: string }>
+      records?: Array<{
+        status: string
+        quality?: { quality?: { name?: string } }
+        sizeleft?: number
+        size?: number
+        movie?: { title?: string }
+        series?: { title?: string }
+        episode?: { title?: string }
+        artist?: { artistName?: string }
+        album?: { title?: string }
+      }>
     }
     queueCount = queueData.totalRecords ?? 0
     const records = queueData.records ?? []
-    activeDownloads = records.filter((r) => r.status === 'downloading').length
+    const downloadingRecords = records.filter((r) => r.status === 'downloading')
+    activeDownloads = downloadingRecords.length
     downloading = activeDownloads > 0
+
+    const firstDownload = downloadingRecords[0]
+    if (firstDownload != null) {
+      downloadQuality = firstDownload.quality?.quality?.name ?? ''
+      downloadProgress = typeof firstDownload.sizeleft === 'number'
+        && typeof firstDownload.size === 'number'
+        && firstDownload.size > 0
+        ? Math.round((1 - firstDownload.sizeleft / firstDownload.size) * 100)
+        : 0
+
+      if (serviceId === 'radarr') {
+        activeTitle = firstDownload.movie?.title ?? ''
+      } else if (serviceId === 'sonarr') {
+        activeTitle = firstDownload.series?.title && firstDownload.episode?.title
+          ? `${firstDownload.series.title} — ${firstDownload.episode.title}`
+          : firstDownload.series?.title ?? ''
+      } else if (serviceId === 'lidarr') {
+        activeTitle = firstDownload.album?.title && firstDownload.artist?.artistName
+          ? `${firstDownload.album.title} — ${firstDownload.artist.artistName}`
+          : firstDownload.album?.title ?? ''
+      }
+    }
   }
 
   const items: Array<{ source: string; type: string; message: string; wikiUrl: string }> =
@@ -97,7 +133,7 @@ export async function pollArr(
       status: 'warning',
       configured: true,
       lastPollAt,
-      metrics: { healthWarnings, queue: queueCount, downloading, activeDownloads },
+      metrics: { healthWarnings, queue: queueCount, downloading, activeDownloads, activeTitle, downloadQuality, downloadProgress },
     }
   }
 
@@ -108,6 +144,6 @@ export async function pollArr(
     status: 'online',
     configured: true,
     lastPollAt,
-    metrics: { queue: queueCount, downloading, activeDownloads },
+    metrics: { queue: queueCount, downloading, activeDownloads, activeTitle, downloadQuality, downloadProgress },
   }
 }
