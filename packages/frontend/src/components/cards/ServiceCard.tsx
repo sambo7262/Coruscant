@@ -104,71 +104,142 @@ function NasInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   )
 }
 
-// NAS standalone tile instrument (D-21) — amber ribbon header, CPU/RAM/volume bars, disk temps, docker stats
+/**
+ * Vertical column bar gauge (8px wide × 60px tall) — used in NAS full-width tile.
+ * fillPct: 0–100, fills from bottom up.
+ */
+function NasGaugeColumn({
+  label,
+  fillPct,
+  valueText,
+  color = 'var(--cockpit-amber)',
+}: {
+  label: string
+  fillPct: number
+  valueText: string
+  color?: string
+}) {
+  const clampedFill = Math.max(0, Math.min(100, fillPct))
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '2px',
+      }}
+    >
+      <span
+        style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: '9px',
+          textTransform: 'uppercase',
+          color: 'rgba(232,160,32,0.6)',
+          letterSpacing: '0.06em',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          maxWidth: '36px',
+          textAlign: 'center',
+        }}
+      >
+        {label}
+      </span>
+      <div
+        style={{
+          width: '8px',
+          height: '60px',
+          background: 'rgba(232,160,32,0.15)',
+          borderRadius: '2px',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: `${clampedFill}%`,
+            background: color,
+            borderRadius: '2px',
+            transition: 'height 0.6s ease',
+            boxShadow: `0 0 4px ${color}`,
+          }}
+        />
+      </div>
+      <span
+        style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: '10px',
+          color,
+          textShadow: `0 0 6px ${color}`,
+        }}
+      >
+        {valueText}
+      </span>
+    </div>
+  )
+}
+
+// NAS standalone tile instrument (D-21) — vertical bars for CPU/RAM/volumes, disk temps, docker stats
 function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-      {/* CPU bar */}
-      <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-          <span style={{ fontSize: '8px', color: '#C8C8C8', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>CPU</span>
-          <span className="text-glow" style={{ fontSize: '9px', color: getBarColor(nasStatus.cpu), fontFamily: 'var(--font-mono)' }}>
-            {Math.round(nasStatus.cpu)}%
-          </span>
-        </div>
-        <div style={{ height: '4px', background: 'rgba(232,160,32,0.15)', borderRadius: '2px', overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${Math.min(nasStatus.cpu, 100)}%`, background: getBarColor(nasStatus.cpu), borderRadius: '2px' }} />
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+      {/* Top section — vertical column bars: CPU, RAM, each volume */}
+      <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
+        <NasGaugeColumn
+          label="CPU"
+          fillPct={nasStatus.cpu}
+          valueText={`${Math.round(nasStatus.cpu)}%`}
+          color={getBarColor(nasStatus.cpu)}
+        />
+        <NasGaugeColumn
+          label="RAM"
+          fillPct={nasStatus.ram}
+          valueText={`${Math.round(nasStatus.ram)}%`}
+          color={getBarColor(nasStatus.ram)}
+        />
+        {nasStatus.volumes.map((vol: NasVolume) => (
+          <NasGaugeColumn
+            key={vol.name}
+            label={vol.name.slice(0, 8)}
+            fillPct={vol.usedPercent}
+            valueText={`${Math.round(vol.usedPercent)}%`}
+            color={getBarColor(vol.usedPercent)}
+          />
+        ))}
       </div>
-      {/* RAM bar */}
-      <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-          <span style={{ fontSize: '8px', color: '#C8C8C8', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>RAM</span>
-          <span className="text-glow" style={{ fontSize: '9px', color: getBarColor(nasStatus.ram), fontFamily: 'var(--font-mono)' }}>
-            {Math.round(nasStatus.ram)}%
-          </span>
-        </div>
-        <div style={{ height: '4px', background: 'rgba(232,160,32,0.15)', borderRadius: '2px', overflow: 'hidden' }}>
-          <div style={{ height: '100%', width: `${Math.min(nasStatus.ram, 100)}%`, background: getBarColor(nasStatus.ram), borderRadius: '2px' }} />
-        </div>
-      </div>
-      {/* Volume bars */}
-      {nasStatus.volumes.length > 0 && nasStatus.volumes.map((vol: NasVolume) => (
-        <div key={vol.name}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-            <span style={{ fontSize: '8px', color: '#C8C8C8', textTransform: 'uppercase', fontFamily: 'var(--font-mono)', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%' }}>
-              {vol.name}
-            </span>
-            <span className="text-glow" style={{ fontSize: '9px', color: getBarColor(vol.usedPercent), fontFamily: 'var(--font-mono)' }}>
-              {Math.round(vol.usedPercent)}%
-            </span>
-          </div>
-          <div style={{ height: '4px', background: 'rgba(232,160,32,0.15)', borderRadius: '2px', overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${Math.min(vol.usedPercent, 100)}%`, background: getBarColor(vol.usedPercent), borderRadius: '2px' }} />
-          </div>
-        </div>
-      ))}
-      {/* Disk temps inline */}
+
+      {/* Middle section — disk temps */}
       {nasStatus.disks && nasStatus.disks.length > 0 && (
-        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '2px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {nasStatus.disks.map(disk => {
             const tempF = Math.round(disk.tempC * 9 / 5 + 32)
+            const name = disk.name ? disk.name.slice(0, 6) : disk.id
             return (
-              <span key={disk.id} className="text-glow" style={{ fontSize: '9px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)' }}>
-                {disk.name ? disk.name.slice(0, 6) : disk.id}: {tempF}°F
-              </span>
+              <div key={disk.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                <span style={{ fontSize: '9px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em' }}>
+                  {name}
+                </span>
+                <span className="text-glow" style={{ fontSize: '11px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textShadow: '0 0 6px currentColor' }}>
+                  {tempF}°F
+                </span>
+              </div>
             )
           })}
         </div>
       )}
-      {/* Docker stats */}
+
+      {/* Bottom section — Docker container stats */}
       {nasStatus.docker && (
-        <div style={{ display: 'flex', gap: '8px', marginTop: '2px' }}>
-          <span style={{ fontSize: '9px', color: '#C8C8C8', fontFamily: 'var(--font-mono)' }}>
-            DCK CPU <span className="text-glow" style={{ color: 'var(--cockpit-amber)' }}>{nasStatus.docker.cpuPercent.toFixed(1)}%</span>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '2px' }}>
+          <span style={{ fontSize: '9px', color: '#C8C8C8', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+            DCK CPU <span className="text-glow" style={{ color: 'var(--cockpit-amber)', textShadow: '0 0 6px currentColor', fontSize: '10px' }}>{nasStatus.docker.cpuPercent.toFixed(1)}%</span>
           </span>
-          <span style={{ fontSize: '9px', color: '#C8C8C8', fontFamily: 'var(--font-mono)' }}>
-            RAM <span className="text-glow" style={{ color: 'var(--cockpit-amber)' }}>{nasStatus.docker.ramPercent.toFixed(1)}%</span>
+          <span style={{ fontSize: '9px', color: '#C8C8C8', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+            RAM <span className="text-glow" style={{ color: 'var(--cockpit-amber)', textShadow: '0 0 6px currentColor', fontSize: '10px' }}>{nasStatus.docker.ramPercent.toFixed(1)}%</span>
           </span>
         </div>
       )}
@@ -605,6 +676,9 @@ export function ServiceCard({ service, index, allServices, nasStatus }: ServiceC
   // D-20: Plex does not render as a grid card (in NowPlayingBanner)
   if (service.id === 'plex') return null
 
+  // SABnzbd is absorbed into the Media tile — no standalone card
+  if (service.id === 'sabnzbd') return null
+
   // D-15, D-16: unconfigured services deep-link to settings
   const isUnconfigured = service.configured === false
 
@@ -700,7 +774,7 @@ export function ServiceCard({ service, index, allServices, nasStatus }: ServiceC
       className="chamfer-card"
       style={{
         position: 'relative',
-        minHeight: service.id === 'sabnzbd' ? '110px' : service.id === 'pihole' ? '130px' : '160px',
+        minHeight: service.id === 'pihole' ? '130px' : '160px',
         padding: 0,
         background: 'var(--bg-panel)',
         border: `1px solid ${hovered ? 'rgba(232,160,32,0.60)' : 'var(--border-rest)'}`,

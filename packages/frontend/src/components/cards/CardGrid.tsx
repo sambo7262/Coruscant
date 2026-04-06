@@ -3,6 +3,9 @@ import { ServiceCard, MediaStackRow } from './ServiceCard.js'
 
 const ARR_IDS = new Set(['radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 'readarr'])
 
+// Download-active arr services (have activeDownloads/downloadProgress in metrics)
+const DOWNLOAD_ARR_IDS = ['radarr', 'sonarr', 'lidarr']
+
 // Ordered columns for the arr tile (D-09, D-12)
 const LEFT_COL_IDS = ['radarr', 'sonarr', 'lidarr']
 const RIGHT_COL_IDS = ['prowlarr', 'bazarr', 'readarr']
@@ -11,6 +14,94 @@ interface CardGridProps {
   snapshot: DashboardSnapshot | null
   lastArrEvent?: ArrWebhookEvent | null
   nasStatus?: NasStatus | null
+}
+
+/** Inline download activity section inside the Media tile */
+function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
+  const arrServices = snapshot.services.filter(s => DOWNLOAD_ARR_IDS.includes(s.id))
+  const sabnzbd = snapshot.services.find(s => s.id === 'sabnzbd')
+
+  // Active arr downloads
+  const activeArr = arrServices.filter(s => {
+    const m = s.metrics as Record<string, unknown> | undefined
+    return m?.downloading === true && typeof m?.activeDownloads === 'number' && (m.activeDownloads as number) > 0
+  })
+
+  // SABnzbd activity
+  const sabMetrics = sabnzbd?.metrics as Record<string, unknown> | undefined
+  const sabSpeedMBs = typeof sabMetrics?.speedMBs === 'number' ? sabMetrics.speedMBs : 0
+  const sabQueueCount = typeof sabMetrics?.queueCount === 'number' ? sabMetrics.queueCount : 0
+  const sabProgressPercent = typeof sabMetrics?.progressPercent === 'number' ? sabMetrics.progressPercent : 0
+  const sabHasActivity = sabSpeedMBs > 0 || sabQueueCount > 0
+
+  const hasAnyActivity = activeArr.length > 0 || sabHasActivity
+
+  return (
+    <div>
+      {/* Divider */}
+      <div style={{ borderTop: '1px solid rgba(232,160,32,0.08)', margin: '4px 0' }} />
+
+      {/* DOWNLOADS sub-label */}
+      <div style={{ fontSize: '8px', color: 'rgba(232,160,32,0.5)', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '3px' }}>
+        DOWNLOADS
+      </div>
+
+      {!hasAnyActivity && (
+        <span style={{ fontSize: '9px', color: '#333', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          IDLE
+        </span>
+      )}
+
+      {/* Active arr download rows */}
+      {activeArr.map(s => {
+        const m = s.metrics as Record<string, unknown>
+        const progress = typeof m.downloadProgress === 'number' ? m.downloadProgress : 0
+        const quality = typeof m.downloadQuality === 'string' ? m.downloadQuality : ''
+        const count = typeof m.activeDownloads === 'number' ? m.activeDownloads : 0
+        return (
+          <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
+            <span style={{ fontSize: '8px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0, width: '44px' }}>
+              {s.name.slice(0, 7)}
+            </span>
+            <div style={{ flex: 1, height: '3px', background: 'rgba(139,92,246,0.15)', borderRadius: '2px', overflow: 'hidden' }}>
+              <div style={{
+                height: '100%',
+                width: `${Math.min(Math.max(progress, 5), 100)}%`,
+                background: 'var(--cockpit-purple)',
+                borderRadius: '2px',
+                boxShadow: '0 0 4px var(--cockpit-purple)',
+                transition: 'width 1s ease',
+              }} />
+            </div>
+            <span style={{ fontSize: '9px', color: 'var(--cockpit-purple)', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
+              {quality} x{count}
+            </span>
+          </div>
+        )
+      })}
+
+      {/* SABnzbd row */}
+      {sabHasActivity && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ fontSize: '8px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0, width: '44px' }}>
+            SAB
+          </span>
+          <div style={{ flex: 1, height: '3px', background: 'rgba(232,160,32,0.15)', borderRadius: '2px', overflow: 'hidden' }}>
+            <div style={{
+              height: '100%',
+              width: `${Math.min(Math.max(sabProgressPercent, 5), 100)}%`,
+              background: 'var(--cockpit-amber)',
+              borderRadius: '2px',
+              transition: 'width 1s ease',
+            }} />
+          </div>
+          <span style={{ fontSize: '9px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
+            {sabSpeedMBs.toFixed(1)} MB/s
+          </span>
+        </div>
+      )}
+    </div>
+  )
 }
 
 export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
@@ -34,13 +125,16 @@ export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
   }
 
   // Exclude nas-detail (legacy), Plex (in NowPlayingBanner), UniFi (embedded in NETWORK card)
-  // NAS is now a standalone tile in the grid — D-21
+  // SABnzbd is absorbed into Media tile
   const allServices = snapshot.services.filter(
     (s) => s.id !== 'nas-detail' && s.id !== 'plex' && s.id !== 'unifi',
   )
   const arrServices = allServices.filter((s) => ARR_IDS.has(s.id))
-  // All non-arr services (including SABnzbd) go into the normal grid flow — D-09
-  const nonArrServices = allServices.filter((s) => !ARR_IDS.has(s.id))
+
+  // NAS service for full-width tile
+  const nasService = allServices.find(s => s.id === 'nas')
+  // Pi-hole service for network tile
+  const piholeService = allServices.find(s => s.id === 'pihole')
 
   // Build ordered columns — only include services that exist in the snapshot
   const leftColArr = LEFT_COL_IDS
@@ -53,49 +147,68 @@ export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
   let globalIndex = 0
 
   return (
-    <div style={{ padding: '0 8px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', alignItems: 'stretch' }}>
-      {/* 1. Arr services tile — chamfered card with MEDIA label in amber header (D-09, D-12) */}
-      {arrServices.length > 0 && (
-        <div
-          className="chamfer-card"
-          style={{
-            background: 'var(--bg-panel)',
-            border: '1px solid var(--border-rest)',
-            display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
-          }}
-        >
-          {/* 20px amber header strip with MEDIA label */}
-          <div style={{ height: '20px', background: 'var(--cockpit-amber)', flexShrink: 0, display: 'flex', alignItems: 'center', paddingLeft: '6px' }}>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: '#1a1a1a', letterSpacing: '0.08em', fontWeight: 600 }}>MEDIA</span>
-          </div>
-          {/* Two-column layout: L = Radarr/Sonarr/Lidarr, R = Prowlarr/Bazarr/Readarr */}
-          <div style={{ display: 'flex', padding: '6px 4px', gap: '0' }}>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1px' }}>
-              {leftColArr.map((service) => (
-                <MediaStackRow key={service.id} service={service} index={globalIndex++} lastArrEvent={lastArrEvent} />
-              ))}
-            </div>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1px' }}>
-              {rightColArr.map((service) => (
-                <MediaStackRow key={service.id} service={service} index={globalIndex++} lastArrEvent={lastArrEvent} />
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+    <div style={{ padding: '0 8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
 
-      {/* 2. All non-arr service cards in normal grid flow (NAS, Pi-hole, SABnzbd, etc.) — D-09, D-21 */}
-      {nonArrServices.map((service) => (
+      {/* Row 1: NAS tile — full width */}
+      {nasService && (
         <ServiceCard
-          key={service.id}
-          service={service}
+          key={nasService.id}
+          service={nasService}
           index={globalIndex++}
           allServices={snapshot.services}
-          nasStatus={service.id === 'nas' ? nasStatus : undefined}
+          nasStatus={nasStatus}
         />
-      ))}
+      )}
+
+      {/* Row 2: 2-column — Media tile left, Network tile right */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', alignItems: 'stretch' }}>
+
+        {/* Media tile — arr LED rows + download activity section */}
+        {arrServices.length > 0 && (
+          <div
+            className="chamfer-card"
+            style={{
+              background: 'var(--bg-panel)',
+              border: '1px solid var(--border-rest)',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
+            }}
+          >
+            {/* 20px amber header strip with MEDIA label */}
+            <div style={{ height: '20px', background: 'var(--cockpit-amber)', flexShrink: 0, display: 'flex', alignItems: 'center', paddingLeft: '6px' }}>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: '#1a1a1a', letterSpacing: '0.08em', fontWeight: 600 }}>MEDIA</span>
+            </div>
+            {/* Two-column layout: L = Radarr/Sonarr/Lidarr, R = Prowlarr/Bazarr/Readarr */}
+            <div style={{ display: 'flex', padding: '6px 4px 2px 4px', gap: '0' }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                {leftColArr.map((service) => (
+                  <MediaStackRow key={service.id} service={service} index={globalIndex++} lastArrEvent={lastArrEvent} />
+                ))}
+              </div>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1px' }}>
+                {rightColArr.map((service) => (
+                  <MediaStackRow key={service.id} service={service} index={globalIndex++} lastArrEvent={lastArrEvent} />
+                ))}
+              </div>
+            </div>
+            {/* Download activity section */}
+            <div style={{ padding: '0 4px 6px 4px' }}>
+              <DownloadActivity snapshot={snapshot} />
+            </div>
+          </div>
+        )}
+
+        {/* Network tile — Pi-hole with Ubiquiti */}
+        {piholeService && (
+          <ServiceCard
+            key={piholeService.id}
+            service={piholeService}
+            index={globalIndex++}
+            allServices={snapshot.services}
+          />
+        )}
+      </div>
     </div>
   )
 }
