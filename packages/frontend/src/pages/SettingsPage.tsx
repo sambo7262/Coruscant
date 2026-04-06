@@ -19,6 +19,17 @@ const SERVICES = [
 
 type ServiceId = (typeof SERVICES)[number]['id']
 
+// Webhook services listed in Notifications tab (order per UI-SPEC)
+const WEBHOOK_SERVICES = [
+  { id: 'radarr', label: 'RADARR' },
+  { id: 'sonarr', label: 'SONARR' },
+  { id: 'lidarr', label: 'LIDARR' },
+  { id: 'bazarr', label: 'BAZARR' },
+  { id: 'prowlarr', label: 'PROWLARR' },
+  { id: 'readarr', label: 'READARR' },
+  { id: 'sabnzbd', label: 'SABNZBD' },
+] as const
+
 interface TestResult {
   success: boolean
   message: string
@@ -93,9 +104,14 @@ function getCredentialLabel(serviceId: ServiceId): string {
 export function SettingsPage({ snapshot }: SettingsPageProps) {
   const [searchParams, setSearchParams] = useSearchParams()
   const rawService = searchParams.get('service') ?? 'radarr'
-  const activeTab: ServiceId = SERVICES.some((s) => s.id === rawService)
+  // 'notifications' is a special non-service tab
+  const isNotificationsTab = rawService === 'notifications'
+  const activeTab: ServiceId = (!isNotificationsTab && SERVICES.some((s) => s.id === rawService))
     ? (rawService as ServiceId)
     : 'radarr'
+
+  // Notifications tab state
+  const [copiedService, setCopiedService] = useState<string | null>(null)
 
   const [url, setUrl] = useState('')
   const [apiKey, setApiKey] = useState('')
@@ -138,8 +154,22 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
     void loadTabConfig(activeTab)
   }, [activeTab, loadTabConfig])
 
-  const handleTabClick = (serviceId: ServiceId) => {
+  const handleTabClick = (serviceId: ServiceId | 'notifications') => {
     setSearchParams({ service: serviceId })
+  }
+
+  // D-18: Webhook URLs use configured base URL, not window.location.host
+  // Use placeholder if no base URL configured — user must configure manually
+  const webhookBase = 'http://<coruscant-ip>:1688'
+
+  const handleCopyWebhookUrl = async (url: string, serviceId: string) => {
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopiedService(serviceId)
+      setTimeout(() => setCopiedService(null), 1500)
+    } catch {
+      // clipboard write failed — silently ignore
+    }
   }
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -233,7 +263,7 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
         aria-label="Service configuration tabs"
       >
         {SERVICES.map((svc) => {
-          const isActive = svc.id === activeTab
+          const isActive = !isNotificationsTab && svc.id === activeTab
           const status = getServiceStatus(snapshot, svc.id)
           return (
             <button
@@ -268,9 +298,137 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
             </button>
           )
         })}
+        {/* NOTIFICATIONS special tab */}
+        <button
+          role="tab"
+          aria-selected={isNotificationsTab}
+          onClick={() => handleTabClick('notifications')}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border-rest)',
+            borderBottom: isNotificationsTab
+              ? '2px solid var(--cockpit-amber)'
+              : '1px solid var(--border-rest)',
+            color: isNotificationsTab ? 'var(--cockpit-amber)' : 'var(--text-offwhite)',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '12px',
+            fontWeight: isNotificationsTab ? 600 : 400,
+            letterSpacing: '0.06em',
+            padding: '8px 16px',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+            marginRight: '4px',
+            borderRadius: '4px 4px 0 0',
+            transition: 'color 0.15s, border-bottom-color 0.15s',
+          }}
+        >
+          NOTIFICATIONS
+        </button>
       </div>
 
+      {/* NOTIFICATIONS tab panel */}
+      {isNotificationsTab && (
+        <div
+          role="tabpanel"
+          style={{
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border-rest)',
+            borderRadius: '4px',
+            padding: '20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px',
+          }}
+        >
+          <p style={{
+            fontSize: '14px',
+            color: 'var(--text-offwhite)',
+            margin: 0,
+            marginBottom: '16px',
+            fontFamily: "'JetBrains Mono', monospace",
+            lineHeight: 1.5,
+          }}>
+            Configure arr apps to POST events to these endpoints. Paste the URL into each app&apos;s Connections settings.
+          </p>
+          {WEBHOOK_SERVICES.map((svc) => {
+            const webhookUrl = `${webhookBase}/api/webhooks/${svc.id}`
+            const isCopied = copiedService === svc.id
+            return (
+              <div
+                key={svc.id}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                }}
+              >
+                {/* Service label */}
+                <div style={{
+                  fontSize: '12px',
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontWeight: 400,
+                  color: 'rgba(232,160,32,0.6)',
+                  textTransform: 'uppercase',
+                  marginBottom: '4px',
+                }}>
+                  {svc.label}
+                </div>
+                {/* URL row: URL display + COPY URL button */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{
+                    flex: 1,
+                    fontSize: '12px',
+                    fontFamily: "'JetBrains Mono', monospace",
+                    color: 'rgba(200,200,200,0.8)',
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(232,160,32,0.15)',
+                    padding: '4px 8px',
+                    borderRadius: '2px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {webhookUrl}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void handleCopyWebhookUrl(webhookUrl, svc.id)}
+                    aria-label={`Copy webhook URL for ${svc.label}`}
+                    style={{
+                      flexShrink: 0,
+                      fontSize: '12px',
+                      fontFamily: "'JetBrains Mono', monospace",
+                      color: 'var(--cockpit-amber)',
+                      border: '1px solid rgba(232,160,32,0.3)',
+                      padding: '4px 8px',
+                      background: isCopied ? 'rgba(232,160,32,0.1)' : 'transparent',
+                      cursor: 'pointer',
+                      borderRadius: '2px',
+                      minHeight: '32px',
+                      transition: 'border-color 0.15s, background 0.15s',
+                      letterSpacing: '0.06em',
+                    }}
+                    onMouseEnter={(e) => {
+                      ;(e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(232,160,32,0.7)'
+                    }}
+                    onMouseLeave={(e) => {
+                      ;(e.currentTarget as HTMLButtonElement).style.borderColor = 'rgba(232,160,32,0.3)'
+                    }}
+                  >
+                    {isCopied ? 'COPIED' : 'COPY URL'}
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
       {/* Service config panel */}
+      {!isNotificationsTab && (
       <div
         role="tabpanel"
         style={{
@@ -503,6 +661,7 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
           </p>
         )}
       </div>
+      )}
     </div>
   )
 }
