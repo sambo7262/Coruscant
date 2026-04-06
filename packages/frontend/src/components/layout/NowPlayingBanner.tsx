@@ -78,17 +78,17 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
         {plexServerStats && (
           <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
             {plexServerStats.processCpuPercent != null && (
-              <span style={{ fontSize: '22px', color: '#4ADE80', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px #4ADE80' }}>
+              <span style={{ fontSize: '22px', color: '#4ADE80', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
                 CPU {plexServerStats.processCpuPercent.toFixed(1)}%
               </span>
             )}
             {plexServerStats.processRamPercent != null && (
-              <span style={{ fontSize: '22px', color: '#00c8ff', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px #00c8ff' }}>
+              <span style={{ fontSize: '22px', color: '#00c8ff', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
                 RAM {plexServerStats.processRamPercent.toFixed(1)}%
               </span>
             )}
             {plexServerStats.bandwidthMbps != null && (
-              <span style={{ fontSize: '22px', color: '#C8C8C8', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px rgba(200,200,200,0.4)' }}>
+              <span style={{ fontSize: '22px', color: '#C8C8C8', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
                 {plexServerStats.bandwidthMbps.toFixed(1)}M
               </span>
             )}
@@ -240,17 +240,17 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
           {plexServerStats && (
             <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
               {plexServerStats.processCpuPercent != null && (
-                <span style={{ fontSize: '22px', color: '#4ADE80', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px #4ADE80' }}>
+                <span style={{ fontSize: '22px', color: '#4ADE80', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
                   CPU {plexServerStats.processCpuPercent.toFixed(1)}%
                 </span>
               )}
               {plexServerStats.processRamPercent != null && (
-                <span style={{ fontSize: '22px', color: '#00c8ff', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px #00c8ff' }}>
+                <span style={{ fontSize: '22px', color: '#00c8ff', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
                   RAM {plexServerStats.processRamPercent.toFixed(1)}%
                 </span>
               )}
               {plexServerStats.bandwidthMbps != null && (
-                <span style={{ fontSize: '22px', color: '#C8C8C8', fontFamily: 'var(--font-mono)', fontWeight: 600, textShadow: '0 0 6px rgba(200,200,200,0.4)' }}>
+                <span style={{ fontSize: '22px', color: '#C8C8C8', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
                   {plexServerStats.bandwidthMbps.toFixed(1)}M
                 </span>
               )}
