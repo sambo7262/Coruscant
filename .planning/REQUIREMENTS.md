@@ -71,7 +71,7 @@
 ### Configuration & Settings
 
 - [x] **CFG-01**: Settings page lets user configure the base URL and API key for each service integration
-- [ ] **CFG-02**: Settings page lets user configure per-service notification thresholds
+- [x] **CFG-02**: Settings page lets user configure per-service notification thresholds
 - [x] **CFG-03**: All settings are persisted to SQLite and survive app restarts and container restarts
 - [x] **CFG-04**: Each service configuration has a "Test Connection" action that validates the URL and credentials live
 
@@ -156,7 +156,7 @@ These are isolated in their own phase due to complexity, OAuth requirements, and
 | NOTIF-04 | Phase 6 | Pending |
 | NOTIF-05 | Phase 6 | Pending |
 | NOTIF-06 | Phase 6 | Pending |
-| CFG-02 | Phase 6 | Pending |
+| CFG-02 | Phase 6 | Complete |
 | LOG-01 | Phase 7 | Pending |
 | LOG-02 | Phase 7 | Pending |
 | LOG-03 | Phase 7 | Pending |

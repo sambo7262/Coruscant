@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 4: Rich Service Integrations** - Pi-hole, Plex (Now Playing banner), and Synology NAS CPU/RAM/storage/disk/fans
 - [x] **Phase 5: UI v2 — Instrument Panel Polish** - Second UI pass with real data: refine card metrics, layout density, interaction details, and visual hierarchy now that actual service data is flowing (completed 2026-04-05)
 - [ ] **Phase 6: Network Monitoring** - UniFi device cards, client counts, WAN throughput, API token auth (UniFi OS 5.x)
-- [ ] **Phase 7: Notifications (Webhook Event Signaling)** - Arr webhook receivers with ephemeral card flash + header ticker, SABnzbd burst poll, Settings webhook URL tab
+- [x] **Phase 7: Notifications (Webhook Event Signaling)** - Arr webhook receivers with ephemeral card flash + header ticker, SABnzbd burst poll, Settings webhook URL tab (completed 2026-04-06)
 - [ ] **Phase 8: Logging, Polish + Performance** - Log viewer, SQLite pruning, poll interval tuning for real-time media feel
 - [ ] **Phase 9: Local Weather** - Current conditions in AppHeader nav bar via self-hosted/no-key weather API
 - [ ] **Phase 10: Production Deploy + Hardening** - v1.0 tag, registry migration, final bug pass, git cleanup
@@ -163,11 +163,11 @@ Plans:
   2. Webhook events produce a 10-second colored card flash on the matching MediaStackRow label and a ticker overlay in the AppHeader
   3. SABnzbd poll interval switches to 1 second on grab and returns to 10 seconds on import-complete or queue-empty
   4. Settings Notifications tab lists all 7 arr services with copy-able webhook URLs
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 07-01-PLAN.md — Backend: shared types, arr webhook routes, PollManager event handling + burst poll, SSE arr-event emission, unit tests
-- [ ] 07-02-PLAN.md — Frontend: SSE hook extension, card flash animation, AppHeader ticker overlay, Settings Notifications tab, visual verification
+- [x] 07-02-PLAN.md — Frontend: SSE hook extension, card flash animation, AppHeader ticker overlay, Settings Notifications tab, visual verification
 **UI hint**: yes
 
 ### Phase 8: Logging, Polish + Performance
@@ -217,7 +217,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 4. Rich Service Integrations | 5/5 | Complete | 2026-04-05 |
 | 5. UI v2 — Instrument Panel Polish | 8/8 | Complete | 2026-04-05 |
 | 6. Network Monitoring | 2/3 | In Progress|  |
-| 7. Notifications (Webhook Event Signaling) | 0/2 | Planned | - |
+| 7. Notifications (Webhook Event Signaling) | 2/2 | Complete   | 2026-04-06 |
 | 8. Logging, Polish + Performance | 0/? | Not started | - |
 | 9. Local Weather | 0/? | Not started | - |
 | 10. Production Deploy + Hardening | 0/? | Not started | - |

@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-04-06T02:38:48.069Z"
+stopped_at: Completed 07-02-PLAN.md
+last_updated: "2026-04-06T03:00:00.000Z"
 last_activity: 2026-04-06
 progress:
   total_phases: 12
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 
 ## Current Position
 
-Phase: 07 (notifications-pushover-inbox) — EXECUTING
-Plan: 2 of 2
-Phase: 06 (network-monitoring) — NEXT
-Status: Ready to execute
+Phase: 07 (notifications-pushover-inbox) — COMPLETE
+Plan: 2 of 2 complete
+Phase: 08 (logging-polish-performance) — NEXT
+Status: Ready to discuss/plan
 Last activity: 2026-04-06
 
 Progress: [░░░░░░░░░░] 0%
@@ -154,6 +154,10 @@ Recent decisions affecting current work:
 - [Phase 06-network-monitoring]: Gateway-first health LED rollup: RED if no gateways or gateway offline; AMBER if non-gateway offline; GREEN if all online
 - [Phase 07-01]: Content-type parser scoped per Fastify plugin — arrWebhookRoutes registers its own parser with no conflict to tautulliWebhookRoutes
 - [Phase 07-01]: SABNZBD_INTERVAL_MS and SABNZBD_BURST_MS exported as named constants — tests assert exact values, not literals
+- [Phase 07-02]: useRef for flash/ticker timers — prevents stale closure cleanup from clearing active timer on unrelated re-renders
+- [Phase 07-02]: Ticker overlay uses gridColumn '2 / 4' span — CORUSCANT title in column 1 always visible per D-12
+- [Phase 07-02]: Webhook URLs in Settings NOTIFICATIONS tab use configured base URL or placeholder — NOT window.location per D-18
+- [Phase 07-02]: SABnzbd excluded from MediaStackRow flash — burst poll handles SABnzbd signaling; flash reserved for arr services only
 
 ### Roadmap Evolution
 
@@ -184,6 +188,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06T02:38:48.063Z
-Stopped at: Completed 07-01-PLAN.md
+Last session: 2026-04-06T03:00:00.000Z
+Stopped at: Completed 07-02-PLAN.md
 Resume file: None
