@@ -189,7 +189,7 @@ Plans:
 Plans:
 - [x] 08-01-PLAN.md — Backend: DB schema (app_logs, kv_store), pino transport, log API routes, SSE change detection, poll interval tuning, Tautulli Plex re-poll, UniFi high-water marks
 - [x] 08-02-PLAN.md — Theme preview page (3 background variants) + user selection checkpoint
-- [ ] 08-03-PLAN.md — Frontend: log viewer UI (LogsPage), SSE hook extension, Settings LOGS tab
+- [x] 08-03-PLAN.md — Frontend: log viewer UI (LogsPage), SSE hook extension, Settings LOGS tab
 - [ ] 08-04-PLAN.md — Frontend: download bar removal, text scale-up, background + depth + glow, NAS tile, CRT sweep, color indicators, UniFi bars
 - [ ] 08-05-PLAN.md — Visual and functional verification checkpoint
 **UI hint**: yes
