@@ -42,7 +42,7 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
       <div style={{ borderTop: '1px solid rgba(232,160,32,0.08)', margin: '4px 0' }} />
 
       {/* DOWNLOADS sub-label */}
-      <div style={{ fontSize: '8px', color: 'rgba(232,160,32,0.5)', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '3px' }}>
+      <div style={{ fontSize: '9px', color: 'rgba(232,160,32,0.5)', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '3px' }}>
         DOWNLOADS
       </div>
 
@@ -52,30 +52,18 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
         </span>
       )}
 
-      {/* Active arr download rows */}
+      {/* Active arr download rows — title + count only, no progress bar */}
       {activeArr.map(s => {
         const m = s.metrics as Record<string, unknown>
-        const progress = typeof m.downloadProgress === 'number' ? m.downloadProgress : 0
-        const quality = typeof m.downloadQuality === 'string' ? m.downloadQuality : ''
         const count = typeof m.activeDownloads === 'number' ? m.activeDownloads : 0
         const activeTitle = typeof m.activeTitle === 'string' && m.activeTitle ? m.activeTitle : s.name.slice(0, 7)
         return (
           <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
-            <span style={{ fontSize: '8px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0, maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: '9px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {activeTitle}
             </span>
-            <div style={{ flex: 1, height: '3px', background: 'rgba(139,92,246,0.15)', borderRadius: '2px', overflow: 'hidden' }}>
-              <div style={{
-                height: '100%',
-                width: `${Math.min(Math.max(progress, 5), 100)}%`,
-                background: 'var(--cockpit-purple)',
-                borderRadius: '2px',
-                boxShadow: '0 0 4px var(--cockpit-purple)',
-                transition: 'width 1s ease',
-              }} />
-            </div>
             <span style={{ fontSize: '9px', color: 'var(--cockpit-purple)', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
-              {quality} x{count}
+              x{count}
             </span>
           </div>
         )
@@ -87,13 +75,14 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
           <span style={{ fontSize: '8px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0, width: '44px' }}>
             SAB
           </span>
-          <div style={{ flex: 1, height: '3px', background: 'rgba(232,160,32,0.15)', borderRadius: '2px', overflow: 'hidden' }}>
+          <div style={{ flex: 1, height: '12px', background: 'rgba(232,160,32,0.15)', borderRadius: '3px', overflow: 'hidden' }}>
             <div style={{
               height: '100%',
               width: `${Math.min(Math.max(sabProgressPercent, 5), 100)}%`,
               background: 'var(--cockpit-amber)',
-              borderRadius: '2px',
+              borderRadius: '3px',
               transition: 'width 1s ease',
+              boxShadow: '0 0 6px var(--cockpit-amber)',
             }} />
           </div>
           <span style={{ fontSize: '9px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
@@ -162,7 +151,7 @@ export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
       )}
 
       {/* Row 2: 2-column — Media tile left, Network tile right */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', alignItems: 'stretch' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', alignItems: 'start' }}>
 
         {/* Media tile — arr LED rows + download activity section */}
         {arrServices.length > 0 && (
@@ -178,7 +167,7 @@ export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
           >
             {/* 20px amber header strip with MEDIA label */}
             <div style={{ height: '20px', background: 'var(--cockpit-amber)', flexShrink: 0, display: 'flex', alignItems: 'center', paddingLeft: '6px' }}>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: '#1a1a1a', letterSpacing: '0.08em', fontWeight: 600 }}>MEDIA</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: '#1a1a1a', letterSpacing: '0.08em', fontWeight: 600 }}>MEDIA</span>
             </div>
             {/* Two-column layout: L = Radarr/Sonarr/Lidarr, R = Prowlarr/Bazarr/Readarr */}
             <div style={{ display: 'flex', padding: '6px 4px 2px 4px', gap: '0' }}>

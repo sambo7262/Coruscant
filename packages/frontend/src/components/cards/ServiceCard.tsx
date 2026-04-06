@@ -191,47 +191,49 @@ function NasGaugeColumn({
 // NAS standalone tile instrument (D-21) — 3-column layout: disk LEDs | CPU/RAM/volume bars | Docker stats
 function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '0 8px', alignItems: 'flex-start' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '0 8px', alignItems: 'stretch' }}>
 
       {/* LEFT col — disk temp LED indicators: 4-per-row grid, last row centered */}
-      <div>
-        {nasStatus.disks && (() => {
-          const rows: typeof nasStatus.disks[] = []
-          for (let i = 0; i < nasStatus.disks.length; i += 4) rows.push(nasStatus.disks.slice(i, i + 4))
-          return rows.map((row, rowIdx) => (
-            <div key={rowIdx} style={{
-              display: 'flex',
-              justifyContent: row.length < 4 ? 'center' : 'flex-start',
-              gap: '6px',
-              marginBottom: rowIdx < rows.length - 1 ? '6px' : 0,
-            }}>
-              {row.map((disk, colIdx) => {
-                const idx = rowIdx * 4 + colIdx
-                const tempC = disk.tempC
-                const dotColor = tempC > 55 ? '#FF3B3B' : tempC >= 45 ? '#E8A020' : '#4ADE80'
-                const tempF = Math.round(tempC * 9 / 5 + 32)
-                return (
-                  <div key={disk.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                    <div style={{
-                      width: '10px', height: '10px', borderRadius: '50%',
-                      background: dotColor, boxShadow: `0 0 6px ${dotColor}`,
-                    }} />
-                    <span style={{ fontSize: '9px', color: dotColor, fontFamily: 'var(--font-mono)', lineHeight: 1 }}>
-                      {tempF}°
-                    </span>
-                    <span style={{ fontSize: '7px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', textTransform: 'uppercase', lineHeight: 1 }}>
-                      D{idx + 1}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-          ))
-        })()}
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+        <div style={{ width: '100%' }}>
+          {nasStatus.disks && (() => {
+            const rows: typeof nasStatus.disks[] = []
+            for (let i = 0; i < nasStatus.disks.length; i += 4) rows.push(nasStatus.disks.slice(i, i + 4))
+            return rows.map((row, rowIdx) => (
+              <div key={rowIdx} style={{
+                display: 'flex',
+                justifyContent: row.length < 4 ? 'center' : 'flex-start',
+                gap: '8px',
+                marginBottom: rowIdx < rows.length - 1 ? '8px' : 0,
+              }}>
+                {row.map((disk, colIdx) => {
+                  const idx = rowIdx * 4 + colIdx
+                  const tempC = disk.tempC
+                  const dotColor = tempC > 55 ? '#FF3B3B' : tempC >= 45 ? '#E8A020' : '#4ADE80'
+                  const tempF = Math.round(tempC * 9 / 5 + 32)
+                  return (
+                    <div key={disk.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                      <div style={{
+                        width: '14px', height: '14px', borderRadius: '50%',
+                        background: dotColor, boxShadow: `0 0 6px ${dotColor}`,
+                      }} />
+                      <span style={{ fontSize: '10px', color: dotColor, fontFamily: 'var(--font-mono)', lineHeight: 1 }}>
+                        {tempF}°
+                      </span>
+                      <span style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', textTransform: 'uppercase', lineHeight: 1 }}>
+                        D{idx + 1}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
+            ))
+          })()}
+        </div>
       </div>
 
-      {/* CENTER col — vertical bars reduced 25% */}
-      <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+      {/* CENTER col — vertical bars */}
+      <div style={{ display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
         <NasGaugeColumn
           label="CPU"
           fillPct={nasStatus.cpu}
@@ -251,7 +253,7 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
         {nasStatus.volumes.map((vol: NasVolume) => (
           <NasGaugeColumn
             key={vol.name}
-            label={vol.name.slice(0, 8)}
+            label={vol.name === '/volume1' ? 'HD' : vol.name.replace(/^\/volume/, 'V').slice(0, 4)}
             fillPct={vol.usedPercent}
             valueText={`${Math.round(vol.usedPercent)}%`}
             color={getBarColor(vol.usedPercent)}
@@ -262,22 +264,29 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
       </div>
 
       {/* RIGHT col — Docker stats */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', justifyContent: 'center', height: '100%' }}>
         {nasStatus.docker ? (
           <>
-            <div style={{ fontSize: '8px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Docker</div>
-            <span className="text-glow" style={{ fontSize: '10px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textShadow: '0 0 6px var(--cockpit-amber)' }}>
+            <div style={{ fontSize: '9px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Docker</div>
+            <span className="text-glow" style={{ fontSize: '16px', lineHeight: 1.2, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textShadow: '0 0 6px var(--cockpit-amber)' }}>
               CPU {nasStatus.docker.cpuPercent.toFixed(1)}%
             </span>
-            <span className="text-glow" style={{ fontSize: '10px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textShadow: '0 0 6px var(--cockpit-amber)' }}>
+            <span className="text-glow" style={{ fontSize: '16px', lineHeight: 1.2, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textShadow: '0 0 6px var(--cockpit-amber)' }}>
               RAM {nasStatus.docker.ramPercent.toFixed(1)}%
             </span>
-            {nasStatus.imageUpdateAvailable === true && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#E8A020', boxShadow: '0 0 4px #E8A020', flexShrink: 0 }} />
-                <span style={{ fontSize: '8px', color: '#E8A020', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>UPDATE</span>
-              </div>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
+              {nasStatus.imageUpdateAvailable === true ? (
+                <>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#E8A020', boxShadow: '0 0 4px #E8A020', flexShrink: 0 }} />
+                  <span style={{ fontSize: '8px', color: '#E8A020', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>IMG UPDATE</span>
+                </>
+              ) : (
+                <>
+                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#444', flexShrink: 0 }} />
+                  <span style={{ fontSize: '8px', color: '#444', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>IMG OK</span>
+                </>
+              )}
+            </div>
           </>
         ) : null}
       </div>
@@ -514,6 +523,7 @@ function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
             background: 'var(--cockpit-amber)',
             borderRadius: '2px',
             transition: 'width 1s ease',
+            boxShadow: '0 0 6px var(--cockpit-amber)',
           }} />
         </div>
       )}
@@ -522,21 +532,18 @@ function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
 }
 
 // Throughput bar for TX/RX display in NETWORK card UBIQUITI section (D-02, D-03)
+// Shows bar only — no trailing number, bar height 16px for visual prominence
 function ThroughputBar({ label, value, peak, color }: { label: string; value: number | null; peak: number; color: string }) {
   const effectivePeak = peak > 0 ? peak : 100  // fallback to 100 Mbps until peaks are established
   const pct = value !== null ? Math.min((value / effectivePeak) * 100, 100) : 0
-  const display = value !== null ? `${value >= 1 ? Math.round(value) : value.toFixed(1)}M` : '—'
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1 }}>
       <span style={{ fontSize: '8px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)', width: '14px' }}>
         {label}
       </span>
-      <div style={{ flex: 1, height: '12px', background: '#222', borderRadius: '3px' }}>
+      <div style={{ flex: 1, height: '16px', background: '#222', borderRadius: '3px' }}>
         <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: '3px', transition: 'width 0.3s ease', boxShadow: `0 0 6px ${color}` }} />
       </div>
-      <span style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', width: '32px', textAlign: 'right', color: color, textShadow: '0 0 6px currentColor' }}>
-        {display}
-      </span>
     </div>
   )
 }
@@ -564,10 +571,10 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 8px' }}>
       {/* LEFT — Pi-hole */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-        <div style={{ fontSize: '8px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em',
+        <div style={{ fontSize: '9px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em',
           textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>PI-HOLE</div>
         <span className="text-glow" style={{
-          fontSize: '20px',
+          fontSize: '22px',
           fontWeight: 600,
           letterSpacing: '0.08em',
           fontFamily: 'var(--font-mono)',
@@ -578,7 +585,7 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
           {blocking}
         </span>
         <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>BLOCKING</div>
-        <span className="text-glow" style={{ fontSize: '20px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1, textShadow: '0 0 8px var(--cockpit-amber)' }}>
+        <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1, textShadow: '0 0 8px var(--cockpit-amber)' }}>
           {qpm}
         </span>
         <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>QPM</div>
@@ -593,7 +600,7 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
       </div>
       {/* RIGHT — Ubiquiti */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-        <div style={{ fontSize: '8px', color: unifiConfigured ? 'var(--cockpit-amber)' : '#555',
+        <div style={{ fontSize: '9px', color: unifiConfigured ? 'var(--cockpit-amber)' : '#555',
           letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
           UBIQUITI
         </div>
@@ -607,7 +614,7 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <StatusDot status={healthToLed} />
               <span className="text-glow" style={{
-                fontSize: '20px',
+                fontSize: '22px',
                 fontWeight: 600,
                 letterSpacing: '0.08em',
                 fontFamily: 'var(--font-mono)',
@@ -640,24 +647,10 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
                 MAX {um!.peakClients ?? um!.clientCount}
               </div>
             </div>
-            {/* Row 3: TX bar + arrow indicator — red (D-20) */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <ThroughputBar label="TX" value={um!.wanTxMbps} peak={um!.peakTxMbps} color="#FF3B3B" />
-              {getArrowTier(um!.wanTxMbps, 'tx') && (
-                <span className="text-glow" style={{ fontSize: '10px', color: '#FF3B3B', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
-                  {getArrowTier(um!.wanTxMbps, 'tx')}
-                </span>
-              )}
-            </div>
-            {/* Row 4: RX bar + arrow indicator — blue (D-20) */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <ThroughputBar label="RX" value={um!.wanRxMbps} peak={um!.peakRxMbps} color="#00c8ff" />
-              {getArrowTier(um!.wanRxMbps, 'rx') && (
-                <span className="text-glow" style={{ fontSize: '10px', color: '#00c8ff', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
-                  {getArrowTier(um!.wanRxMbps, 'rx')}
-                </span>
-              )}
-            </div>
+            {/* Row 3: TX bar — red, bars only no trailing numbers (D-20) */}
+            <ThroughputBar label="TX" value={um!.wanTxMbps} peak={um!.peakTxMbps} color="#FF3B3B" />
+            {/* Row 4: RX bar — blue, bars only no trailing numbers (D-20) */}
+            <ThroughputBar label="RX" value={um!.wanRxMbps} peak={um!.peakRxMbps} color="#00c8ff" />
           </>
         )}
       </div>
@@ -836,7 +829,7 @@ export function ServiceCard({ service, index, allServices, nasStatus }: ServiceC
       className="chamfer-card"
       style={{
         position: 'relative',
-        minHeight: service.id === 'pihole' ? '130px' : '160px',
+        minHeight: service.id === 'pihole' ? undefined : '160px',
         padding: 0,
         background: 'var(--bg-panel)',
         border: `1px solid ${hovered ? 'rgba(232,160,32,0.60)' : 'var(--border-rest)'}`,
@@ -1048,11 +1041,11 @@ export function MediaStackRow({ service, index, lastArrEvent }: ServiceCardProps
           }}
         />
       )}
-      {/* 8px LED dot */}
+      {/* 10px LED dot */}
       <div
         style={{
-          width: '8px',
-          height: '8px',
+          width: '10px',
+          height: '10px',
           borderRadius: '50%',
           flexShrink: 0,
           ...getLedStyle(),
@@ -1063,7 +1056,7 @@ export function MediaStackRow({ service, index, lastArrEvent }: ServiceCardProps
         className="text-label"
         style={{
           color: isUnconfigured ? '#666' : 'var(--text-offwhite)',
-          fontSize: '12px',
+          fontSize: '14px',
           textTransform: 'uppercase',
           letterSpacing: '0.06em',
         }}
