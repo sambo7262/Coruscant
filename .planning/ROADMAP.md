@@ -271,3 +271,18 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 
 Plans:
 - [ ] TBD (promote with /gsd:review-backlog when ready)
+
+### Phase 999.2: Plex Now Playing — Vertical Bar Stats (BACKLOG)
+
+**Goal:** Add vertical bar meters (instrument-panel style) to the right side of each Now Playing stream row, showing bitrate and transcode load at a glance without expanding the tile
+**Requirements:** TBD
+**Notes:**
+- Bars for scalar stats only: bitrate (0–max Mbps) and transcode CPU load — these map naturally to gauge/meter metaphor
+- Categorical stats (codec, resolution, direct play vs transcode) stay as small text badges, not bars
+- Layout: bars column on the right of the stream row; title/user/progress on the left — verify fits on 800×480 kiosk width and phone portrait without clipping
+- Multi-stream case: each stream row gets its own bar column — test with 2–3 concurrent streams
+- Cockpit aesthetic: amber fill, dark background, thin stroke — matches fuel gauge / signal meter vibe
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
