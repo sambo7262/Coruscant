@@ -73,11 +73,18 @@ export interface PlexServerStats {
   bandwidthMbps: number
 }
 
+export interface WeatherData {
+  temp_f: number
+  wmo_code: number
+  fetched_at: string  // ISO 8601
+}
+
 export interface DashboardSnapshot {
   services: ServiceStatus[]
   nas: NasStatus
   streams: PlexStream[]
   plexServerStats?: PlexServerStats  // optional — populated when Plex is configured
+  weather?: WeatherData | null  // null = not configured; undefined = not yet loaded
   timestamp: string // ISO 8601
 }
 
