@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 09-03-PLAN.md — settings side-rail layout
-last_updated: "2026-04-06T20:19:53.462Z"
+stopped_at: Completed 09-01-PLAN.md — weather backend pipeline
+last_updated: "2026-04-06T20:31:06.668Z"
 last_activity: 2026-04-06
 progress:
-  total_phases: 12
+  total_phases: 13
   completed_phases: 7
   total_plans: 49
-  completed_plans: 44
+  completed_plans: 45
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 ## Current Position
 
 Phase: 09 (local-weather-ui-polish) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Phase: 09 (production-deploy-and-hardening) — NEXT
 Status: Ready to execute
 Last activity: 2026-04-06
@@ -84,6 +84,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 08 P03 | 8min | 2 tasks | 4 files |
 | Phase 09-local-weather-ui-polish P02 | 12min | 2 tasks | 5 files |
 | Phase 09-local-weather-ui-polish P03 | 265 | 1 tasks | 1 files |
+| Phase 09-local-weather-ui-polish P01 | 15min | 2 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -173,6 +174,9 @@ Recent decisions affecting current work:
 - [Phase 09-02]: backdrop-filter moved to ::before pseudo on .app-header-blur and .banner-blur-bg — isolates blur from child text rendering
 - [Phase 09-02]: Marquee threshold is title.length > 25 chars — avoids ref measurement overhead while covering overflow cases
 - [Phase 09-local-weather-ui-polish]: SECTIONS defined as const tuple for type-safe SectionId derivation; WeatherTab is self-contained component matching LogsTab pattern; handleSectionClick sets service to section.services[0]
+- [Phase 09-local-weather-ui-polish]: Open-Meteo used for both weather data and geocoding — no API key required, stays within privacy constraint
+- [Phase 09-local-weather-ui-polish]: On fetch failure, weather.current kvStore key is NOT overwritten — frontend detects stale via fetched_at age
+- [Phase 09-local-weather-ui-polish]: vitest weather-poller: shared get mock + advanceTimersByTimeAsync(0) to avoid runAllTimersAsync infinite loop
 
 ### Roadmap Evolution
 
@@ -210,6 +214,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06T20:19:53.455Z
-Stopped at: Completed 09-03-PLAN.md — settings side-rail layout
+Last session: 2026-04-06T20:31:06.662Z
+Stopped at: Completed 09-01-PLAN.md — weather backend pipeline
 Resume file: None

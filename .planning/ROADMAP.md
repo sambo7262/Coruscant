@@ -209,10 +209,10 @@ Plans:
   3. User sets location (lat/lon) once in Settings; weather persists across restarts
   4. If weather fetch fails, header shows last-known value with a stale indicator rather than crashing
   5. All Claude-identified UI micro-issues resolved and signed off
-**Plans:** 2/4 plans executed
+**Plans:** 3/4 plans executed
 
 Plans:
-- [ ] 09-01-PLAN.md — Weather backend: shared types, adapter, poller, settings route, SSE integration, unit tests
+- [x] 09-01-PLAN.md — Weather backend: shared types, adapter, poller, settings route, SSE integration, unit tests
 - [x] 09-02-PLAN.md — UI polish: disconnect dot, header sizing, text sharpness, DOWNLOADS tile fixes, speed colors, webhook log format
 - [x] 09-03-PLAN.md — Settings page side-rail restructure with section groupings
 - [ ] 09-04-PLAN.md — Weather frontend widget, living/breathing animations, visual verification checkpoint
@@ -233,7 +233,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 6. Network Monitoring | 2/3 | In Progress|  |
 | 7. Notifications (Webhook Event Signaling) | 2/2 | Complete   | 2026-04-06 |
 | 8. Logging, Polish + Performance | 2/5 | In Progress|  |
-| 9. Local Weather + UI Final Polish | 2/4 | In Progress|  |
+| 9. Local Weather + UI Final Polish | 3/4 | In Progress|  |
 | 10. Production Deploy + Hardening | 0/? | Not started | - |
 | 11. Raspberry Pi Kiosk | — | Complete (manual) | 2026-04-05 |
 
