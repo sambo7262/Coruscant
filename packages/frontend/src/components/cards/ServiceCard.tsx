@@ -199,6 +199,21 @@ const NAS_SECTION_LABEL_STYLE: React.CSSProperties = {
   marginBottom: '4px',
 }
 
+/** Derive short volume label from DSM volume name.
+ *  "volume1" | "/volume1" | "Volume 1" | "Volume1" → "HD"
+ *  "volume2" | "/volume2" | "Volume 2"             → "HD2"
+ *  Anything else ≤4 chars                            → as-is
+ *  Anything else                                     → first 4 chars
+ */
+function volumeLabel(name: string): string {
+  const normalized = name.replace(/^\//, '').replace(/\s+/g, '').toLowerCase()
+  const match = normalized.match(/^volume(\d+)$/)
+  if (match) {
+    return match[1] === '1' ? 'HD' : `HD${match[1]}`
+  }
+  return name.length <= 4 ? name : name.slice(0, 4)
+}
+
 // NAS standalone tile instrument (D-21) — 3-column layout: disk LEDs | CPU/RAM/volume bars | Docker stats
 function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
   return (
@@ -248,15 +263,12 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
       {/* CENTER col — horizontal bars for CPU, RAM, HD volumes */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'center', height: '100%' }}>
         {/* NAS device name label */}
-        <div style={{ ...NAS_SECTION_LABEL_STYLE, marginBottom: '2px' }}>{nasStatus.name ?? 'NAS'}</div>
+        <div style={{ ...NAS_SECTION_LABEL_STYLE, marginBottom: '2px' }}>{nasStatus.name || 'TheRock'}</div>
         {[
           { label: 'CPU', value: nasStatus.cpu, valueText: `${Math.round(nasStatus.cpu)}%` },
           { label: 'RAM', value: nasStatus.ram, valueText: `${Math.round(nasStatus.ram)}%` },
           ...nasStatus.volumes.map((vol: NasVolume) => ({
-            label: vol.name === 'volume1' || vol.name === '/volume1' ? 'HD'
-              : vol.name.match(/^\/?volume(\d+)$/) ? `HD${vol.name.match(/^\/?volume(\d+)$/)![1]}`
-              : vol.name.length <= 4 ? vol.name
-              : vol.name.slice(0, 4),
+            label: volumeLabel(vol.name),
             value: vol.usedPercent,
             valueText: `${Math.round(vol.usedPercent)}%`,
           })),
@@ -264,7 +276,7 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
           const color = getBarColor(value)
           return (
             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'rgba(232,160,32,0.6)', width: '26px', flexShrink: 0 }}>{label}</span>
+              <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'rgba(232,160,32,0.6)', width: '28px', flexShrink: 0 }}>{label}</span>
               <div style={{ flex: 1, height: '14px', background: `rgba(232,160,32,0.15)`, borderRadius: '3px', overflow: 'hidden' }}>
                 <div style={{
                   height: '100%',
