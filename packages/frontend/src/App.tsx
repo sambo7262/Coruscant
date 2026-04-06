@@ -33,7 +33,7 @@ export default function App() {
       <div className="crt-sweep" aria-hidden="true" />
       <GridBackground />
       <WiringOverlay />
-      <AppHeader connected={connected} showBack={showBack} lastArrEvent={lastArrEvent} />
+      <AppHeader connected={connected} showBack={showBack} lastArrEvent={lastArrEvent} weatherData={snapshot?.weather ?? null} />
       <main style={{ position: 'relative', zIndex: 1, paddingTop: '52px', paddingBottom: '40px' }}>
         <Routes>
           <Route path="/" element={<DashboardPage snapshot={snapshot} lastArrEvent={lastArrEvent} />} />

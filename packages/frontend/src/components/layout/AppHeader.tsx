@@ -1,12 +1,20 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Settings, List } from 'lucide-react'
-import type { ArrWebhookEvent } from '@coruscant/shared'
+import type { ArrWebhookEvent, WeatherData } from '@coruscant/shared'
+import { WeatherIcon } from '../weather/WeatherIcon.js'
+import { StaleIndicator } from '../ui/StaleIndicator.js'
 
 interface AppHeaderProps {
   connected: boolean
   showBack?: boolean
   lastArrEvent?: ArrWebhookEvent | null
+  weatherData?: WeatherData | null
+}
+
+function isWeatherStale(fetchedAt: string): boolean {
+  const age = Date.now() - new Date(fetchedAt).getTime()
+  return age > 20 * 60 * 1000 // 20 minutes (15 min poll + 5 min grace)
 }
 
 const EVENT_COLORS: Record<string, string> = {
@@ -38,7 +46,7 @@ function buildTickerText(event: ArrWebhookEvent): string {
   return `${svc} \u25B8 ${eventVerb}`
 }
 
-export function AppHeader({ connected, showBack = false, lastArrEvent }: AppHeaderProps) {
+export function AppHeader({ connected, showBack = false, lastArrEvent, weatherData }: AppHeaderProps) {
   const [ticker, setTicker] = useState<{ text: string; color: string } | null>(null)
   const tickerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -161,9 +169,33 @@ export function AppHeader({ connected, showBack = false, lastArrEvent }: AppHead
               </div>
             )}
 
-            {/* Right: nav icons (hidden when showBack) */}
+            {/* Right: weather widget + nav icons (hidden when showBack) */}
             {!showBack ? (
-              <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+              <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                {/* Weather widget — renders nothing when weatherData is null/undefined */}
+                {weatherData && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    height: '44px',
+                    paddingRight: '4px',
+                  }}>
+                    <WeatherIcon wmoCode={weatherData.wmo_code} size={30} />
+                    <span style={{
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: '22px',
+                      fontWeight: 700,
+                      color: 'var(--cockpit-amber)',
+                      letterSpacing: '-0.02em',
+                    }}>
+                      {Math.round(weatherData.temp_f)}°
+                    </span>
+                    {isWeatherStale(weatherData.fetched_at) && (
+                      <StaleIndicator lastPollAt={weatherData.fetched_at} />
+                    )}
+                  </div>
+                )}
                 <Link
                   to="/settings"
                   aria-label="Open Settings"
