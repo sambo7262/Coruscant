@@ -63,10 +63,10 @@
 
 ### Logging
 
-- [ ] **LOG-01**: App maintains internal structured logs covering poll events, errors, service state changes, and alert dispatches
-- [ ] **LOG-02**: User can view logs in a dedicated log viewer page within the dashboard
-- [ ] **LOG-03**: User can purge all logs or logs older than a selectable age from the UI
-- [ ] **LOG-04**: User can export logs as a downloadable file from the UI
+- [x] **LOG-01**: App maintains internal structured logs covering poll events, errors, service state changes, and alert dispatches
+- [x] **LOG-02**: User can view logs in a dedicated log viewer page within the dashboard
+- [x] **LOG-03**: User can purge all logs or logs older than a selectable age from the UI
+- [x] **LOG-04**: User can export logs as a downloadable file from the UI
 
 ### Configuration & Settings
 
@@ -94,6 +94,11 @@
 ## Smart Home Phase (Dedicated Late Phase)
 
 These are isolated in their own phase due to complexity, OAuth requirements, and fragility of unofficial APIs.
+
+### Local Weather
+
+- [x] **WTHR-01**: AppHeader top nav bar shows current temperature and animated weather condition icon; weather updates automatically on a 15-minute interval from Open-Meteo (no API key required)
+- [x] **WTHR-02**: User sets location (zip code) once in Settings; backend geocodes to lat/lon and caches in kvStore; weather persists across restarts; fetch failures show last-known value with stale indicator
 
 - **SMRTH-01**: Google Nest thermostat card shows current temperature, humidity %, HVAC state (heating/cooling/off), and connectivity status
 - **SMRTH-02**: Nest integration includes a one-time OAuth 2.0 setup wizard (SDM API, requires Google Cloud project + $5 Device Access enrollment)
@@ -157,19 +162,22 @@ These are isolated in their own phase due to complexity, OAuth requirements, and
 | NOTIF-05 | Phase 6 | Pending |
 | NOTIF-06 | Phase 6 | Pending |
 | CFG-02 | Phase 6 | Complete |
-| LOG-01 | Phase 7 | Pending |
-| LOG-02 | Phase 7 | Pending |
-| LOG-03 | Phase 7 | Pending |
-| LOG-04 | Phase 7 | Pending |
+| LOG-01 | Phase 7 | Complete |
+| LOG-02 | Phase 7 | Complete |
+| LOG-03 | Phase 7 | Complete |
+| LOG-04 | Phase 7 | Complete |
 | SMRTH-01 | Phase 8 | Pending |
 | SMRTH-02 | Phase 8 | Pending |
 | SMRTH-03 | Phase 8 | Pending |
 | SMRTH-04 | Phase 8 | Pending |
+| WTHR-01 | Phase 9 | Complete |
+| WTHR-02 | Phase 9 | Complete |
 
 **Coverage:**
 - v1 requirements: 43 total
 - Smart Home phase: 4 total
-- Mapped to phases: 47
+- Weather: 2 total
+- Mapped to phases: 49
 - Unmapped: 0
 
 ---
