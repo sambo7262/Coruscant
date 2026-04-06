@@ -47,6 +47,7 @@ export async function weatherSettingsRoutes(fastify: FastifyInstance) {
         ['weather.zip', zip.trim()],
         ['weather.lat', String(geocodeResult.latitude)],
         ['weather.lon', String(geocodeResult.longitude)],
+        ['weather.timezone', geocodeResult.timezone],
       ] as [string, string][]) {
         db.insert(kvStore)
           .values({ key, value, updatedAt: now })

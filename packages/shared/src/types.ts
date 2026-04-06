@@ -77,6 +77,7 @@ export interface WeatherData {
   temp_f: number
   wmo_code: number
   fetched_at: string  // ISO 8601
+  timezone?: string   // IANA timezone from geocoding (e.g. "America/New_York")
 }
 
 export interface DashboardSnapshot {

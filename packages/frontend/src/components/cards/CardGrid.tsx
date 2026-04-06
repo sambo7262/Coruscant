@@ -101,7 +101,6 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
                 textTransform: 'uppercase',
                 letterSpacing: '0.06em',
                 whiteSpace: 'nowrap',
-                textShadow: '0 0 8px var(--cockpit-purple)',
                 ...(activeTitle.length > 25
                   ? { animation: 'downloadsMarquee 8s linear infinite', animationDelay: '2s' }
                   : {}),
@@ -122,7 +121,7 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
                 boxShadow: '0 0 6px var(--cockpit-amber)',
               }} />
             </div>
-            <span style={{ fontSize: '22px', fontWeight: 600, color: '#00c8ff', fontFamily: 'var(--font-mono)', flexShrink: 0, textShadow: '0 0 8px #00c8ff' }}>
+            <span style={{ fontSize: '22px', fontWeight: 600, color: '#00c8ff', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
               {(animSpeedTimes10 / 10).toFixed(1)} <span style={{ fontSize: '11px', fontWeight: 400 }}>MB/s</span>
             </span>
           </div>
@@ -204,7 +203,7 @@ export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
               display: 'flex',
               flexDirection: 'column',
               overflow: 'hidden',
-              maxHeight: 'var(--tile-max-height, 240px)',
+              maxHeight: '227px',
             }}
           >
             {/* 20px amber header strip with MEDIA label */}

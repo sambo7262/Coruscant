@@ -92,7 +92,7 @@ body::after {
 
 /* Glow utility for key numerics — D-17 */
 .text-glow {
-  text-shadow: 0 0 6px currentColor;
+  /* glow removed for text sharpness — D-20 */
 }
 
 /* Chamfer utility class — D-15 */

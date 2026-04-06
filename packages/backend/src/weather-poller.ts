@@ -23,7 +23,8 @@ export function startWeatherPoller(): () => void {
 
     try {
       const result = await fetchWeatherData(latRow.value, lonRow.value)
-      const payload = JSON.stringify(result)
+      const tzRow = db.select().from(kvStore).where(eq(kvStore.key, 'weather.timezone')).get()
+      const payload = JSON.stringify({ ...result, timezone: tzRow?.value })
       db.insert(kvStore)
         .values({ key: 'weather.current', value: payload, updatedAt: new Date().toISOString() })
         .onConflictDoUpdate({ target: kvStore.key, set: { value: payload, updatedAt: new Date().toISOString() } })

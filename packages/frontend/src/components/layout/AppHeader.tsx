@@ -17,6 +17,24 @@ function isWeatherStale(fetchedAt: string): boolean {
   return age > 20 * 60 * 1000 // 20 minutes (15 min poll + 5 min grace)
 }
 
+function useLocalClock(timezone?: string): { time: string; colonVisible: boolean } {
+  const [now, setNow] = useState(Date.now())
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [])
+  const tz = timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone
+  const d = new Date(now)
+  const parts = new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric', minute: '2-digit', hour12: true, timeZone: tz,
+  }).formatToParts(d)
+  const hour = parts.find(p => p.type === 'hour')?.value ?? ''
+  const minute = parts.find(p => p.type === 'minute')?.value ?? ''
+  const dayPeriod = parts.find(p => p.type === 'dayPeriod')?.value ?? ''
+  const colonVisible = d.getSeconds() % 2 === 0
+  return { time: `${hour}:${minute} ${dayPeriod}`, colonVisible }
+}
+
 const EVENT_COLORS: Record<string, string> = {
   grab: '#ffaa00',
   download_complete: '#c084fc',
@@ -49,6 +67,7 @@ function buildTickerText(event: ArrWebhookEvent): string {
 export function AppHeader({ connected, showBack = false, lastArrEvent, weatherData }: AppHeaderProps) {
   const [ticker, setTicker] = useState<{ text: string; color: string } | null>(null)
   const tickerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const clock = useLocalClock(weatherData?.timezone)
 
   useEffect(() => {
     if (!lastArrEvent || lastArrEvent.eventCategory === 'unknown') return
@@ -150,6 +169,20 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, weatherDa
                   gap: '8px',
                 }}
               >
+                {/* Local clock — flashing colon */}
+                <span style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '22px',
+                  fontWeight: 700,
+                  color: 'var(--cockpit-amber)',
+                  letterSpacing: '-0.02em',
+                }}>
+                  {(() => {
+                    const [hm, ampm] = clock.time.split(' ')
+                    const [h, m] = hm.split(':')
+                    return <>{h}<span style={{ opacity: clock.colonVisible ? 1 : 0 }}>:</span>{m} <span style={{ fontSize: '12px', fontWeight: 400 }}>{ampm}</span></>
+                  })()}
+                </span>
                 {/* Disconnected indicator */}
                 {!connected && (
                   <span

@@ -180,8 +180,7 @@ function NasGaugeColumn({
           fontFamily: 'var(--font-mono)',
           fontSize: '10px',
           color,
-          textShadow: `0 0 6px ${color}`,
-        }}
+                  }}
       >
         {valueText}
       </span>
@@ -278,7 +277,7 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
                   boxShadow: `0 0 6px ${color}`,
                 }} />
               </div>
-              <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color, textShadow: `0 0 6px ${color}`, width: '32px', textAlign: 'right', flexShrink: 0 }}>{valueText}</span>
+              <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color,  width: '32px', textAlign: 'right', flexShrink: 0 }}>{valueText}</span>
             </div>
           )
         })}
@@ -289,10 +288,10 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
         {nasStatus.docker ? (
           <>
             <div style={{ ...NAS_SECTION_LABEL_STYLE, marginBottom: '2px', width: '100%' }}>DOCKER</div>
-            <span className="text-glow" style={{ fontSize: '22px', lineHeight: 1.2, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textShadow: '0 0 6px var(--cockpit-amber)' }}>
+            <span className="text-glow" style={{ fontSize: '22px', lineHeight: 1.2, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)' }}>
               CPU {animDockerCpu}%
             </span>
-            <span className="text-glow" style={{ fontSize: '22px', lineHeight: 1.2, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textShadow: '0 0 6px var(--cockpit-amber)' }}>
+            <span className="text-glow" style={{ fontSize: '22px', lineHeight: 1.2, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)' }}>
               RAM {animDockerRam}%
             </span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
@@ -359,7 +358,7 @@ function ArrInstrument({ service, metrics }: { service: ServiceStatus; metrics: 
         />
         <span
           className="text-label text-glow"
-          style={{ color: 'var(--text-offwhite)', fontSize: '22px', fontWeight: 600, lineHeight: 1.1, textTransform: 'uppercase', textShadow: '0 0 8px rgba(200,200,200,0.4)' }}
+          style={{ color: 'var(--text-offwhite)', fontSize: '22px', fontWeight: 600, lineHeight: 1.1, textTransform: 'uppercase' }}
         >
           {statusText}
         </span>
@@ -397,7 +396,6 @@ function ArrInstrument({ service, metrics }: { service: ServiceStatus; metrics: 
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               maxWidth: '100%',
-              textShadow: '0 0 8px var(--cockpit-purple)',
             }}
           >
             {typeof metrics.activeTitle === 'string' && metrics.activeTitle
@@ -620,24 +618,24 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
           fontFamily: 'var(--font-mono)',
           lineHeight: 1.1,
           color: blocking === 'BLOCKING' ? 'var(--cockpit-green)' : 'var(--cockpit-red)',
-          textShadow: `0 0 8px ${blocking === 'BLOCKING' ? 'var(--cockpit-green)' : 'var(--cockpit-red)'}`,
+          
         }}>
           {blocking}
         </span>
         <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>BLOCKING</div>
-        <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1, textShadow: '0 0 8px var(--cockpit-amber)' }}>
+        <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1 }}>
           {qpmDisplay}
         </span>
         <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>QPM</div>
         {hasPercentData && (
           <>
-            <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1, textShadow: '0 0 8px var(--cockpit-amber)' }}>
+            <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1 }}>
               {percentBlockedDisplay}%
             </span>
             <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>BLOCKED</div>
           </>
         )}
-        <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1, textShadow: '0 0 8px var(--cockpit-amber)' }}>
+        <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1 }}>
           {memDisplay}
         </span>
         <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>MEM</div>
@@ -664,7 +662,7 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
                 fontFamily: 'var(--font-mono)',
                 lineHeight: 1.1,
                 color: healthToLed === 'online' ? 'var(--cockpit-green)' : healthToLed === 'warning' ? 'var(--cockpit-amber)' : 'var(--cockpit-red)',
-                textShadow: `0 0 8px ${healthToLed === 'online' ? 'var(--cockpit-green)' : healthToLed === 'warning' ? 'var(--cockpit-amber)' : 'var(--cockpit-red)'}`,
+                
               }}>
                 {healthLabel}
               </span>
@@ -701,7 +699,7 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
                 const fillPct = value !== null && value !== undefined ? Math.min((value / effectivePeak) * 100, 100) : 0
                 return (
                   <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flex: 1 }}>
-                    <span style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-mono)', color, textAlign: 'center', whiteSpace: 'nowrap', textShadow: `0 0 6px ${color}`, lineHeight: 1.1 }}>
+                    <span style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-mono)', color, textAlign: 'center', whiteSpace: 'nowrap',  lineHeight: 1.1 }}>
                       {valueText}
                     </span>
                     {unit && <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', color: 'rgba(200,200,200,0.4)', textAlign: 'center' }}>{unit}</span>}
@@ -1150,7 +1148,6 @@ export function MediaStackRow({ service, index, lastArrEvent }: ServiceCardProps
           lineHeight: 1.1,
           textTransform: 'uppercase',
           letterSpacing: '0.06em',
-          textShadow: isUnconfigured ? 'none' : '0 0 8px rgba(200,200,200,0.4)',
         }}
       >
         {service.name}

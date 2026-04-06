@@ -10,6 +10,7 @@ export interface GeocodeResult {
   latitude: number
   longitude: number
   name: string
+  timezone: string
 }
 
 /**
@@ -65,5 +66,6 @@ export async function geocodeZip(zip: string): Promise<GeocodeResult> {
     latitude: match.latitude,
     longitude: match.longitude,
     name: match.name,
+    timezone: match.timezone ?? 'America/New_York',
   }
 }

@@ -221,9 +221,11 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
                         </span>
                       )}
                       <span style={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
+                        display: 'inline-block',
                         whiteSpace: 'nowrap',
+                        ...(titleText.length > 28
+                          ? { animation: 'downloadsMarquee 8s linear infinite', animationDelay: '2s' }
+                          : {}),
                       }}>
                         {titleText}
                       </span>
