@@ -9,6 +9,7 @@ import { sseRoutes } from './routes/sse.js'
 import { settingsRoutes } from './routes/settings.js'
 import { testConnectionRoutes } from './routes/test-connection.js'
 import { tautulliWebhookRoutes } from './routes/tautulli-webhook.js'
+import { arrWebhookRoutes } from './routes/arr-webhooks.js'
 import { debugRoutes } from './routes/debug.js'
 import { healthProbe, serviceConfig } from './schema.js'
 import { pollManager } from './poll-manager.js'
@@ -33,6 +34,7 @@ await fastify.register(sseRoutes)
 await fastify.register(settingsRoutes)
 await fastify.register(testConnectionRoutes)
 await fastify.register(tautulliWebhookRoutes)
+await fastify.register(arrWebhookRoutes)
 await fastify.register(debugRoutes)
 
 // Serve compiled Vite bundle in production (D-23)

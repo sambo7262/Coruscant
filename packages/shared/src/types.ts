@@ -115,3 +115,10 @@ export interface UnifiMetrics {
   devices: UnifiDevice[]
   healthStatus: 'online' | 'warning' | 'offline'  // derived from D-05 rollup
 }
+
+export interface ArrWebhookEvent {
+  service: string          // 'radarr' | 'sonarr' | 'lidarr' | 'bazarr' | 'prowlarr' | 'readarr' | 'sabnzbd'
+  eventCategory: 'grab' | 'download_complete' | 'health_issue' | 'update_available' | 'unknown'
+  title?: string           // content title for ticker display
+  rawEventType: string     // original eventType from arr payload, for logging
+}
