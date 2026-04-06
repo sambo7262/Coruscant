@@ -1,13 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Settings, List } from 'lucide-react'
-import type { NasStatus, ArrWebhookEvent } from '@coruscant/shared'
+import type { ArrWebhookEvent } from '@coruscant/shared'
 
 interface AppHeaderProps {
-  nas: NasStatus | null
   connected: boolean
   showBack?: boolean
-  nasConfigured?: boolean
   lastArrEvent?: ArrWebhookEvent | null
 }
 
@@ -40,103 +38,7 @@ function buildTickerText(event: ArrWebhookEvent): string {
   return `${svc} \u25B8 ${eventVerb}`
 }
 
-/** Map a Fahrenheit temp to fill color for the bar.
- *  Thresholds match Synology DSM: warn at 45°C, critical at 60°C.
- *  ≥ 140°F (60°C) = red (DSM critical)
- *  ≥ 113°F (45°C) = orange (DSM warning)
- *  < 113°F        = amber (normal)
- */
-function tempColor(tempF: number): string {
-  if (tempF >= 140) return '#FF3B3B'   // red   — ≥ 60°C (DSM critical)
-  if (tempF >= 113) return '#FF8C00'   // orange — ≥ 45°C (DSM warning)
-  return 'var(--cockpit-amber)'         // amber  — normal
-}
-
-/**
- * Vertical bar gauge (4px wide × 20px tall).
- * fillPct: 0–100
- */
-function VerticalBar({ fillPct, color }: { fillPct: number; color: string }) {
-  const clampedFill = Math.max(0, Math.min(100, fillPct))
-  return (
-    <div
-      style={{
-        width: '4px',
-        height: '20px',
-        background: 'rgba(232,160,32,0.15)',
-        borderRadius: '1px',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: `${clampedFill}%`,
-          background: color,
-          borderRadius: '1px',
-          transition: 'height 0.6s ease',
-        }}
-      />
-    </div>
-  )
-}
-
-/** Single labeled gauge column: label / bar / value */
-function GaugeColumn({
-  label,
-  fillPct,
-  valueText,
-  color = 'var(--cockpit-amber)',
-}: {
-  label: string
-  fillPct: number
-  valueText: string
-  color?: string
-}) {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '2px',
-      }}
-    >
-      <span
-        style={{
-          fontFamily: 'var(--font-mono)',
-          fontSize: '9px',
-          textTransform: 'uppercase',
-          color: 'rgba(232,160,32,0.6)',
-          letterSpacing: '0.06em',
-        }}
-      >
-        {label}
-      </span>
-      <VerticalBar fillPct={fillPct} color={color} />
-      <span
-        style={{
-          fontFamily: 'var(--font-mono)',
-          fontSize: '10px',
-          color,
-        }}
-      >
-        {valueText}
-      </span>
-    </div>
-  )
-}
-
-export function AppHeader({ nas, connected, showBack = false, nasConfigured, lastArrEvent }: AppHeaderProps) {
-  // D-18: no expand/collapse mechanic — all NAS data always visible
-  const isLive = nasConfigured !== false && nas !== null
-  const isStale = nasConfigured !== false && nas === null
-  const isUnconfigured = nasConfigured === false
-
+export function AppHeader({ connected, showBack = false, lastArrEvent }: AppHeaderProps) {
   const [ticker, setTicker] = useState<{ text: string; color: string } | null>(null)
   const tickerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -255,20 +157,6 @@ export function AppHeader({ nas, connected, showBack = false, nasConfigured, las
                     }}
                   />
                 )}
-
-                {/* NAS NOT CONFIGURED state */}
-                {isUnconfigured && (
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '12px',
-                      color: '#666666',
-                      letterSpacing: '0.06em',
-                    }}
-                  >
-                    NAS NOT CONFIGURED
-                  </span>
-                )}
               </div>
             )}
 
@@ -310,63 +198,6 @@ export function AppHeader({ nas, connected, showBack = false, nasConfigured, las
           </>
         )}
       </div>
-
-      {/* NAS temp/fan summary line — one-line inline (D-21: NAS detail moved to standalone tile) */}
-      {!showBack && (isLive || isStale) && (
-        <div style={{
-          maxWidth: '800px',
-          margin: '0 auto',
-          padding: '0 12px 4px 12px',
-          borderTop: '1px solid rgba(232,160,32,0.1)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '12px',
-        }}>
-          {/* CPU temp */}
-          {isLive && nas && nas.cpuTempC != null && (() => {
-            const tempF = Math.round(nas.cpuTempC * 9 / 5 + 32)
-            return (
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: tempColor(tempF) }}>
-                CPU {tempF}°F
-              </span>
-            )
-          })()}
-          {/* Disk temps */}
-          {isLive && nas && nas.disks && nas.disks.map(disk => {
-            const tempF = Math.round(disk.tempC * 9 / 5 + 32)
-            const name = disk.name ? disk.name.slice(0, 6) : disk.id
-            return (
-              <span key={disk.id} style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: tempColor(tempF) }}>
-                {name} {tempF}°F
-              </span>
-            )
-          })}
-          {/* Fan RPM */}
-          {isLive && nas && nas.fans && nas.fans.length > 0 && (
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'rgba(232,160,32,0.6)' }}>
-              FAN {nas.fans[0].rpm}rpm
-            </span>
-          )}
-          {/* Image update LED */}
-          {isLive && nas && nas.imageUpdateAvailable && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: 'auto' }}>
-              <div style={{
-                width: '6px', height: '6px', borderRadius: '50%',
-                background: 'var(--cockpit-amber)',
-                animation: 'ledPulseWarn 1.2s ease-in-out infinite',
-                flexShrink: 0,
-              }} />
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: 'var(--cockpit-amber)', letterSpacing: '0.06em' }}>
-                UPDATES
-              </span>
-            </div>
-          )}
-          {/* Stale indicator */}
-          {isStale && (
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: '#555' }}>NAS STALE</span>
-          )}
-        </div>
-      )}
     </header>
   )
 }

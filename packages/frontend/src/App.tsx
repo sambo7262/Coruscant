@@ -24,10 +24,6 @@ export default function App() {
     }
   }, [isDashboard])
 
-  // Derive whether NAS has been configured in Settings
-  // Uses strict !== false check so legacy/mock services without the flag are not treated as unconfigured
-  const nasConfigured = snapshot?.services.find(s => s.id === 'nas')?.configured !== false
-
   // D-11: Plex rail only shows when Plex is configured
   // Uses strict !== false check so legacy/mock services without the flag are not treated as unconfigured
   const plexConfigured = snapshot?.services.find(s => s.id === 'plex')?.configured !== false
@@ -37,8 +33,8 @@ export default function App() {
       <div className="crt-sweep" aria-hidden="true" />
       <GridBackground />
       <WiringOverlay />
-      <AppHeader nas={snapshot?.nas ?? null} connected={connected} showBack={showBack} nasConfigured={nasConfigured} lastArrEvent={lastArrEvent} />
-      <main style={{ position: 'relative', zIndex: 1, paddingTop: '76px', paddingBottom: '40px' }}>
+      <AppHeader connected={connected} showBack={showBack} lastArrEvent={lastArrEvent} />
+      <main style={{ position: 'relative', zIndex: 1, paddingTop: '52px', paddingBottom: '40px' }}>
         <Routes>
           <Route path="/" element={<DashboardPage snapshot={snapshot} lastArrEvent={lastArrEvent} />} />
           <Route path="/services/:serviceId" element={<ServiceDetailPage snapshot={snapshot} />} />
