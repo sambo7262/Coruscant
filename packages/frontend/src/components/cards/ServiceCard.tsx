@@ -238,7 +238,9 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
           { label: 'CPU', value: nasStatus.cpu, valueText: `${Math.round(nasStatus.cpu)}%` },
           { label: 'RAM', value: nasStatus.ram, valueText: `${Math.round(nasStatus.ram)}%` },
           ...nasStatus.volumes.map((vol: NasVolume) => ({
-            label: vol.name === '/volume1' ? 'HD' : vol.name.replace(/^\/volume/, 'V').slice(0, 4),
+            label: vol.name === '/volume1' ? 'HD'
+              : vol.name.startsWith('/volume') ? `HD${vol.name.replace(/^\/volume/, '')}`
+              : vol.name.slice(0, 4),
             value: vol.usedPercent,
             valueText: `${Math.round(vol.usedPercent)}%`,
           })),
@@ -264,7 +266,7 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
       </div>
 
       {/* RIGHT col — Docker stats */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', justifyContent: 'center', height: '100%' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', justifyContent: 'center', height: '100%', paddingLeft: '8px' }}>
         {nasStatus.docker ? (
           <>
             <div style={{ fontSize: '11px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Docker</div>
@@ -593,12 +595,20 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
         <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>QPM</div>
         {typeof metrics.percentBlocked === 'number' && (
           <>
-            <span className="text-glow" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1, textShadow: '0 0 8px var(--cockpit-amber)' }}>
+            <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1, textShadow: '0 0 8px var(--cockpit-amber)' }}>
               {(metrics.percentBlocked as number).toFixed(1)}%
             </span>
             <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>BLOCKED</div>
           </>
         )}
+        <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1, textShadow: '0 0 8px var(--cockpit-amber)' }}>
+          {mem}
+        </span>
+        <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>MEM</div>
+        <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1, textShadow: '0 0 8px var(--cockpit-amber)' }}>
+          {load}
+        </span>
+        <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>LOAD</div>
       </div>
       {/* RIGHT — Ubiquiti */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
@@ -638,7 +648,7 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
                 const fillPct = value !== null && value !== undefined ? Math.min((value / effectivePeak) * 100, 100) : 0
                 return (
                   <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flex: 1 }}>
-                    <div style={{ width: '16px', height: '60px', background: '#222', borderRadius: '3px', position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ width: '16px', height: '90px', background: '#222', borderRadius: '3px', position: 'relative', overflow: 'hidden' }}>
                       <div style={{
                         position: 'absolute',
                         bottom: 0,
