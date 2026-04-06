@@ -337,8 +337,8 @@ function ArrInstrument({ service, metrics }: { service: ServiceStatus; metrics: 
           }}
         />
         <span
-          className="text-label"
-          style={{ color: 'var(--text-offwhite)', fontSize: '11px', textTransform: 'uppercase' }}
+          className="text-label text-glow"
+          style={{ color: 'var(--text-offwhite)', fontSize: '22px', fontWeight: 600, lineHeight: 1.1, textTransform: 'uppercase', textShadow: '0 0 8px rgba(200,200,200,0.4)' }}
         >
           {statusText}
         </span>
@@ -368,13 +368,15 @@ function ArrInstrument({ service, metrics }: { service: ServiceStatus; metrics: 
             className="text-label"
             style={{
               color: 'var(--cockpit-purple)',
-              fontSize: '10px',
+              fontSize: '22px',
+              fontWeight: 600,
+              lineHeight: 1.1,
               textTransform: 'uppercase',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               maxWidth: '100%',
-              textShadow: '0 0 6px var(--cockpit-purple)',
+              textShadow: '0 0 8px var(--cockpit-purple)',
             }}
           >
             {typeof metrics.activeTitle === 'string' && metrics.activeTitle
@@ -1053,12 +1055,15 @@ export function MediaStackRow({ service, index, lastArrEvent }: ServiceCardProps
       />
       {/* Service label */}
       <span
-        className="text-label"
+        className="text-label text-glow"
         style={{
           color: isUnconfigured ? '#666' : 'var(--text-offwhite)',
-          fontSize: '14px',
+          fontSize: '22px',
+          fontWeight: 600,
+          lineHeight: 1.1,
           textTransform: 'uppercase',
           letterSpacing: '0.06em',
+          textShadow: isUnconfigured ? 'none' : '0 0 8px rgba(200,200,200,0.4)',
         }}
       >
         {service.name}
