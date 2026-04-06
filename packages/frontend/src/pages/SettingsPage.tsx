@@ -3,6 +3,204 @@ import { useSearchParams } from 'react-router-dom'
 import { StatusDot } from '../components/ui/StatusDot.js'
 import type { DashboardSnapshot, ServiceStatus } from '@coruscant/shared'
 
+// LOGS tab component — Log retention configuration (D-27)
+function LogsTab() {
+  const [retentionDays, setRetentionDays] = useState<number>(7)
+  const [inputValue, setInputValue] = useState<string>('7')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
+  const [saveError, setSaveError] = useState(false)
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const res = await fetch('/api/settings/logs-retention')
+        if (res.ok) {
+          const data = await res.json() as { retentionDays: number }
+          setRetentionDays(data.retentionDays)
+          setInputValue(String(data.retentionDays))
+        }
+      } catch {
+        // use default
+      } finally {
+        setLoading(false)
+      }
+    })()
+  }, [])
+
+  const parsedValue = parseInt(inputValue, 10)
+  const isValid = !isNaN(parsedValue) && parsedValue >= 1 && parsedValue <= 365
+
+  const handleSave = async () => {
+    if (!isValid) return
+    setSaving(true)
+    setSaveSuccess(false)
+    setSaveError(false)
+    try {
+      const res = await fetch('/api/settings/logs-retention', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ retentionDays: parsedValue }),
+      })
+      if (res.ok) {
+        setRetentionDays(parsedValue)
+        setSaveSuccess(true)
+        setTimeout(() => setSaveSuccess(false), 2000)
+      } else {
+        setSaveError(true)
+        setTimeout(() => setSaveError(false), 3000)
+      }
+    } catch {
+      setSaveError(true)
+      setTimeout(() => setSaveError(false), 3000)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const inputBorderColor = !isValid && inputValue !== ''
+    ? 'var(--cockpit-red)'
+    : 'var(--border-rest)'
+
+  return (
+    <div
+      role="tabpanel"
+      style={{
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border-rest)',
+        borderRadius: '4px',
+        padding: '20px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px',
+      }}
+    >
+      <div>
+        <label
+          className="text-label"
+          style={{
+            display: 'block',
+            color: 'var(--cockpit-amber)',
+            marginBottom: '8px',
+            fontSize: '12px',
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+            fontFamily: "'JetBrains Mono', monospace",
+          }}
+        >
+          LOG RETENTION
+        </label>
+        <p style={{
+          fontSize: '13px',
+          color: 'var(--text-offwhite)',
+          marginBottom: '12px',
+          fontFamily: "'JetBrains Mono', monospace",
+          lineHeight: 1.5,
+        }}>
+          Log entries older than this many days will be deleted during the nightly purge.
+        </p>
+        {loading ? (
+          <p style={{ fontSize: '13px', color: 'var(--text-offwhite)', fontFamily: "'JetBrains Mono', monospace" }}>
+            Loading...
+          </p>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <input
+              type="number"
+              min={1}
+              max={365}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              style={{
+                width: '100px',
+                background: 'var(--bg-surface)',
+                border: `1px solid ${inputBorderColor}`,
+                color: 'var(--text-offwhite)',
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: '14px',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                outline: 'none',
+                minHeight: '44px',
+              }}
+              aria-label="Log retention days"
+            />
+            <span style={{
+              fontSize: '13px',
+              color: 'var(--text-offwhite)',
+              fontFamily: "'JetBrains Mono', monospace",
+            }}>
+              days (1–365)
+            </span>
+            <button
+              type="button"
+              onClick={() => void handleSave()}
+              disabled={saving || !isValid}
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: '13px',
+                fontWeight: 600,
+                letterSpacing: '0.08em',
+                padding: '8px 20px',
+                borderRadius: '4px',
+                cursor: saving || !isValid ? 'not-allowed' : 'pointer',
+                border: '1px solid var(--cockpit-amber)',
+                textTransform: 'uppercase',
+                background: 'rgba(232,160,32,0.15)',
+                color: 'var(--cockpit-amber)',
+                opacity: saving || !isValid ? 0.6 : 1,
+                minHeight: '44px',
+              }}
+            >
+              {saving ? 'SAVING...' : 'SAVE RETENTION'}
+            </button>
+            {saveSuccess && (
+              <span style={{
+                fontSize: '13px',
+                color: 'var(--cockpit-green)',
+                fontFamily: "'JetBrains Mono', monospace",
+                fontWeight: 600,
+              }}>
+                &#10003; SAVED
+              </span>
+            )}
+            {saveError && (
+              <span style={{
+                fontSize: '13px',
+                color: 'var(--cockpit-red)',
+                fontFamily: "'JetBrains Mono', monospace",
+                fontWeight: 600,
+              }}>
+                SAVE FAILED
+              </span>
+            )}
+          </div>
+        )}
+        {!isValid && inputValue !== '' && (
+          <p style={{
+            fontSize: '12px',
+            color: 'var(--cockpit-red)',
+            fontFamily: "'JetBrains Mono', monospace",
+            marginTop: '6px',
+          }}>
+            Value must be between 1 and 365.
+          </p>
+        )}
+        <p style={{
+          fontSize: '12px',
+          color: '#666',
+          fontStyle: 'italic',
+          marginTop: '8px',
+          fontFamily: "'JetBrains Mono', monospace",
+        }}>
+          Current retention: {retentionDays} day{retentionDays === 1 ? '' : 's'}
+        </p>
+      </div>
+    </div>
+  )
+}
+
 const SERVICES = [
   { id: 'radarr', label: 'RADARR' },
   { id: 'sonarr', label: 'SONARR' },
@@ -104,9 +302,10 @@ function getCredentialLabel(serviceId: ServiceId): string {
 export function SettingsPage({ snapshot }: SettingsPageProps) {
   const [searchParams, setSearchParams] = useSearchParams()
   const rawService = searchParams.get('service') ?? 'radarr'
-  // 'notifications' is a special non-service tab
+  // 'notifications' and 'logs' are special non-service tabs
   const isNotificationsTab = rawService === 'notifications'
-  const activeTab: ServiceId = (!isNotificationsTab && SERVICES.some((s) => s.id === rawService))
+  const isLogsTab = rawService === 'logs'
+  const activeTab: ServiceId = (!isNotificationsTab && !isLogsTab && SERVICES.some((s) => s.id === rawService))
     ? (rawService as ServiceId)
     : 'radarr'
 
@@ -154,7 +353,7 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
     void loadTabConfig(activeTab)
   }, [activeTab, loadTabConfig])
 
-  const handleTabClick = (serviceId: ServiceId | 'notifications') => {
+  const handleTabClick = (serviceId: ServiceId | 'notifications' | 'logs') => {
     setSearchParams({ service: serviceId })
   }
 
@@ -327,6 +526,35 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
         >
           NOTIFICATIONS
         </button>
+        {/* LOGS special tab */}
+        <button
+          role="tab"
+          aria-selected={isLogsTab}
+          onClick={() => handleTabClick('logs')}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border-rest)',
+            borderBottom: isLogsTab
+              ? '2px solid var(--cockpit-amber)'
+              : '1px solid var(--border-rest)',
+            color: isLogsTab ? 'var(--cockpit-amber)' : 'var(--text-offwhite)',
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: '12px',
+            fontWeight: isLogsTab ? 600 : 400,
+            letterSpacing: '0.06em',
+            padding: '8px 16px',
+            cursor: 'pointer',
+            whiteSpace: 'nowrap',
+            marginRight: '4px',
+            borderRadius: '4px 4px 0 0',
+            transition: 'color 0.15s, border-bottom-color 0.15s',
+          }}
+        >
+          LOGS
+        </button>
       </div>
 
       {/* NOTIFICATIONS tab panel */}
@@ -427,8 +655,11 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
         </div>
       )}
 
+      {/* LOGS tab panel */}
+      {isLogsTab && <LogsTab />}
+
       {/* Service config panel */}
-      {!isNotificationsTab && (
+      {!isNotificationsTab && !isLogsTab && (
       <div
         role="tabpanel"
         style={{
