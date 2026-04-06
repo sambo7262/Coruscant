@@ -194,6 +194,15 @@ body::after {
   z-index: 10000;
 }
 
+/* Downloads tile title marquee scroll — D-11 (ISSUE-06) */
+/* Scrolls from start to reveal end of long download titles; pauses at each end */
+@keyframes downloadsMarquee {
+  0%   { transform: translateX(0); }
+  10%  { transform: translateX(0); }
+  90%  { transform: translateX(calc(-100% + 100px)); }
+  100% { transform: translateX(calc(-100% + 100px)); }
+}
+
 /* Backdrop blur isolation — D-20 text sharpness (ISSUE-02, ISSUE-03) */
 /* Moves blur to ::before pseudo so it doesn't bleed into child text rendering */
 .app-header-blur {

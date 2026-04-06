@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { pollManager } from '../poll-manager.js'
+import { pollManager, classifyArrEvent, extractArrTitle } from '../poll-manager.js'
 
 // All arr-compatible services that can send webhooks to Coruscant
 const ARR_SERVICES = ['radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 'readarr', 'sabnzbd'] as const
@@ -40,6 +40,14 @@ export async function arrWebhookRoutes(fastify: FastifyInstance) {
       if (!body || Object.keys(body).length === 0) {
         return reply.code(200).send({ success: true, note: 'empty payload' })
       }
+
+      // Structured webhook log — [WEBHOOK] SERVICE -> event_type -> "title" (D-13 ISSUE-11)
+      const eventType = classifyArrEvent((body.eventType as string) || '')
+      const title = extractArrTitle(body) || 'unknown'
+      fastify.log.info(
+        { service: service.toUpperCase() },
+        `[WEBHOOK] ${service.toUpperCase()} -> ${eventType} -> "${title}"`
+      )
 
       // Forward to PollManager for classification, SSE broadcast, and burst poll
       pollManager.handleArrEvent(service, body)

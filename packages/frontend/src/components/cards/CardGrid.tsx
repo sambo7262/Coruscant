@@ -83,11 +83,26 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
       {/* Active state: title + SABnzbd bar + speed only */}
       {hasAnyActivity && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          {/* Download title — 22px bold purple */}
+          {/* Download title — 22px bold purple with marquee scroll for long titles */}
           {activeTitle && (
-            <span style={{ display: 'block', maxWidth: '100%', fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-purple)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textShadow: '0 0 8px var(--cockpit-purple)' }}>
-              {activeTitle}
-            </span>
+            <div style={{ overflow: 'hidden', maxWidth: '100%' }}>
+              <span style={{
+                display: 'inline-block',
+                fontSize: '22px',
+                fontWeight: 600,
+                color: 'var(--cockpit-purple)',
+                fontFamily: 'var(--font-mono)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                whiteSpace: 'nowrap',
+                textShadow: '0 0 8px var(--cockpit-purple)',
+                ...(activeTitle.length > 25
+                  ? { animation: 'downloadsMarquee 8s linear infinite', animationDelay: '2s' }
+                  : {}),
+              }}>
+                {activeTitle}
+              </span>
+            </div>
           )}
           {/* SABnzbd progress bar + speed */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -101,7 +116,7 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
                 boxShadow: '0 0 6px var(--cockpit-amber)',
               }} />
             </div>
-            <span style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', flexShrink: 0, textShadow: '0 0 8px var(--cockpit-amber)' }}>
+            <span style={{ fontSize: '22px', fontWeight: 600, color: '#00c8ff', fontFamily: 'var(--font-mono)', flexShrink: 0, textShadow: '0 0 8px #00c8ff' }}>
               {sabSpeedMBs.toFixed(1)} <span style={{ fontSize: '11px', fontWeight: 400 }}>MB/s</span>
             </span>
           </div>
@@ -180,6 +195,7 @@ export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
               display: 'flex',
               flexDirection: 'column',
               overflow: 'hidden',
+              maxHeight: 'var(--tile-max-height, 320px)',
             }}
           >
             {/* 20px amber header strip with MEDIA label */}
