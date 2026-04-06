@@ -123,7 +123,7 @@ describe('arrWebhookRoutes', () => {
         url: `/api/webhooks/${service}`,
         payload: { eventType: 'Test' },
       })
-      expect(response.statusCode).toBe(200, `Expected 200 for /api/webhooks/${service}`)
+      expect(response.statusCode, `Expected 200 for /api/webhooks/${service}`).toBe(200)
     }
   })
 })
