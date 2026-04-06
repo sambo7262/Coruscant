@@ -8,7 +8,7 @@
   --cockpit-purple: #8B5CF6;
 
   /* Deep-space blue-grey palette — cockpit-space depth tokens */
-  --space-deep: #080C14;           /* Very dark blue-black — body/background base */
+  --space-deep: #000D1A;           /* Very dark blue-black — body/background base (Variant C: Tactical Dark) */
   --space-mid: #0E1520;            /* Dark blue-grey — panel slot backgrounds */
   --space-nebula: rgba(30, 60, 120, 0.12);   /* Faint blue glow for background depth */
   --bg-seam-cold: rgba(60, 100, 180, 0.08);  /* Blue-tinted seam lines (mix with amber seams) */
@@ -84,11 +84,16 @@ body::after {
   );
 }
 
-/* Typography roles — D-28, D-29, D-30 */
-.text-display { font-size: 20px; font-weight: 600; line-height: 1.2; letter-spacing: 0.08em; }
-.text-heading  { font-size: 16px; font-weight: 600; line-height: 1.2; letter-spacing: 0.08em; }
-.text-body     { font-size: 14px; font-weight: 400; line-height: 1.5; }
+/* Typography roles — D-28, D-29, D-30 — scaled for 10ft kiosk readability (D-14, D-15, D-16) */
+.text-display { font-size: 24px; font-weight: 600; line-height: 1.2; letter-spacing: 0.08em; }
+.text-heading  { font-size: 18px; font-weight: 600; line-height: 1.2; letter-spacing: 0.08em; }
+.text-body     { font-size: 15px; font-weight: 400; line-height: 1.5; }
 .text-label    { font-size: 12px; font-weight: 400; line-height: 1.4; }
+
+/* Glow utility for key numerics — D-17 */
+.text-glow {
+  text-shadow: 0 0 6px currentColor;
+}
 
 /* Chamfer utility class — D-15 */
 .chamfer-card {
@@ -102,6 +107,7 @@ body::after {
     0% calc(100% - 8px),
     0% 0px
   );
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
 }
 
 /* LED status animations — D-12 */
@@ -164,11 +170,32 @@ body::after {
   100%     { opacity: 0; }
 }
 
+/* CRT sweep bar — ambient scan-line traveling across viewport (D-37) */
+@keyframes crtSweep {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+.crt-sweep {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(transparent, rgba(255,255,255,0.025), transparent);
+  animation: crtSweep 10s linear infinite;
+  pointer-events: none;
+  z-index: 10000;
+}
+
 /* Reduced motion preference — D-44 / DASH-08 accessibility */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+  }
+  .crt-sweep {
+    animation: none;
   }
 }

@@ -1,4 +1,4 @@
-import type { DashboardSnapshot, ArrWebhookEvent } from '@coruscant/shared'
+import type { DashboardSnapshot, ArrWebhookEvent, NasStatus } from '@coruscant/shared'
 import { ServiceCard, MediaStackRow } from './ServiceCard.js'
 
 const ARR_IDS = new Set(['radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 'readarr'])
@@ -7,15 +7,13 @@ const ARR_IDS = new Set(['radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 're
 const LEFT_COL_IDS = ['radarr', 'sonarr', 'lidarr']
 const RIGHT_COL_IDS = ['prowlarr', 'bazarr', 'readarr']
 
-// SABnzbd is a download service — rendered below media and network tiles
-const DOWNLOAD_IDS = new Set(['sabnzbd'])
-
 interface CardGridProps {
   snapshot: DashboardSnapshot | null
   lastArrEvent?: ArrWebhookEvent | null
+  nasStatus?: NasStatus | null
 }
 
-export function CardGrid({ snapshot, lastArrEvent }: CardGridProps) {
+export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
   if (!snapshot) {
     // Skeleton state: two placeholder cards
     return (
@@ -35,16 +33,14 @@ export function CardGrid({ snapshot, lastArrEvent }: CardGridProps) {
     )
   }
 
-  // Exclude NAS (in AppHeader), Plex (in NowPlayingBanner), UniFi (embedded in NETWORK card)
+  // Exclude nas-detail (legacy), Plex (in NowPlayingBanner), UniFi (embedded in NETWORK card)
+  // NAS is now a standalone tile in the grid — D-21
   const allServices = snapshot.services.filter(
-    (s) => s.id !== 'nas-detail' && s.id !== 'plex' && s.id !== 'nas' && s.id !== 'unifi',
+    (s) => s.id !== 'nas-detail' && s.id !== 'plex' && s.id !== 'unifi',
   )
   const arrServices = allServices.filter((s) => ARR_IDS.has(s.id))
+  // All non-arr services (including SABnzbd) go into the normal grid flow — D-09
   const nonArrServices = allServices.filter((s) => !ARR_IDS.has(s.id))
-
-  // Split non-arr cards: network/infrastructure first, downloads (SABnzbd) below
-  const networkServices = nonArrServices.filter((s) => !DOWNLOAD_IDS.has(s.id))
-  const downloadServices = nonArrServices.filter((s) => DOWNLOAD_IDS.has(s.id))
 
   // Build ordered columns — only include services that exist in the snapshot
   const leftColArr = LEFT_COL_IDS
@@ -57,7 +53,7 @@ export function CardGrid({ snapshot, lastArrEvent }: CardGridProps) {
   let globalIndex = 0
 
   return (
-    <div style={{ padding: '0 8px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', alignItems: 'start' }}>
+    <div style={{ padding: '0 8px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', alignItems: 'stretch' }}>
       {/* 1. Arr services tile — chamfered card with MEDIA label in amber header (D-09, D-12) */}
       {arrServices.length > 0 && (
         <div
@@ -90,19 +86,16 @@ export function CardGrid({ snapshot, lastArrEvent }: CardGridProps) {
         </div>
       )}
 
-      {/* 2. Network/infrastructure cards (Pi-hole, etc.) */}
-      {networkServices.map((service) => (
-        <ServiceCard key={service.id} service={service} index={globalIndex++} allServices={snapshot.services} />
+      {/* 2. All non-arr service cards in normal grid flow (NAS, Pi-hole, SABnzbd, etc.) — D-09, D-21 */}
+      {nonArrServices.map((service) => (
+        <ServiceCard
+          key={service.id}
+          service={service}
+          index={globalIndex++}
+          allServices={snapshot.services}
+          nasStatus={service.id === 'nas' ? nasStatus : undefined}
+        />
       ))}
-
-      {/* 3. Download cards (SABnzbd) — always on its own row below media and network */}
-      {downloadServices.length > 0 && (
-        <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '1fr', gap: '8px' }}>
-          {downloadServices.map((service) => (
-            <ServiceCard key={service.id} service={service} index={globalIndex++} />
-          ))}
-        </div>
-      )}
     </div>
   )
 }

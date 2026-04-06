@@ -34,10 +34,11 @@ export default function App() {
 
   return (
     <>
+      <div className="crt-sweep" aria-hidden="true" />
       <GridBackground />
       <WiringOverlay />
       <AppHeader nas={snapshot?.nas ?? null} connected={connected} showBack={showBack} nasConfigured={nasConfigured} lastArrEvent={lastArrEvent} />
-      <main style={{ position: 'relative', zIndex: 1, paddingTop: '128px', paddingBottom: '40px' }}>
+      <main style={{ position: 'relative', zIndex: 1, paddingTop: '76px', paddingBottom: '40px' }}>
         <Routes>
           <Route path="/" element={<DashboardPage snapshot={snapshot} lastArrEvent={lastArrEvent} />} />
           <Route path="/services/:serviceId" element={<ServiceDetailPage snapshot={snapshot} />} />

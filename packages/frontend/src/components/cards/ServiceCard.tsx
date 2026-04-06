@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import type { ServiceStatus, UnifiMetrics, ArrWebhookEvent } from '@coruscant/shared'
+import type { ServiceStatus, UnifiMetrics, ArrWebhookEvent, NasStatus, NasVolume } from '@coruscant/shared'
 import { StatusDot } from '../ui/StatusDot.js'
 import { StaleIndicator } from '../ui/StaleIndicator.js'
 
@@ -16,6 +16,22 @@ const EVENT_COLORS: Record<string, string> = {
 // ARR services that receive flash — SABnzbd excluded (uses burst poll instead)
 const ARR_FLASH_IDS = new Set(['radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 'readarr'])
 
+// NAS CPU/RAM bar threshold color (D-19): green <60%, amber 60-85%, red >85%
+function getBarColor(percent: number): string {
+  if (percent > 85) return '#FF3B3B'   // red
+  if (percent > 60) return '#E8A020'   // amber
+  return '#4ADE80'                      // green
+}
+
+// UniFi multi-arrow speed tier indicator (D-20)
+function getArrowTier(mbps: number | null, direction: 'rx' | 'tx'): string {
+  if (mbps === null || mbps < 0.1) return ''
+  const arrow = direction === 'rx' ? '↓' : '↑'
+  if (mbps < 10) return arrow
+  if (mbps < 100) return arrow.repeat(2)
+  return arrow.repeat(3)
+}
+
 // Card outline glow per non-healthy status (D-13)
 function getCardGlow(status: ServiceStatus['status']): string {
   const base = 'inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.4)'
@@ -24,7 +40,7 @@ function getCardGlow(status: ServiceStatus['status']): string {
   return base
 }
 
-// NAS gauge bar instrument
+// NAS gauge bar instrument — used for nas-detail service (legacy detail view)
 function NasInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   const cpu = typeof metrics.cpu === 'number' ? metrics.cpu : 0
   const ram = typeof metrics.ram === 'number' ? metrics.ram : 0
@@ -32,55 +48,130 @@ function NasInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   const temp = typeof metrics.tempC === 'number' ? metrics.tempC : 0
 
   const gauges = [
-    { label: 'CPU', value: Math.round(cpu), unit: '%', percent: cpu },
-    { label: 'RAM', value: Math.round(ram), unit: '%', percent: ram },
-    { label: 'DISK', value: Math.round(disk), unit: '%', percent: disk },
-    { label: 'TEMP', value: Math.round(temp), unit: '°C', percent: (temp / 80) * 100 },
+    { label: 'CPU', value: Math.round(cpu), unit: '%', percent: cpu, isThreshold: true },
+    { label: 'RAM', value: Math.round(ram), unit: '%', percent: ram, isThreshold: true },
+    { label: 'DISK', value: Math.round(disk), unit: '%', percent: disk, isThreshold: false },
+    { label: 'TEMP', value: Math.round(temp), unit: '°C', percent: (temp / 80) * 100, isThreshold: false },
   ]
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-      {gauges.map(({ label, value, unit, percent }) => (
-        <div key={label}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginBottom: '2px',
-            }}
-          >
-            <span
-              className="text-label"
-              style={{ color: '#C8C8C8', fontSize: '9px', textTransform: 'uppercase' }}
-            >
-              {label}
-            </span>
-            <span
-              className="text-label"
-              style={{ color: 'var(--cockpit-amber)', fontSize: '9px' }}
-            >
-              {value}{unit}
-            </span>
-          </div>
-          <div
-            style={{
-              height: '4px',
-              background: 'rgba(232,160,32,0.15)',
-              borderRadius: '2px',
-              overflow: 'hidden',
-            }}
-          >
+      {gauges.map(({ label, value, unit, percent, isThreshold }) => {
+        const barColor = isThreshold ? getBarColor(percent) : 'var(--cockpit-amber)'
+        return (
+          <div key={label}>
             <div
               style={{
-                height: '100%',
-                width: `${Math.min(Math.max(percent, 0), 100)}%`,
-                background: 'var(--cockpit-amber)',
-                borderRadius: '2px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginBottom: '2px',
               }}
-            />
+            >
+              <span
+                className="text-label"
+                style={{ color: '#C8C8C8', fontSize: '9px', textTransform: 'uppercase' }}
+              >
+                {label}
+              </span>
+              <span
+                className="text-label text-glow"
+                style={{ color: barColor, fontSize: '9px' }}
+              >
+                {value}{unit}
+              </span>
+            </div>
+            <div
+              style={{
+                height: '4px',
+                background: 'rgba(232,160,32,0.15)',
+                borderRadius: '2px',
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  height: '100%',
+                  width: `${Math.min(Math.max(percent, 0), 100)}%`,
+                  background: barColor,
+                  borderRadius: '2px',
+                }}
+              />
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// NAS standalone tile instrument (D-21) — amber ribbon header, CPU/RAM/volume bars, disk temps, docker stats
+function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+      {/* CPU bar */}
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+          <span style={{ fontSize: '8px', color: '#C8C8C8', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>CPU</span>
+          <span className="text-glow" style={{ fontSize: '9px', color: getBarColor(nasStatus.cpu), fontFamily: 'var(--font-mono)' }}>
+            {Math.round(nasStatus.cpu)}%
+          </span>
+        </div>
+        <div style={{ height: '4px', background: 'rgba(232,160,32,0.15)', borderRadius: '2px', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${Math.min(nasStatus.cpu, 100)}%`, background: getBarColor(nasStatus.cpu), borderRadius: '2px' }} />
+        </div>
+      </div>
+      {/* RAM bar */}
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+          <span style={{ fontSize: '8px', color: '#C8C8C8', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>RAM</span>
+          <span className="text-glow" style={{ fontSize: '9px', color: getBarColor(nasStatus.ram), fontFamily: 'var(--font-mono)' }}>
+            {Math.round(nasStatus.ram)}%
+          </span>
+        </div>
+        <div style={{ height: '4px', background: 'rgba(232,160,32,0.15)', borderRadius: '2px', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${Math.min(nasStatus.ram, 100)}%`, background: getBarColor(nasStatus.ram), borderRadius: '2px' }} />
+        </div>
+      </div>
+      {/* Volume bars */}
+      {nasStatus.volumes.length > 0 && nasStatus.volumes.map((vol: NasVolume) => (
+        <div key={vol.name}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+            <span style={{ fontSize: '8px', color: '#C8C8C8', textTransform: 'uppercase', fontFamily: 'var(--font-mono)', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '70%' }}>
+              {vol.name}
+            </span>
+            <span className="text-glow" style={{ fontSize: '9px', color: getBarColor(vol.usedPercent), fontFamily: 'var(--font-mono)' }}>
+              {Math.round(vol.usedPercent)}%
+            </span>
+          </div>
+          <div style={{ height: '4px', background: 'rgba(232,160,32,0.15)', borderRadius: '2px', overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${Math.min(vol.usedPercent, 100)}%`, background: getBarColor(vol.usedPercent), borderRadius: '2px' }} />
           </div>
         </div>
       ))}
+      {/* Disk temps inline */}
+      {nasStatus.disks && nasStatus.disks.length > 0 && (
+        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '2px' }}>
+          {nasStatus.disks.map(disk => {
+            const tempF = Math.round(disk.tempC * 9 / 5 + 32)
+            return (
+              <span key={disk.id} className="text-glow" style={{ fontSize: '9px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)' }}>
+                {disk.name ? disk.name.slice(0, 6) : disk.id}: {tempF}°F
+              </span>
+            )
+          })}
+        </div>
+      )}
+      {/* Docker stats */}
+      {nasStatus.docker && (
+        <div style={{ display: 'flex', gap: '8px', marginTop: '2px' }}>
+          <span style={{ fontSize: '9px', color: '#C8C8C8', fontFamily: 'var(--font-mono)' }}>
+            DCK CPU <span className="text-glow" style={{ color: 'var(--cockpit-amber)' }}>{nasStatus.docker.cpuPercent.toFixed(1)}%</span>
+          </span>
+          <span style={{ fontSize: '9px', color: '#C8C8C8', fontFamily: 'var(--font-mono)' }}>
+            RAM <span className="text-glow" style={{ color: 'var(--cockpit-amber)' }}>{nasStatus.docker.ramPercent.toFixed(1)}%</span>
+          </span>
+        </div>
+      )}
     </div>
   )
 }
@@ -197,6 +288,10 @@ function ArrInstrument({ service, metrics }: { service: ServiceStatus; metrics: 
 function PlexInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   const activeStreams = typeof metrics.activeStreams === 'number' ? metrics.activeStreams : 0
   const maxStreams = typeof metrics.maxStreams === 'number' ? metrics.maxStreams : 5
+  // Plex server stats — CPU green, RAM blue, bandwidth white (D-22)
+  const cpuPct = typeof metrics.processCpuPercent === 'number' ? metrics.processCpuPercent.toFixed(1) : null
+  const ramPct = typeof metrics.processRamPercent === 'number' ? metrics.processRamPercent.toFixed(1) : null
+  const bwMbps = typeof metrics.bandwidthMbps === 'number' ? metrics.bandwidthMbps.toFixed(1) : null
 
   const barHeights = [4, 8, 12, 16, 20]
 
@@ -219,11 +314,31 @@ function PlexInstrument({ metrics }: { metrics: Record<string, unknown> }) {
         ))}
       </div>
       <div
-        className="text-label"
+        className="text-label text-glow"
         style={{ color: '#C8C8C8', fontSize: '9px' }}
       >
         {activeStreams} ACTIVE
       </div>
+      {/* Plex server stats — D-22 */}
+      {(cpuPct !== null || ramPct !== null || bwMbps !== null) && (
+        <div style={{ display: 'flex', gap: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
+          {cpuPct !== null && (
+            <span className="text-label text-glow" style={{ color: '#4ADE80', fontSize: '9px' }}>
+              CPU {cpuPct}%
+            </span>
+          )}
+          {ramPct !== null && (
+            <span className="text-label text-glow" style={{ color: '#00c8ff', fontSize: '9px' }}>
+              RAM {ramPct}%
+            </span>
+          )}
+          {bwMbps !== null && (
+            <span className="text-label text-glow" style={{ color: '#C8C8C8', fontSize: '9px' }}>
+              {bwMbps}M
+            </span>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -343,11 +458,11 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
         <div style={{ fontSize: '8px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em',
           textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>PI-HOLE</div>
-        <span style={{ fontSize: '9px', fontFamily: 'var(--font-mono)',
+        <span className="text-glow" style={{ fontSize: '9px', fontFamily: 'var(--font-mono)',
           color: blocking === 'BLOCKING' ? 'var(--cockpit-green)' : 'var(--cockpit-red)' }}>
           {blocking}
         </span>
-        <span style={{ fontSize: '9px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)' }}>
+        <span className="text-glow" style={{ fontSize: '9px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)' }}>
           QPM {qpm}
         </span>
         <span style={{ fontSize: '9px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)' }}>
@@ -369,20 +484,47 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
           </span>
         ) : (
           <>
-            {/* Row 1: Health LED + status label + client count (D-04) */}
+            {/* Row 1: Health LED + status label */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <StatusDot status={healthToLed} />
               <span style={{ fontSize: '9px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)' }}>
                 {healthLabel}
               </span>
-              <span style={{ fontSize: '9px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)', marginLeft: 'auto' }}>
-                {um!.clientCount} cl
-              </span>
             </div>
-            {/* Row 2: TX bar — red per D-02 */}
-            <ThroughputBar label="TX" value={um!.wanTxMbps} peak={um!.peakTxMbps} color="#FF4444" />
-            {/* Row 3: RX bar — blue per D-02 */}
-            <ThroughputBar label="RX" value={um!.wanRxMbps} peak={um!.peakRxMbps} color="#00c8ff" />
+            {/* Row 2: Client bar gauge — green, no raw number (D-39) */}
+            <div>
+              <span style={{ fontSize: '8px', color: 'rgba(74,222,128,0.6)', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>CLIENTS</span>
+              <div style={{ height: '4px', background: '#222', borderRadius: '2px', marginTop: '1px' }}>
+                <div style={{
+                  width: `${um!.peakClients && um!.peakClients > 0
+                    ? Math.min((um!.clientCount / um!.peakClients) * 100, 100)
+                    : (um!.clientCount > 0 ? 100 : 0)}%`,
+                  height: '100%',
+                  background: '#4ADE80',
+                  borderRadius: '2px',
+                  boxShadow: '0 0 4px #4ADE80',
+                  transition: 'width 0.3s ease',
+                }} />
+              </div>
+            </div>
+            {/* Row 3: TX bar + arrow indicator — red (D-20) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <ThroughputBar label="TX" value={um!.wanTxMbps} peak={um!.peakTxMbps} color="#FF3B3B" />
+              {getArrowTier(um!.wanTxMbps, 'tx') && (
+                <span className="text-glow" style={{ fontSize: '10px', color: '#FF3B3B', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
+                  {getArrowTier(um!.wanTxMbps, 'tx')}
+                </span>
+              )}
+            </div>
+            {/* Row 4: RX bar + arrow indicator — blue (D-20) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <ThroughputBar label="RX" value={um!.wanRxMbps} peak={um!.peakRxMbps} color="#00c8ff" />
+              {getArrowTier(um!.wanRxMbps, 'rx') && (
+                <span className="text-glow" style={{ fontSize: '10px', color: '#00c8ff', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
+                  {getArrowTier(um!.wanRxMbps, 'rx')}
+                </span>
+              )}
+            </div>
           </>
         )}
       </div>
@@ -453,14 +595,15 @@ interface ServiceCardProps {
   index: number
   allServices?: ServiceStatus[]
   lastArrEvent?: ArrWebhookEvent | null
+  nasStatus?: NasStatus | null
 }
 
-export function ServiceCard({ service, index, allServices }: ServiceCardProps) {
+export function ServiceCard({ service, index, allServices, nasStatus }: ServiceCardProps) {
   const navigate = useNavigate()
   const [hovered, setHovered] = useState(false)
 
-  // D-20: Plex and NAS do not render as grid cards
-  if (service.id === 'plex' || service.id === 'nas') return null
+  // D-20: Plex does not render as a grid card (in NowPlayingBanner)
+  if (service.id === 'plex') return null
 
   // D-15, D-16: unconfigured services deep-link to settings
   const isUnconfigured = service.configured === false
@@ -473,6 +616,45 @@ export function ServiceCard({ service, index, allServices }: ServiceCardProps) {
     // Save scroll position for restoration on back nav (UI-SPEC Scroll behavior)
     sessionStorage.setItem('dashboardScrollY', window.scrollY.toString())
     navigate(`/services/${service.id}`)
+  }
+
+  // NAS standalone tile — amber ribbon header, full NAS metrics (D-21)
+  if (service.id === 'nas') {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: 'easeOut', delay: index * 0.05 }}
+        className="chamfer-card"
+        style={{
+          position: 'relative',
+          background: 'var(--bg-panel)',
+          border: `1px solid ${hovered ? 'rgba(232,160,32,0.60)' : 'var(--border-rest)'}`,
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        {/* 20px amber ribbon header — same pattern as MEDIA tile */}
+        <div style={{ height: '20px', background: 'var(--cockpit-amber)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '6px', paddingRight: '8px' }}>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: '#1a1a1a', letterSpacing: '0.08em', fontWeight: 600 }}>NAS</span>
+          <StatusDot status={isUnconfigured ? 'stale' : service.status} />
+        </div>
+        <div style={{ padding: '6px 10px 8px 10px', flex: 1 }}>
+          {isUnconfigured || !nasStatus ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60px' }}>
+              <span className="text-label" style={{ color: 'rgba(200,200,200,0.3)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                {isUnconfigured ? 'NOT CONFIGURED' : 'LOADING...'}
+              </span>
+            </div>
+          ) : (
+            <NasTileInstrument nasStatus={nasStatus} />
+          )}
+        </div>
+      </motion.div>
+    )
   }
 
   // Unconfigured cards show the NOT CONFIGURED label instead of service instruments
