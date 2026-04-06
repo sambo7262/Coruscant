@@ -122,6 +122,17 @@ Phase ends when:
   - **Bootstrap:** On first run (no stored max), initialize max to the first observed speed. The bar starts full and expands as faster speeds appear.
   - **No UI controls:** This is automatic — no user-facing reset button in Phase 8. If user wants to force a reset, they can do it via the debug endpoint.
 
+### Unifi Client Count — Green Bar Gauge
+
+- **D-39:** Replace the plain numeric client count in the Unifi tile with a green bar gauge, identical in behavior to the D-38 network throughput bars.
+
+  - **Visual:** A horizontal bar, green (`#4ADE80`), fills from 0% to 100% where 100% = the observed high-water mark client count. The raw number is NOT shown — the bar alone communicates load.
+  - **Dynamic max:** Same rolling high-water mark pattern as D-38. Store `unifi.clients_max` in the `kv_store` SQLite table. Read on server start; update immediately whenever current count exceeds stored max.
+  - **Bootstrap:** On first run (no stored max), initialize max to the first observed count. Bar starts full and expands as higher client counts are seen.
+  - **Color:** Fixed green (`#4ADE80`) — client count is not a warning metric, so no threshold color changes. Green conveys "live and healthy."
+  - **Layout:** Replace the client count number cell in the Unifi tile with the bar. Same height and positioning as the RX/TX bars above it — consistent instrument feel.
+  - **Persistence:** Same `kv_store` table as D-38; just a new key `unifi.clients_max`.
+
 ### Color + Indicator Polish
 
 - **D-19:** NAS CPU and RAM bars colored as cockpit warning indicators:
