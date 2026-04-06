@@ -204,7 +204,7 @@ export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
               display: 'flex',
               flexDirection: 'column',
               overflow: 'hidden',
-              maxHeight: 'var(--tile-max-height, 320px)',
+              maxHeight: 'var(--tile-max-height, 240px)',
             }}
           >
             {/* 20px amber header strip with MEDIA label */}

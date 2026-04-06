@@ -239,13 +239,15 @@ function WeatherTab() {
         body: JSON.stringify({ zip: zip.trim() }),
       })
       if (res.ok) {
-        const data = await res.json() as { location?: { name: string; lat: number; lon: number } }
-        setLocation(data.location ?? null)
+        const data = await res.json() as { success?: boolean; location?: string; lat?: number; lon?: number }
+        if (data.location && data.lat !== undefined && data.lon !== undefined) {
+          setLocation({ name: data.location, lat: data.lat, lon: data.lon })
+        }
         setSaveSuccess(true)
         setTimeout(() => setSaveSuccess(false), 2000)
       } else {
-        const errData = await res.json().catch(() => ({})) as { message?: string }
-        setSaveError(errData.message ?? `Save failed (${res.status})`)
+        const errData = await res.json().catch(() => ({})) as { error?: string; message?: string }
+        setSaveError(errData.error ?? errData.message ?? `Save failed (${res.status})`)
         setTimeout(() => setSaveError(null), 4000)
       }
     } catch {
