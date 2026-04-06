@@ -105,19 +105,24 @@ function NasInstrument({ metrics }: { metrics: Record<string, unknown> }) {
 }
 
 /**
- * Vertical column bar gauge (8px wide × 60px tall) — used in NAS full-width tile.
+ * Vertical column bar gauge — used in NAS full-width tile.
  * fillPct: 0–100, fills from bottom up.
+ * barWidth and barHeight are optional; defaults are '8px' and '60px'.
  */
 function NasGaugeColumn({
   label,
   fillPct,
   valueText,
   color = 'var(--cockpit-amber)',
+  barWidth = '8px',
+  barHeight = '60px',
 }: {
   label: string
   fillPct: number
   valueText: string
   color?: string
+  barWidth?: string
+  barHeight?: string
 }) {
   const clampedFill = Math.max(0, Math.min(100, fillPct))
   return (
@@ -147,8 +152,8 @@ function NasGaugeColumn({
       </span>
       <div
         style={{
-          width: '8px',
-          height: '60px',
+          width: barWidth,
+          height: barHeight,
           background: 'rgba(232,160,32,0.15)',
           borderRadius: '2px',
           position: 'relative',
@@ -183,23 +188,51 @@ function NasGaugeColumn({
   )
 }
 
-// NAS standalone tile instrument (D-21) — vertical bars for CPU/RAM/volumes, disk temps, docker stats
+// NAS standalone tile instrument (D-21) — 3-column layout: disk LEDs | CPU/RAM/volume bars | Docker stats
 function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-      {/* Top section — vertical column bars: CPU, RAM, each volume */}
-      <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '0 8px', alignItems: 'flex-start' }}>
+
+      {/* LEFT col — disk temp LED indicators */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        {nasStatus.disks && nasStatus.disks.map((disk, idx) => {
+          const tempC = disk.tempC
+          const dotColor = tempC > 55 ? '#FF3B3B' : tempC >= 45 ? '#E8A020' : '#4ADE80'
+          const tempF = Math.round(tempC * 9 / 5 + 32)
+          return (
+            <div key={disk.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+              <div style={{
+                width: '8px', height: '8px', borderRadius: '50%',
+                background: dotColor, boxShadow: `0 0 4px ${dotColor}`,
+              }} />
+              <span style={{ fontSize: '9px', color: dotColor, fontFamily: 'var(--font-mono)', lineHeight: 1 }}>
+                {tempF}°F
+              </span>
+              <span style={{ fontSize: '7px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', textTransform: 'uppercase', lineHeight: 1 }}>
+                DISK {idx + 1}
+              </span>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* CENTER col — vertical bars reduced 25% */}
+      <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
         <NasGaugeColumn
           label="CPU"
           fillPct={nasStatus.cpu}
           valueText={`${Math.round(nasStatus.cpu)}%`}
           color={getBarColor(nasStatus.cpu)}
+          barWidth="6px"
+          barHeight="45px"
         />
         <NasGaugeColumn
           label="RAM"
           fillPct={nasStatus.ram}
           valueText={`${Math.round(nasStatus.ram)}%`}
           color={getBarColor(nasStatus.ram)}
+          barWidth="6px"
+          barHeight="45px"
         />
         {nasStatus.volumes.map((vol: NasVolume) => (
           <NasGaugeColumn
@@ -208,41 +241,33 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
             fillPct={vol.usedPercent}
             valueText={`${Math.round(vol.usedPercent)}%`}
             color={getBarColor(vol.usedPercent)}
+            barWidth="6px"
+            barHeight="45px"
           />
         ))}
       </div>
 
-      {/* Middle section — disk temps */}
-      {nasStatus.disks && nasStatus.disks.length > 0 && (
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-          {nasStatus.disks.map(disk => {
-            const tempF = Math.round(disk.tempC * 9 / 5 + 32)
-            const name = disk.name ? disk.name.slice(0, 6) : disk.id
-            return (
-              <div key={disk.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                <span style={{ fontSize: '9px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em' }}>
-                  {name}
-                </span>
-                <span className="text-glow" style={{ fontSize: '11px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textShadow: '0 0 6px currentColor' }}>
-                  {tempF}°F
-                </span>
+      {/* RIGHT col — Docker stats */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+        {nasStatus.docker ? (
+          <>
+            <div style={{ fontSize: '8px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Docker</div>
+            <span className="text-glow" style={{ fontSize: '10px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textShadow: '0 0 6px var(--cockpit-amber)' }}>
+              CPU {nasStatus.docker.cpuPercent.toFixed(1)}%
+            </span>
+            <span className="text-glow" style={{ fontSize: '10px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textShadow: '0 0 6px var(--cockpit-amber)' }}>
+              RAM {nasStatus.docker.ramPercent.toFixed(1)}%
+            </span>
+            {nasStatus.imageUpdateAvailable === true && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#E8A020', boxShadow: '0 0 4px #E8A020', flexShrink: 0 }} />
+                <span style={{ fontSize: '8px', color: '#E8A020', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>UPDATE</span>
               </div>
-            )
-          })}
-        </div>
-      )}
+            )}
+          </>
+        ) : null}
+      </div>
 
-      {/* Bottom section — Docker container stats */}
-      {nasStatus.docker && (
-        <div style={{ display: 'flex', gap: '10px', marginTop: '2px' }}>
-          <span style={{ fontSize: '9px', color: '#C8C8C8', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-            DCK CPU <span className="text-glow" style={{ color: 'var(--cockpit-amber)', textShadow: '0 0 6px currentColor', fontSize: '10px' }}>{nasStatus.docker.cpuPercent.toFixed(1)}%</span>
-          </span>
-          <span style={{ fontSize: '9px', color: '#C8C8C8', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-            RAM <span className="text-glow" style={{ color: 'var(--cockpit-amber)', textShadow: '0 0 6px currentColor', fontSize: '10px' }}>{nasStatus.docker.ramPercent.toFixed(1)}%</span>
-          </span>
-        </div>
-      )}
     </div>
   )
 }
@@ -497,7 +522,7 @@ function ThroughputBar({ label, value, peak, color }: { label: string; value: nu
       <div style={{ flex: 1, height: '4px', background: '#222', borderRadius: '2px' }}>
         <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: '2px', transition: 'width 0.3s ease' }} />
       </div>
-      <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', width: '32px', textAlign: 'right', color: color, textShadow: '0 0 6px currentColor' }}>
+      <span style={{ fontSize: '13px', fontFamily: 'var(--font-mono)', width: '32px', textAlign: 'right', color: color, textShadow: '0 0 6px currentColor' }}>
         {display}
       </span>
     </div>
@@ -545,6 +570,14 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
           {qpm}
         </span>
         <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>QPM</div>
+        {typeof metrics.percentBlocked === 'number' && (
+          <>
+            <span className="text-glow" style={{ fontSize: '13px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1, textShadow: '0 0 8px var(--cockpit-amber)' }}>
+              {(metrics.percentBlocked as number).toFixed(1)}%
+            </span>
+            <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>BLOCKED</div>
+          </>
+        )}
       </div>
       {/* RIGHT — Ubiquiti */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
@@ -561,7 +594,7 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
             {/* Row 1: Health LED + status label */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <StatusDot status={healthToLed} />
-              <span style={{ fontSize: '9px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)' }}>
+              <span style={{ fontSize: '14px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)' }}>
                 {healthLabel}
               </span>
             </div>

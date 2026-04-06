@@ -58,10 +58,11 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
         const progress = typeof m.downloadProgress === 'number' ? m.downloadProgress : 0
         const quality = typeof m.downloadQuality === 'string' ? m.downloadQuality : ''
         const count = typeof m.activeDownloads === 'number' ? m.activeDownloads : 0
+        const activeTitle = typeof m.activeTitle === 'string' && m.activeTitle ? m.activeTitle : s.name.slice(0, 7)
         return (
           <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
-            <span style={{ fontSize: '8px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0, width: '44px' }}>
-              {s.name.slice(0, 7)}
+            <span style={{ fontSize: '8px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0, maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {activeTitle}
             </span>
             <div style={{ flex: 1, height: '3px', background: 'rgba(139,92,246,0.15)', borderRadius: '2px', overflow: 'hidden' }}>
               <div style={{
