@@ -193,6 +193,7 @@ None yet.
 | 260406-c11 | UAT round 6: NAS Docker shift, HD label, Pi-hole MEM/LOAD 22px, taller network bars, Plex 22px rail, DOWNLOADS 11px header, active title layout | 2026-04-06 | 2d6fa97 | [260406-c11-phase-8-uat-round-6-docker-stats-shift-r](./quick/260406-c11-phase-8-uat-round-6-docker-stats-shift-r/) |
 | 260406-dwj | UAT round 7: NAS section labels, HD vol fix (regex), Prowlarr flash LED, network bar numerics, LOAD removed, download title+SABnzbd only | 2026-04-06 | e70a886 | [260406-dwj-phase-8-uat-round-7-nas-section-labels-d](./quick/260406-dwj-phase-8-uat-round-7-nas-section-labels-d/) |
 | 260406-fsu | UAT round 8: volumeLabel() helper fixes VOLU, NAS name→TheRock fallback, download 3-tier title lookup, SABnzbd speed 22px | 2026-04-06 | 4b41d87 | [260406-fsu-phase-8-uat-round-8-volu-deep-trace-nas-](./quick/260406-fsu-phase-8-uat-round-8-volu-deep-trace-nas-/) |
+| 260406-gbd | UAT round 9: index-based HD labels (volumeLabel deleted), download title ellipsis block, Plex rail height 20→28px | 2026-04-06 | 0593587 | [260406-gbd-phase-8-uat-round-9-volu-hardcode-hd-by-](./quick/260406-gbd-phase-8-uat-round-9-volu-hardcode-hd-by-/) |
 
 ### Blockers/Concerns
 
