@@ -81,11 +81,10 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
             flexShrink: 0,
             fontSize: '10px',
             fontFamily: 'var(--font-mono)',
-            color: '#555555',
           }}>
-            <span>CPU {(plexServerStats.processCpuPercent ?? 0).toFixed(0)}%</span>
-            <span>RAM {(plexServerStats.processRamPercent ?? 0).toFixed(0)}%</span>
-            <span>{(plexServerStats.bandwidthMbps ?? 0).toFixed(1)} Mbps</span>
+            <span style={{ color: '#4ADE80' }}>CPU {(plexServerStats.processCpuPercent ?? 0).toFixed(0)}%</span>
+            <span style={{ color: '#00c8ff' }}>RAM {(plexServerStats.processRamPercent ?? 0).toFixed(0)}%</span>
+            <span style={{ color: '#C8C8C8' }}>{(plexServerStats.bandwidthMbps ?? 0).toFixed(1)} Mbps</span>
           </div>
         )}
       </div>
@@ -235,11 +234,10 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
               flexShrink: 0,
               fontSize: '10px',
               fontFamily: 'var(--font-mono)',
-              color: 'var(--text-offwhite)',
             }}>
-              <span>CPU {(plexServerStats.processCpuPercent ?? 0).toFixed(0)}%</span>
-              <span>RAM {(plexServerStats.processRamPercent ?? 0).toFixed(0)}%</span>
-              <span>{(plexServerStats.bandwidthMbps ?? 0).toFixed(1)} Mbps</span>
+              <span style={{ color: '#4ADE80' }}>CPU {(plexServerStats.processCpuPercent ?? 0).toFixed(0)}%</span>
+              <span style={{ color: '#00c8ff' }}>RAM {(plexServerStats.processRamPercent ?? 0).toFixed(0)}%</span>
+              <span style={{ color: '#C8C8C8' }}>{(plexServerStats.bandwidthMbps ?? 0).toFixed(1)} Mbps</span>
             </div>
           )}
         </div>
@@ -290,13 +288,12 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
                       display: 'flex',
                       gap: '16px',
                       fontSize: '14px',
-                      color: 'var(--text-offwhite)',
                       fontFamily: 'var(--font-mono)',
                     }}
                   >
-                    <span>CPU {(plexServerStats.processCpuPercent ?? 0).toFixed(1)}%</span>
-                    <span>RAM {(plexServerStats.processRamPercent ?? 0).toFixed(1)}%</span>
-                    <span>BW {(plexServerStats.bandwidthMbps ?? 0).toFixed(1)} Mbps</span>
+                    <span style={{ color: '#4ADE80' }}>CPU {(plexServerStats.processCpuPercent ?? 0).toFixed(1)}%</span>
+                    <span style={{ color: '#00c8ff' }}>RAM {(plexServerStats.processRamPercent ?? 0).toFixed(1)}%</span>
+                    <span style={{ color: '#C8C8C8' }}>BW {(plexServerStats.bandwidthMbps ?? 0).toFixed(1)} Mbps</span>
                   </div>
                 </div>
               )}

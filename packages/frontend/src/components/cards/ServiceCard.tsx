@@ -497,7 +497,7 @@ function ThroughputBar({ label, value, peak, color }: { label: string; value: nu
       <div style={{ flex: 1, height: '4px', background: '#222', borderRadius: '2px' }}>
         <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: '2px', transition: 'width 0.3s ease' }} />
       </div>
-      <span style={{ fontSize: '8px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)', width: '32px', textAlign: 'right' }}>
+      <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', width: '32px', textAlign: 'right', color: color, textShadow: '0 0 6px currentColor' }}>
         {display}
       </span>
     </div>
@@ -529,19 +529,22 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
         <div style={{ fontSize: '8px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em',
           textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>PI-HOLE</div>
-        <span className="text-glow" style={{ fontSize: '9px', fontFamily: 'var(--font-mono)',
-          color: blocking === 'BLOCKING' ? 'var(--cockpit-green)' : 'var(--cockpit-red)' }}>
+        <span className="text-glow" style={{
+          fontSize: '20px',
+          fontWeight: 600,
+          letterSpacing: '0.08em',
+          fontFamily: 'var(--font-mono)',
+          lineHeight: 1.1,
+          color: blocking === 'BLOCKING' ? 'var(--cockpit-green)' : 'var(--cockpit-red)',
+          textShadow: `0 0 8px ${blocking === 'BLOCKING' ? 'var(--cockpit-green)' : 'var(--cockpit-red)'}`,
+        }}>
           {blocking}
         </span>
-        <span className="text-glow" style={{ fontSize: '9px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)' }}>
-          QPM {qpm}
+        <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>BLOCKING</div>
+        <span className="text-glow" style={{ fontSize: '20px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1, textShadow: '0 0 8px var(--cockpit-amber)' }}>
+          {qpm}
         </span>
-        <span style={{ fontSize: '9px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)' }}>
-          LOAD {load}
-        </span>
-        <span style={{ fontSize: '9px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)' }}>
-          MEM {mem}
-        </span>
+        <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>QPM</div>
       </div>
       {/* RIGHT — Ubiquiti */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
@@ -785,8 +788,8 @@ export function ServiceCard({ service, index, allServices, nasStatus }: ServiceC
         boxShadow: getCardGlow(isUnconfigured ? 'stale' : service.status),
       }}
     >
-      {/* Banner header: 20px strip for pihole and sabnzbd (with LED inside), or 6px strip for all others */}
-      {(service.id === 'pihole' || service.id === 'sabnzbd') ? (
+      {/* Banner header: 20px strip for pihole (with LED inside), or 6px strip for all others */}
+      {service.id === 'pihole' ? (
         <div style={{
           height: '20px',
           background: 'var(--cockpit-amber)',
@@ -804,13 +807,9 @@ export function ServiceCard({ service, index, allServices, nasStatus }: ServiceC
             letterSpacing: '0.08em',
             fontWeight: 600,
           }}>
-            {service.id === 'pihole' ? 'NETWORK' : 'DOWNLOADS'}
+            NETWORK
           </span>
-          {/* LED dot inside banner strip */}
-          {service.id === 'sabnzbd' && !isUnconfigured
-            ? <SabnzbdLed service={service} />
-            : <StatusDot status={isUnconfigured ? 'stale' : service.status} />
-          }
+          <StatusDot status={isUnconfigured ? 'stale' : service.status} />
         </div>
       ) : (
         <>
