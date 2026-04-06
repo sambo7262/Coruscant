@@ -129,6 +129,10 @@ export class PollManager {
   private sabnzbdConfig: { baseUrl: string; apiKey: string } | null = null
   private burstPollActive: boolean = false
 
+  // Pi-hole BPM tracking — delta between polls
+  private prevPiholeBlocked: number | null = null
+  private prevPiholePollAt: number | null = null
+
   constructor() {
     // Initialize all services as unconfigured
     for (const id of ALL_SERVICE_IDS) {
@@ -340,6 +344,19 @@ export class PollManager {
           result = await pollSabnzbd(baseUrl, apiKey)
         } else if (serviceId === 'pihole') {
           result = await pollPihole(baseUrl, apiKey)
+          // Compute blocked-per-minute from delta between polls
+          const m = result.metrics as Record<string, unknown> | undefined
+          const totalBlocked = typeof m?.totalBlockedDay === 'number' ? m.totalBlockedDay : 0
+          const now = Date.now()
+          if (this.prevPiholeBlocked !== null && this.prevPiholePollAt !== null) {
+            const deltaBlocked = totalBlocked - this.prevPiholeBlocked
+            const deltaMin = (now - this.prevPiholePollAt) / 60_000
+            if (m && deltaMin > 0 && deltaBlocked >= 0) {
+              m.blockedPerMinute = Math.round(deltaBlocked / deltaMin)
+            }
+          }
+          this.prevPiholeBlocked = totalBlocked
+          this.prevPiholePollAt = now
         } else if (serviceId === 'nas') {
           // NAS stores metrics in nasData and marks itself configured in state
           const nasResult = await pollNas(baseUrl, username ?? '', apiKey)

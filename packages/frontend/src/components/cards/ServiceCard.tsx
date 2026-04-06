@@ -571,11 +571,11 @@ function ThroughputBar({ label, value, peak, color }: { label: string; value: nu
 
 // NETWORK card: Pi-hole section + Ubiquiti section (D-15, D-16)
 function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, unknown>; unifiService?: ServiceStatus }) {
-  const rawQpm = typeof metrics.queriesPerMinute === 'number' ? metrics.queriesPerMinute : 0
+  const rawBpm = typeof metrics.blockedPerMinute === 'number' ? metrics.blockedPerMinute : 0
   const rawPercentBlocked = typeof metrics.percentBlocked === 'number' ? metrics.percentBlocked : 0
   const rawMem = typeof metrics.memPercent === 'number' ? metrics.memPercent : 0
 
-  const animQpm = useAnimatedNumber(rawQpm)
+  const animBpm = useAnimatedNumber(rawBpm)
   const animPercentBlocked = useAnimatedNumber(rawPercentBlocked * 10) // multiply by 10 for sub-integer resolution
   const animMem = useAnimatedNumber(rawMem)
 
@@ -587,11 +587,11 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
   const animWanTx = useAnimatedNumber(rawWanTx)
   const animWanRx = useAnimatedNumber(rawWanRx)
 
-  const hasQpmData = typeof metrics.queriesPerMinute === 'number'
+  const hasBpmData = typeof metrics.blockedPerMinute === 'number'
   const hasPercentData = typeof metrics.percentBlocked === 'number'
   const hasMemData = typeof metrics.memPercent === 'number'
 
-  const qpmDisplay = hasQpmData ? animQpm.toString() : '--'
+  const bpmDisplay = hasBpmData ? animBpm.toString() : '--'
   const percentBlockedDisplay = hasPercentData ? (animPercentBlocked / 10).toFixed(1) : '--'
   const memDisplay = hasMemData ? `${animMem}%` : '--'
 
@@ -624,9 +624,9 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
         </span>
         <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>BLOCKING</div>
         <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1 }}>
-          {qpmDisplay}
+          {bpmDisplay}
         </span>
-        <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>QPM</div>
+        <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>BPM</div>
         {hasPercentData && (
           <>
             <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1 }}>
