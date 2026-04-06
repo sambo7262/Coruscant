@@ -199,21 +199,6 @@ const NAS_SECTION_LABEL_STYLE: React.CSSProperties = {
   marginBottom: '4px',
 }
 
-/** Derive short volume label from DSM volume name.
- *  "volume1" | "/volume1" | "Volume 1" | "Volume1" → "HD"
- *  "volume2" | "/volume2" | "Volume 2"             → "HD2"
- *  Anything else ≤4 chars                            → as-is
- *  Anything else                                     → first 4 chars
- */
-function volumeLabel(name: string): string {
-  const normalized = name.replace(/^\//, '').replace(/\s+/g, '').toLowerCase()
-  const match = normalized.match(/^volume(\d+)$/)
-  if (match) {
-    return match[1] === '1' ? 'HD' : `HD${match[1]}`
-  }
-  return name.length <= 4 ? name : name.slice(0, 4)
-}
-
 // NAS standalone tile instrument (D-21) — 3-column layout: disk LEDs | CPU/RAM/volume bars | Docker stats
 function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
   return (
@@ -267,8 +252,8 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
         {[
           { label: 'CPU', value: nasStatus.cpu, valueText: `${Math.round(nasStatus.cpu)}%` },
           { label: 'RAM', value: nasStatus.ram, valueText: `${Math.round(nasStatus.ram)}%` },
-          ...nasStatus.volumes.map((vol: NasVolume) => ({
-            label: volumeLabel(vol.name),
+          ...nasStatus.volumes.map((vol: NasVolume, idx: number) => ({
+            label: idx === 0 ? 'HD' : `HD${idx + 1}`,
             value: vol.usedPercent,
             valueText: `${Math.round(vol.usedPercent)}%`,
           })),

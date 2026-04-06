@@ -85,7 +85,7 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           {/* Download title — 22px bold purple */}
           {activeTitle && (
-            <span style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-purple)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textShadow: '0 0 8px var(--cockpit-purple)' }}>
+            <span style={{ display: 'block', maxWidth: '100%', fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-purple)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textShadow: '0 0 8px var(--cockpit-purple)' }}>
               {activeTitle}
             </span>
           )}
