@@ -199,18 +199,23 @@ Plans:
 **Depends on**: Phase 8
 **Requirements**: WTHR-01, WTHR-02
 **Notes**:
-- Google Nest and Amazon Ring integrations removed from scope
-- Weather source TBD: options include Open-Meteo (free, no API key), local weather station, or NWS API — all avoid cloud account dependencies
-- Location configured once in Settings (lat/lon or zip) and cached; updates on a slow interval (10–30 min)
-- Display: compact — current temp + condition icon in the header strip; no full weather card needed
-- UI polish pass: Claude will enumerate observed micro-issues before planning (spacing inconsistencies, alignment, truncation edge cases, animation timing, color inconsistencies across tiles, mobile viewport edge cases)
+- Weather source: Open-Meteo (free, no API key, no account)
+- Location configured once in Settings (zip code); backend geocodes to lat/lon and caches
+- Display: compact — animated SVG icon + temperature in the header right column
+- UI polish pass: disconnect dot, header sizing, text sharpness, DOWNLOADS tile fixes, webhook log format, Settings side-rail, living/breathing animations
 **Success Criteria** (what must be TRUE):
   1. AppHeader top nav bar shows current temperature and a weather condition indicator (icon or abbreviated label)
   2. Weather updates automatically on a configured interval without user interaction
   3. User sets location (lat/lon) once in Settings; weather persists across restarts
   4. If weather fetch fails, header shows last-known value with a stale indicator rather than crashing
   5. All Claude-identified UI micro-issues resolved and signed off
-**Plans**: TBD
+**Plans:** 4 plans
+
+Plans:
+- [ ] 09-01-PLAN.md — Weather backend: shared types, adapter, poller, settings route, SSE integration, unit tests
+- [ ] 09-02-PLAN.md — UI polish: disconnect dot, header sizing, text sharpness, DOWNLOADS tile fixes, speed colors, webhook log format
+- [ ] 09-03-PLAN.md — Settings page side-rail restructure with section groupings
+- [ ] 09-04-PLAN.md — Weather frontend widget, living/breathing animations, visual verification checkpoint
 **UI hint**: yes
 
 ## Progress
@@ -228,7 +233,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 6. Network Monitoring | 2/3 | In Progress|  |
 | 7. Notifications (Webhook Event Signaling) | 2/2 | Complete   | 2026-04-06 |
 | 8. Logging, Polish + Performance | 2/5 | In Progress|  |
-| 9. Local Weather | 0/? | Not started | - |
+| 9. Local Weather + UI Final Polish | 0/4 | Not started | - |
 | 10. Production Deploy + Hardening | 0/? | Not started | - |
 | 11. Raspberry Pi Kiosk | — | Complete (manual) | 2026-04-05 |
 
