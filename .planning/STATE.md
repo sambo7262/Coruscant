@@ -187,6 +187,7 @@ None yet.
 | 260405-1of | Add SYNO.API.Info discovery + type=all retry to /debug/docker-stats | 2026-04-05 | 64e3559 | [260405-1of-debug-docker-stats-api-discovery](./quick/260405-1of-debug-docker-stats-api-discovery/) |
 | 260405-b24 | Wire SYNO.Docker.Container.Resource into fetchNasDockerStats; remove network fields | 2026-04-05 | c2aace8 | [260405-b24-wire-syno-docker-container-resource-into](./quick/260405-b24-wire-syno-docker-container-resource-into/) |
 | 260405-byq | Extend Plex adapter with fetchPlexServerStats (CPU/RAM/bandwidth from /statistics/resources) | 2026-04-05 | 90bd9a5 | [260405-byq-extend-plex-adapter-to-populate-plexserv](./quick/260405-byq-extend-plex-adapter-to-populate-plexserv/) |
+| 260406-963 | Phase 8 UAT — dashboard layout + visual polish overhaul (full-width NAS, vertical bars, Variant C style, inline downloads, Plex colors) | 2026-04-06 | 5ab787b | [260406-963-phase8-dashboard-layout-visual-polish-ov](./quick/260406-963-phase8-dashboard-layout-visual-polish-ov/) |
 
 ### Blockers/Concerns
 
