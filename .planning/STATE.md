@@ -189,6 +189,7 @@ None yet.
 | 260405-byq | Extend Plex adapter with fetchPlexServerStats (CPU/RAM/bandwidth from /statistics/resources) | 2026-04-05 | 90bd9a5 | [260405-byq-extend-plex-adapter-to-populate-plexserv](./quick/260405-byq-extend-plex-adapter-to-populate-plexserv/) |
 | 260406-963 | Phase 8 UAT — dashboard layout + visual polish overhaul (full-width NAS, vertical bars, Variant C style, inline downloads, Plex colors) | 2026-04-06 | 5ab787b | [260406-963-phase8-dashboard-layout-visual-polish-ov](./quick/260406-963-phase8-dashboard-layout-visual-polish-ov/) |
 | 260406-are | UAT round 4: SABnzbd 12px bar, 22px Media/arr labels, Network tile flex height, Row 2 stretch | 2026-04-06 | 8976336 | [260406-are-phase-8-uat-round-4-nas-tile-polish-disk](./quick/260406-are-phase-8-uat-round-4-nas-tile-polish-disk/) |
+| 260406-bko | UAT round 5: NAS horizontal bars, disk LED centering, network vertical bars, Plex rail stats, download 22px title/thick bar | 2026-04-06 | c894d49 | [260406-bko-phase-8-uat-round-5-disk-led-row-2-cente](./quick/260406-bko-phase-8-uat-round-5-disk-led-row-2-cente/) |
 
 ### Blockers/Concerns
 
@@ -199,6 +200,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06T14:44:52.620Z
-Stopped at: Completed quick task 260406-are — UAT round 4 polish
+Last session: 2026-04-06T15:30:00.000Z
+Stopped at: Completed quick task 260406-bko — UAT round 5 polish
 Resume file: None
