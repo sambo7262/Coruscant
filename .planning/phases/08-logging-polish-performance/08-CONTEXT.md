@@ -111,6 +111,17 @@ Phase ends when:
   - Image 4: Tactical radar CRT display — dark navy, high contrast, CRT bezel — Variant C draws from this structure
   - **Best 10ft readability:** Image 4. **Best X-Wing soul:** Image 3. Variants B and C target the intersection.
 
+### Unifi Network Traffic Bar — Dynamic Max Scaling
+
+- **D-38:** Remove the periodic max-reset on the Unifi network throughput bars. The current behavior resets the bar scale on a ~30-minute timer, causing the bars to collapse and rescale visibly — this is jarring at kiosk distance.
+
+  Replace with a **rolling high-water mark**: the bar max is the highest throughput observed over a trailing window (recommended: 24h, persisted to SQLite so it survives server restarts). The bar fills organically — as faster speeds are seen, the max drifts upward; it does NOT reset downward on a timer.
+
+  - **Max update rule:** If current speed > stored max → update immediately. Max does not decrease automatically; it decays slowly only if no new reading exceeds it for the retention window.
+  - **Persistence:** Store `unifi_rx_max_bps` and `unifi_tx_max_bps` in a `kv_store` SQLite table (key/value), keyed by `unifi.network.rx_max` and `unifi.network.tx_max`. Read on server start; write on each new high.
+  - **Bootstrap:** On first run (no stored max), initialize max to the first observed speed. The bar starts full and expands as faster speeds appear.
+  - **No UI controls:** This is automatic — no user-facing reset button in Phase 8. If user wants to force a reset, they can do it via the debug endpoint.
+
 ### Color + Indicator Polish
 
 - **D-19:** NAS CPU and RAM bars colored as cockpit warning indicators:
