@@ -21,7 +21,7 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
   const arrServices = snapshot.services.filter(s => DOWNLOAD_ARR_IDS.includes(s.id))
   const sabnzbd = snapshot.services.find(s => s.id === 'sabnzbd')
 
-  // Active arr downloads
+  // Active arr downloads (for title extraction)
   const activeArr = arrServices.filter(s => {
     const m = s.metrics as Record<string, unknown> | undefined
     return m?.downloading === true && typeof m?.activeDownloads === 'number' && (m.activeDownloads as number) > 0
@@ -33,8 +33,18 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
   const sabQueueCount = typeof sabMetrics?.queueCount === 'number' ? sabMetrics.queueCount : 0
   const sabProgressPercent = typeof sabMetrics?.progressPercent === 'number' ? sabMetrics.progressPercent : 0
   const sabHasActivity = sabSpeedMBs > 0 || sabQueueCount > 0
+  const sabCurrentFilename = typeof sabMetrics?.currentFilename === 'string' ? sabMetrics.currentFilename : ''
 
   const hasAnyActivity = activeArr.length > 0 || sabHasActivity
+
+  // Derive active title: first arr activeTitle, then SABnzbd currentFilename
+  const activeTitle = (() => {
+    for (const s of activeArr) {
+      const m = s.metrics as Record<string, unknown>
+      if (typeof m.activeTitle === 'string' && m.activeTitle) return m.activeTitle
+    }
+    return sabCurrentFilename
+  })()
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', minHeight: 'auto' }}>
@@ -46,51 +56,31 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
         DOWNLOADS
       </div>
 
-      {/* Active arr download rows — title + progress bar, no count */}
-      {activeArr.map(s => {
-        const m = s.metrics as Record<string, unknown>
-        const activeTitle = typeof m.activeTitle === 'string' && m.activeTitle ? m.activeTitle : s.name.slice(0, 7).toUpperCase()
-        const downloadProgress = typeof m.downloadProgress === 'number' ? m.downloadProgress : null
-        return (
-          <div key={s.id} style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginBottom: '4px' }}>
-            <span style={{ fontSize: '22px', color: 'var(--cockpit-purple)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: 600, textShadow: '0 0 8px var(--cockpit-purple)' }}>
+      {/* Active state: title + SABnzbd bar + speed only */}
+      {hasAnyActivity && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {/* Download title — 22px bold purple */}
+          {activeTitle && (
+            <span style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-purple)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textShadow: '0 0 8px var(--cockpit-purple)' }}>
               {activeTitle}
             </span>
-            {downloadProgress !== null && (
-              <div style={{ height: '12px', background: 'rgba(232,160,32,0.15)', borderRadius: '3px', overflow: 'hidden' }}>
-                <div style={{
-                  height: '100%',
-                  width: `${Math.min(Math.max(downloadProgress, 5), 100)}%`,
-                  background: 'var(--cockpit-amber)',
-                  borderRadius: '3px',
-                  transition: 'width 1s ease',
-                  boxShadow: '0 0 6px var(--cockpit-amber)',
-                }} />
-              </div>
-            )}
+          )}
+          {/* SABnzbd progress bar + speed */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ flex: 1, height: '12px', background: 'rgba(232,160,32,0.15)', borderRadius: '3px', overflow: 'hidden' }}>
+              <div style={{
+                height: '100%',
+                width: `${Math.min(Math.max(sabProgressPercent, 5), 100)}%`,
+                background: 'var(--cockpit-amber)',
+                borderRadius: '3px',
+                transition: 'width 1s ease',
+                boxShadow: '0 0 6px var(--cockpit-amber)',
+              }} />
+            </div>
+            <span style={{ fontSize: '9px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
+              {sabSpeedMBs.toFixed(1)} MB/s
+            </span>
           </div>
-        )
-      })}
-
-      {/* SABnzbd row */}
-      {sabHasActivity && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ fontSize: '11px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0, width: '44px' }}>
-            SAB
-          </span>
-          <div style={{ flex: 1, height: '16px', background: 'rgba(232,160,32,0.15)', borderRadius: '3px', overflow: 'hidden' }}>
-            <div style={{
-              height: '100%',
-              width: `${Math.min(Math.max(sabProgressPercent, 5), 100)}%`,
-              background: 'var(--cockpit-amber)',
-              borderRadius: '3px',
-              transition: 'width 1s ease',
-              boxShadow: '0 0 6px var(--cockpit-amber)',
-            }} />
-          </div>
-          <span style={{ fontSize: '9px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
-            {sabSpeedMBs.toFixed(1)} MB/s
-          </span>
         </div>
       )}
     </div>
