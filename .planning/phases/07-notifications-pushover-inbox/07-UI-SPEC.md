@@ -61,15 +61,9 @@ All type uses `var(--font-mono)` (JetBrains Mono). Established in `globals.css`.
 | Heading | 16px | 600 | 1.2 |
 | Display | 20px | 600 | 1.2 |
 
-Phase 7 additions:
+These four sizes cover all Phase 7 typography needs. The ticker text, webhook URL display, and service name labels in the Notifications tab all use the **Label** role (12px, 400 weight). Visual distinction between the URL and the service name label is achieved through **opacity and color** differences (see Color section and Component Inventory), not separate type sizes.
 
-| Role | Size | Weight | Letter Spacing | Usage |
-|------|------|--------|----------------|-------|
-| Ticker text | 12px | 400 | 0.08em | AppHeader ticker overlay — `SERVICE ▸ EVENT ▸ TITLE` |
-| Webhook URL | 11px | 400 | 0.04em | Settings Notifications tab URL display |
-| Webhook label | 10px | 400 | 0.06em | Service name label above each URL row |
-
-Source: `globals.css` established values. Ticker and webhook sizes derived from existing 12px label role.
+Source: `globals.css` established values.
 
 ---
 
@@ -116,7 +110,7 @@ Source: 07-CONTEXT.md D-07. Flash colors align with existing LED semantic colors
 
 **Location:** `packages/frontend/src/components/cards/ServiceCard.tsx` — applied to the arr card label box (the amber mono service name header, e.g. "RADARR").
 
-**Behavior:** When an `arr_event` SSE message arrives for a service, the card label box receives a colored border/glow flash for 10 seconds, then fades out.
+**Behavior:** When an `arr_event` SSE message arrives for a service, the card label box receives a colored border/glow flash in the event color for 10 seconds, then fades out.
 
 **Visual spec:**
 - Border: `1px solid {event-color}` on all four sides of the label box
@@ -144,7 +138,7 @@ The flash class is toggled via React state, not a CSS-only approach, so the anim
 **Visual spec:**
 - Overlay covers only the center and right thirds of the 3-column header grid (`gridTemplateColumns: '1fr auto 1fr'`)
 - Left column (CORUSCANT title / back link) is always visible — never covered
-- Ticker text: `{SERVICE} ▸ {EVENT} ▸ {TITLE}` — 12px mono, amber
+- Ticker text: `{SERVICE} ▸ {EVENT} ▸ {TITLE}` — 12px mono (Label role), amber
 - Title portion omitted for events with no title: `PROWLARR ▸ INDEXER DOWN`
 - Overflow: `hidden` with `text-overflow: ellipsis` — max width is the two right columns
 - Text is static (no marquee scroll) — if too long, ellipsis truncates
@@ -163,18 +157,18 @@ The flash class is toggled via React state, not a CSS-only approach, so the anim
 **Visual spec:**
 - Tab label: `NOTIFICATIONS` (uppercase, mono, matches existing tab style)
 - Tab content: read-only list — no forms, no credentials, no TEST CONNECTION button (D-19)
-- Each row: service name label + URL display field + COPY button
+- Each row: service name label + URL display field + COPY URL button
 - Row layout:
 
 ```
 RADARR
-http://192.168.1.x:1688/api/webhooks/radarr  [COPY]
+http://192.168.1.x:1688/api/webhooks/radarr  [COPY URL]
 ```
 
-- Service label: 10px mono, `rgba(232,160,32,0.6)`, uppercase
-- URL field: 11px mono, `rgba(200,200,200,0.8)`, `background: rgba(255,255,255,0.04)`, `border: 1px solid rgba(232,160,32,0.15)`, padding `4px 8px`, border-radius `2px`
-- COPY button: 10px mono, `color: var(--cockpit-amber)`, `border: 1px solid rgba(232,160,32,0.3)`, padding `4px 8px`, hover: `border-color: rgba(232,160,32,0.7)`, active: brief `background: rgba(232,160,32,0.1)`
-- Copy success state: button text changes to `COPIED` for 1.5 seconds, then reverts to `COPY`
+- Service label: 12px mono (Label role), `rgba(232,160,32,0.6)`, uppercase — dimmed amber distinguishes it from the URL without a separate type size
+- URL field: 12px mono (Label role), `rgba(200,200,200,0.8)`, `background: rgba(255,255,255,0.04)`, `border: 1px solid rgba(232,160,32,0.15)`, padding `4px 8px`, border-radius `2px` — off-white color distinguishes URL text from the amber service label
+- COPY URL button: 12px mono (Label role), `color: var(--cockpit-amber)`, `border: 1px solid rgba(232,160,32,0.3)`, padding `4px 8px`, hover: `border-color: rgba(232,160,32,0.7)`, active: brief `background: rgba(232,160,32,0.1)`
+- Copy success state: button text changes to `COPIED` for 1.5 seconds, then reverts to `COPY URL`
 - URL source: uses configured Coruscant base URL from settings; falls back to placeholder `http://{coruscant-ip}:1688/api/webhooks/{service}` if base URL not set
 
 **Services listed (in order):** RADARR, SONARR, LIDARR, BAZARR, PROWLARR, READARR, SABNZBD
@@ -207,14 +201,14 @@ Flash only applies to arr service label boxes (RADARR, SONARR, LIDARR, BAZARR, P
 
 Ticker queue: if a second event fires while ticker is active, immediately replace ticker content (reset 10s timer). No queue — latest event wins.
 
-### Settings COPY Button — All States
+### Settings COPY URL Button — All States
 
 | State | Visual |
 |-------|--------|
-| `default` | `COPY` label, amber border at 30% opacity |
+| `default` | `COPY URL` label, amber border at 30% opacity |
 | `hover` | amber border at 70% opacity |
 | `active (click)` | `rgba(232,160,32,0.1)` background flash |
-| `copied` | Text changes to `COPIED`, 1.5s duration, then reverts |
+| `copied` | Text changes to `COPIED`, 1.5s duration, then reverts to `COPY URL` |
 
 ---
 
@@ -241,7 +235,7 @@ Ticker queue: if a second event fires while ticker is active, immediately replac
 - Timing: `ease-out`
 - Nav icon restore: same `0.4s ease-out` running simultaneously with ticker fade
 
-### COPY Success Flash
+### COPY URL Success Flash
 
 - Button text swap: instant (no transition)
 - Revert delay: `1500ms` via `setTimeout`
@@ -254,8 +248,8 @@ All animations use `transform` and `opacity` only (DASH-08 compliance). No layou
 
 | Element | Copy |
 |---------|------|
-| Primary CTA | `COPY` (Settings Notifications tab copy button) |
-| Copy success state | `COPIED` (1.5s then reverts to `COPY`) |
+| Primary CTA | `COPY URL` (Settings Notifications tab copy button) |
+| Copy success state | `COPIED` (1.5s then reverts to `COPY URL`) |
 | Settings tab label | `NOTIFICATIONS` |
 | Webhook URL placeholder (no base URL configured) | `http://{coruscant-ip}:1688/api/webhooks/{service}` |
 | Settings tab header copy | `Configure arr apps to POST events to these endpoints. Paste the URL into each app's Connections settings.` (14px body, `--text-offwhite`) |
@@ -275,8 +269,8 @@ Service name in ticker is always uppercase: `RADARR`, `SONARR`, `LIDARR`, `BAZAR
 
 - Flash animations respect `prefers-reduced-motion: reduce` via the existing global rule in `globals.css` that sets `animation-duration: 0.001ms` for all animations. Flash effect will be near-instantaneous but the color change state will still render.
 - Ticker overlay: aria-live region recommended — `aria-live="polite"` on the ticker container so screen readers announce new events.
-- COPY button: `aria-label="Copy webhook URL for {service}"` on each button instance.
-- All touch targets: COPY button minimum 32px height (adequate for settings page use; this is a settings-page-only control, not a kiosk primary interaction).
+- COPY URL button: `aria-label="Copy webhook URL for {service}"` on each button instance.
+- All touch targets: COPY URL button minimum 32px height (adequate for settings page use; this is a settings-page-only control, not a kiosk primary interaction).
 
 ---
 
