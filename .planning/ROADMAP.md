@@ -193,8 +193,9 @@ Plans:
 - [x] 08-04-PLAN.md — Frontend: download bar removal, text scale-up, background + depth + glow, NAS tile, CRT sweep, color indicators, UniFi bars
 - [x] 08-05-PLAN.md — Visual and functional verification checkpoint (approved 2026-04-06)
 **UI hint**: yes
-### Phase 9: Local Weather
-**Goal**: Current local weather conditions appear in the AppHeader top nav bar — pulled from a local or self-hosted weather source with no external cloud dependency
+### Phase 9: Local Weather + UI Final Polish
+
+**Goal**: Current local weather conditions appear in the AppHeader top nav bar; plus a final UI polish pass covering Claude-identified micro-issues and any remaining visual bugs surfaced during Phase 8 UAT
 **Depends on**: Phase 8
 **Requirements**: WTHR-01, WTHR-02
 **Notes**:
@@ -202,11 +203,13 @@ Plans:
 - Weather source TBD: options include Open-Meteo (free, no API key), local weather station, or NWS API — all avoid cloud account dependencies
 - Location configured once in Settings (lat/lon or zip) and cached; updates on a slow interval (10–30 min)
 - Display: compact — current temp + condition icon in the header strip; no full weather card needed
+- UI polish pass: Claude will enumerate observed micro-issues before planning (spacing inconsistencies, alignment, truncation edge cases, animation timing, color inconsistencies across tiles, mobile viewport edge cases)
 **Success Criteria** (what must be TRUE):
   1. AppHeader top nav bar shows current temperature and a weather condition indicator (icon or abbreviated label)
   2. Weather updates automatically on a configured interval without user interaction
   3. User sets location (lat/lon) once in Settings; weather persists across restarts
   4. If weather fetch fails, header shows last-known value with a stale indicator rather than crashing
+  5. All Claude-identified UI micro-issues resolved and signed off
 **Plans**: TBD
 **UI hint**: yes
 
