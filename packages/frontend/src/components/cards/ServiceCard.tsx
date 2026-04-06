@@ -900,6 +900,7 @@ export function ServiceCard({ service, index, allServices, nasStatus }: ServiceC
       style={{
         position: 'relative',
         minHeight: service.id === 'pihole' ? undefined : '160px',
+        height: service.id === 'pihole' ? '227px' : undefined,
         padding: 0,
         background: 'var(--bg-panel)',
         border: `1px solid ${hovered ? 'rgba(232,160,32,0.60)' : 'var(--border-rest)'}`,

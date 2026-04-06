@@ -79,10 +79,10 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', minHeight: 'auto' }}>
       {/* Divider */}
-      <div style={{ borderTop: '1px solid rgba(232,160,32,0.08)', margin: '4px 0' }} />
+      <div style={{ borderTop: '1px solid rgba(232,160,32,0.08)', margin: '2px 0' }} />
 
       {/* DOWNLOADS sub-label — small proportional header */}
-      <div style={{ fontSize: '11px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '3px', fontWeight: 600 }}>
+      <div style={{ fontSize: '11px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '1px', fontWeight: 600 }}>
         DOWNLOADS
       </div>
 
@@ -211,7 +211,7 @@ export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: '#1a1a1a', letterSpacing: '0.08em', fontWeight: 600 }}>MEDIA</span>
             </div>
             {/* Two-column layout: L = Radarr/Sonarr/Lidarr, R = Prowlarr/Bazarr/Readarr */}
-            <div style={{ display: 'flex', padding: '6px 4px 2px 4px', gap: '0' }}>
+            <div style={{ display: 'flex', padding: '3px 4px 0 4px', gap: '0' }}>
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1px' }}>
                 {leftColArr.map((service) => (
                   <MediaStackRow key={service.id} service={service} index={globalIndex++} lastArrEvent={lastArrEvent} />
@@ -224,7 +224,7 @@ export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
               </div>
             </div>
             {/* Download activity section */}
-            <div style={{ padding: '0 4px 6px 4px' }}>
+            <div style={{ padding: '0 4px 2px 4px' }}>
               <DownloadActivity snapshot={snapshot} />
             </div>
           </motion.div>
