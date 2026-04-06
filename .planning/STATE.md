@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: "08-02 checkpoint: awaiting theme variant selection"
-last_updated: "2026-04-06T12:47:23.969Z"
-last_activity: 2026-04-06 -- Phase 08 execution started
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-04-06T12:50:52.962Z"
+last_activity: 2026-04-06
 progress:
   total_phases: 12
   completed_phases: 6
   total_plans: 45
-  completed_plans: 38
+  completed_plans: 39
   percent: 0
 ---
 
@@ -26,10 +26,10 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 ## Current Position
 
 Phase: 08 (logging-polish-performance) — EXECUTING
-Plan: 1 of 5
+Plan: 2 of 5
 Phase: 08 (logging-polish-performance) — NEXT
-Status: Executing Phase 08
-Last activity: 2026-04-06 -- Phase 08 execution started
+Status: Ready to execute
+Last activity: 2026-04-06
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -80,6 +80,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 05-ui-v2-instrument-panel-polish P03 | 127s | 1 tasks | 1 files |
 | Phase 06-network-monitoring P01 | 206s | 1 tasks | 4 files |
 | Phase 07-notifications-pushover-inbox P01 | 227s | 2 tasks | 6 files |
+| Phase 08-logging-polish-performance P01 | 10min | 2 tasks | 15 files |
 
 ## Accumulated Context
 
@@ -158,6 +159,10 @@ Recent decisions affecting current work:
 - [Phase 07-02]: Ticker overlay uses gridColumn '2 / 4' span — CORUSCANT title in column 1 always visible per D-12
 - [Phase 07-02]: Webhook URLs in Settings NOTIFICATIONS tab use configured base URL or placeholder — NOT window.location per D-18
 - [Phase 07-02]: SABnzbd excluded from MediaStackRow flash — burst poll handles SABnzbd signaling; flash reserved for arr services only
+- [Phase 08-logging-polish-performance]: pino.multistream used in index.ts: stdout + SqliteLogStream — preserves Docker log visibility while capturing to DB
+- [Phase 08-logging-polish-performance]: Writable stream subclass for pino transport — avoids ESM resolution issues with pino-abstract-transport async factories
+- [Phase 08-logging-polish-performance]: snapshotFingerprint excludes timestamp — prevents spurious SSE pushes when only the poll clock changes
+- [Phase 08-logging-polish-performance]: UniFi peaks stored in kv_store with lazy in-memory cache — peaks survive server restarts, cache cleared on reconfiguration
 
 ### Roadmap Evolution
 
@@ -188,6 +193,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-06T12:47:23.962Z
-Stopped at: 08-02 checkpoint: awaiting theme variant selection
+Last session: 2026-04-06T12:50:52.956Z
+Stopped at: Completed 08-01-PLAN.md
 Resume file: None
