@@ -151,7 +151,7 @@ export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
       )}
 
       {/* Row 2: 2-column — Media tile left, Network tile right */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', alignItems: 'stretch' }}>
 
         {/* Media tile — arr LED rows + download activity section */}
         {arrServices.length > 0 && (
