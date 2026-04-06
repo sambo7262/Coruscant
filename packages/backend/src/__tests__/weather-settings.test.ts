@@ -77,6 +77,7 @@ describe('weather settings route', () => {
         latitude: 37.7749,
         longitude: -122.4194,
         name: 'San Francisco',
+        timezone: 'America/Los_Angeles',
       })
 
       const res = await app.inject({
