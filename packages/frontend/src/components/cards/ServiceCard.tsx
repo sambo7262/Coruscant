@@ -584,6 +584,10 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
   const um = unifiService?.metrics as unknown as UnifiMetrics | undefined
   const rawClientCount = typeof um?.clientCount === 'number' ? um.clientCount : 0
   const animClientCount = useAnimatedNumber(rawClientCount)
+  const rawWanTx = typeof um?.wanTxMbps === 'number' ? um.wanTxMbps * 10 : 0
+  const rawWanRx = typeof um?.wanRxMbps === 'number' ? um.wanRxMbps * 10 : 0
+  const animWanTx = useAnimatedNumber(rawWanTx)
+  const animWanRx = useAnimatedNumber(rawWanRx)
 
   const hasQpmData = typeof metrics.queriesPerMinute === 'number'
   const hasPercentData = typeof metrics.percentBlocked === 'number'
@@ -673,7 +677,7 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
                   value: um!.wanTxMbps,
                   peak: um!.peakTxMbps,
                   color: '#FF3B3B',
-                  valueText: um!.wanTxMbps !== null ? `${um!.wanTxMbps.toFixed(1)}` : '0',
+                  valueText: `${(animWanTx / 10).toFixed(1)}`,
                   unit: 'Mbps',
                 },
                 {
@@ -681,7 +685,7 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
                   value: um!.wanRxMbps,
                   peak: um!.peakRxMbps,
                   color: '#00c8ff',
-                  valueText: um!.wanRxMbps !== null ? `${um!.wanRxMbps.toFixed(1)}` : '0',
+                  valueText: `${(animWanRx / 10).toFixed(1)}`,
                   unit: 'Mbps',
                 },
                 {
@@ -697,9 +701,10 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
                 const fillPct = value !== null && value !== undefined ? Math.min((value / effectivePeak) * 100, 100) : 0
                 return (
                   <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flex: 1 }}>
-                    <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', color: 'rgba(200,200,200,0.5)', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                      {valueText}{unit ? ` ${unit}` : ''}
+                    <span style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-mono)', color, textAlign: 'center', whiteSpace: 'nowrap', textShadow: `0 0 6px ${color}`, lineHeight: 1.1 }}>
+                      {valueText}
                     </span>
+                    {unit && <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', color: 'rgba(200,200,200,0.4)', textAlign: 'center' }}>{unit}</span>}
                     <div style={{ width: '16px', height: '90px', background: '#222', borderRadius: '3px', position: 'relative', overflow: 'hidden' }}>
                       <div style={{
                         position: 'absolute',
