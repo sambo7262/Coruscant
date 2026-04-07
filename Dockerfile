@@ -29,8 +29,7 @@ RUN npm run build --workspace=packages/frontend
 RUN npx drizzle-kit generate
 
 # =============================================================================
-# Stage 2: runner
-# Lean Debian slim image — NOT Alpine (Alpine musl breaks better-sqlite3 prebuilt binaries)
+# Stage 2: runner — Debian slim (NOT Alpine; musl breaks better-sqlite3)
 # =============================================================================
 FROM node:22-slim AS runner
 WORKDIR /app
