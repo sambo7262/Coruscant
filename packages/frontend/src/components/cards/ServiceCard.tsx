@@ -667,7 +667,7 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
               </span>
             </div>
             {/* Speed arcs (UP/DOWN) + vertical bar (CLIENTS) */}
-            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', alignItems: 'flex-end', flex: 1, paddingTop: '8px' }}>
+            <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'flex-end', flex: 1, paddingTop: '8px', overflow: 'hidden' }}>
               {/* UP / DOWN arc indicators */}
               {([
                 { label: 'UP', value: um!.wanTxMbps, color: '#FF3B3B', valueText: `${(animWanTx / 10).toFixed(1)}` },
@@ -675,28 +675,24 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
               ] as const).map(({ label, value, color, valueText }) => {
                 const mbps = typeof value === 'number' ? value : 0
                 const isOnline = um?.healthStatus === 'online' || um?.healthStatus === 'warning'
-                // 3 tiers: low <5, medium 5-25, high 25+
-                // When online with zero traffic, light 1 arc
                 const litArcs = mbps >= 25 ? 3 : mbps >= 5 ? 2 : (mbps > 0 || isOnline) ? 1 : 0
                 const dimColor = 'rgba(255,255,255,0.08)'
-                // Arc paths: 3 concentric arcs (inner=small, outer=large)
-                // Each arc spans ~90° centered at bottom
                 const arcs = [
-                  { r: 28, strokeWidth: 5 },  // innermost (low)
-                  { r: 42, strokeWidth: 5 },  // middle (medium)
-                  { r: 56, strokeWidth: 5 },  // outermost (high)
+                  { r: 14, strokeWidth: 4 },
+                  { r: 22, strokeWidth: 4 },
+                  { r: 30, strokeWidth: 4 },
                 ]
                 return (
-                  <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flex: 1 }}>
+                  <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flex: 1, minWidth: 0 }}>
                     <span style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-mono)', color, textAlign: 'center', whiteSpace: 'nowrap', lineHeight: 1.1 }}>
                       {valueText}
                     </span>
                     <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', color: 'rgba(200,200,200,0.4)', textAlign: 'center' }}>Mbps</span>
-                    <svg width="120" height="78" viewBox="0 0 120 78" style={{ overflow: 'visible' }}>
+                    <svg width="66" height="42" viewBox="0 0 66 42">
                       {arcs.map((arc, i) => {
-                        const cx = 60, cy = 76
-                        const startAngle = Math.PI + 0.35  // ~200°
-                        const endAngle = 2 * Math.PI - 0.35  // ~340°
+                        const cx = 33, cy = 40
+                        const startAngle = Math.PI + 0.35
+                        const endAngle = 2 * Math.PI - 0.35
                         const x1 = cx + arc.r * Math.cos(startAngle)
                         const y1 = cy + arc.r * Math.sin(startAngle)
                         const x2 = cx + arc.r * Math.cos(endAngle)
@@ -723,7 +719,7 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
                   </div>
                 )
               })}
-              {/* CLIENTS vertical bar (unchanged) */}
+              {/* CLIENTS vertical bar */}
               {(() => {
                 const value = um!.clientCount
                 const peak = um!.peakClients && um!.peakClients > 0 ? um!.peakClients : (um!.clientCount > 0 ? um!.clientCount : 1)
@@ -731,7 +727,7 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
                 const effectivePeak = peak > 0 ? peak : 1
                 const fillPct = value !== null && value !== undefined ? Math.min((value / effectivePeak) * 100, 100) : 0
                 return (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flex: 1 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flex: 1, minWidth: 0 }}>
                     <span style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-mono)', color, textAlign: 'center', whiteSpace: 'nowrap', lineHeight: 1.1 }}>
                       {animClientCount}
                     </span>
