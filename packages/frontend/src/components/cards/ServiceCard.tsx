@@ -1034,37 +1034,54 @@ export function MediaStackRow({ service, index, lastArrEvent }: ServiceCardProps
   // Amber: warning
   // Red: offline
   // Grey: unconfigured / stale
+  // D-12: glow values aligned with StatusDot (8px 3px spread) + ledBreathe on idle online
   const getLedStyle = (): React.CSSProperties => {
     if (isUnconfigured || service.status === 'stale') {
-      return { background: '#666666', boxShadow: 'none' }
+      return { background: '#666666', boxShadow: 'none', color: '#666666' }
     }
     if (service.status === 'offline') {
-      return { background: 'var(--cockpit-red)', boxShadow: '0 0 6px var(--cockpit-red)' }
+      return {
+        background: 'var(--cockpit-red)',
+        boxShadow: '0 0 8px 3px rgba(255,59,59,0.6)',
+        color: 'var(--cockpit-red)',
+        animation: 'ledFlashDown 0.4s ease-in-out infinite',
+      }
     }
     if (service.status === 'warning') {
       return {
         background: 'var(--cockpit-amber)',
-        boxShadow: '0 0 6px rgba(232,160,32,0.6)',
+        boxShadow: '0 0 8px 3px rgba(232,160,32,0.6)',
+        color: 'var(--cockpit-amber)',
         animation: 'ledPulseWarn 1s ease-in-out infinite',
       }
     }
     if (service.status === 'online') {
       if (downloading) {
         // D-11: Solid purple = actively downloading (file sent to SABnzbd, in progress)
-        return { background: 'var(--cockpit-purple)', boxShadow: '0 0 6px var(--cockpit-purple)' }
+        return {
+          background: 'var(--cockpit-purple)',
+          boxShadow: '0 0 8px 3px rgba(139,92,246,0.6)',
+          color: 'var(--cockpit-purple)',
+        }
       }
       if (queue > 0) {
         // D-11: Flashing purple = queued (in arr queue, not yet active in SABnzbd)
         return {
           background: 'var(--cockpit-purple)',
-          boxShadow: '0 0 6px var(--cockpit-purple)',
+          boxShadow: '0 0 8px 3px rgba(139,92,246,0.6)',
+          color: 'var(--cockpit-purple)',
           animation: 'ledFlashPurple 1.5s ease-in-out infinite',
         }
       }
-      // D-11: GREEN = online, no download activity (was incorrectly purple)
-      return { background: 'var(--cockpit-green, #4ADE80)', boxShadow: '0 0 6px rgba(74,222,128,0.6)' }
+      // D-11/D-12: GREEN = online, no download activity — ledBreathe matches StatusDot glow
+      return {
+        background: 'var(--cockpit-green, #4ADE80)',
+        boxShadow: '0 0 8px 3px rgba(74,222,128,0.6)',
+        color: 'var(--cockpit-green, #4ADE80)',
+        animation: 'ledBreathe 3s ease-in-out infinite',
+      }
     }
-    return { background: '#666666', boxShadow: 'none' }
+    return { background: '#666666', boxShadow: 'none', color: '#666666' }
   }
 
   const handleClick = () => {
