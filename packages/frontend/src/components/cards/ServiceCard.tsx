@@ -667,42 +667,75 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
                 {healthLabel}
               </span>
             </div>
-            {/* Vertical bars: UP / DOWN / CLIENTS filling space under ONLINE */}
+            {/* Speed arcs (UP/DOWN) + vertical bar (CLIENTS) */}
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', alignItems: 'flex-end', flex: 1, paddingTop: '8px' }}>
-              {[
-                {
-                  label: 'UP',
-                  value: um!.wanTxMbps,
-                  peak: um!.peakTxMbps,
-                  color: '#FF3B3B',
-                  valueText: `${(animWanTx / 10).toFixed(1)}`,
-                  unit: 'Mbps',
-                },
-                {
-                  label: 'DOWN',
-                  value: um!.wanRxMbps,
-                  peak: um!.peakRxMbps,
-                  color: '#00c8ff',
-                  valueText: `${(animWanRx / 10).toFixed(1)}`,
-                  unit: 'Mbps',
-                },
-                {
-                  label: 'CLIENTS',
-                  value: um!.clientCount,
-                  peak: um!.peakClients && um!.peakClients > 0 ? um!.peakClients : (um!.clientCount > 0 ? um!.clientCount : 1),
-                  color: '#4ADE80',
-                  valueText: `${animClientCount}`,
-                  unit: '',
-                },
-              ].map(({ label, value, peak, color, valueText, unit }) => {
+              {/* UP / DOWN arc indicators */}
+              {([
+                { label: 'UP', value: um!.wanTxMbps, color: '#FF3B3B', valueText: `${(animWanTx / 10).toFixed(1)}` },
+                { label: 'DOWN', value: um!.wanRxMbps, color: '#00c8ff', valueText: `${(animWanRx / 10).toFixed(1)}` },
+              ] as const).map(({ label, value, color, valueText }) => {
+                const mbps = typeof value === 'number' ? value : 0
+                const isOnline = um?.healthStatus === 'online' || um?.healthStatus === 'warning'
+                // 3 tiers: low <5, medium 5-25, high 25+
+                // When online with zero traffic, light 1 arc
+                const litArcs = mbps >= 25 ? 3 : mbps >= 5 ? 2 : (mbps > 0 || isOnline) ? 1 : 0
+                const dimColor = 'rgba(255,255,255,0.08)'
+                // Arc paths: 3 concentric arcs (inner=small, outer=large)
+                // Each arc spans ~90° centered at bottom
+                const arcs = [
+                  { r: 12, strokeWidth: 3 },  // innermost (low)
+                  { r: 18, strokeWidth: 3 },  // middle (medium)
+                  { r: 24, strokeWidth: 3 },  // outermost (high)
+                ]
+                return (
+                  <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flex: 1 }}>
+                    <span style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-mono)', color, textAlign: 'center', whiteSpace: 'nowrap', lineHeight: 1.1 }}>
+                      {valueText}
+                    </span>
+                    <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', color: 'rgba(200,200,200,0.4)', textAlign: 'center' }}>Mbps</span>
+                    <svg width="56" height="36" viewBox="0 0 56 36" style={{ overflow: 'visible' }}>
+                      {arcs.map((arc, i) => {
+                        const cx = 28, cy = 34
+                        const startAngle = Math.PI + 0.35  // ~200°
+                        const endAngle = 2 * Math.PI - 0.35  // ~340°
+                        const x1 = cx + arc.r * Math.cos(startAngle)
+                        const y1 = cy + arc.r * Math.sin(startAngle)
+                        const x2 = cx + arc.r * Math.cos(endAngle)
+                        const y2 = cy + arc.r * Math.sin(endAngle)
+                        const d = `M ${x1} ${y1} A ${arc.r} ${arc.r} 0 0 1 ${x2} ${y2}`
+                        const isLit = i < litArcs
+                        return (
+                          <path
+                            key={i}
+                            d={d}
+                            fill="none"
+                            stroke={isLit ? color : dimColor}
+                            strokeWidth={arc.strokeWidth}
+                            strokeLinecap="round"
+                            style={{
+                              transition: 'stroke 0.3s ease',
+                              filter: isLit ? `drop-shadow(0 0 4px ${color})` : 'none',
+                            }}
+                          />
+                        )
+                      })}
+                    </svg>
+                    <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'rgba(200,200,200,0.5)', letterSpacing: '0.04em', textAlign: 'center' }}>{label}</span>
+                  </div>
+                )
+              })}
+              {/* CLIENTS vertical bar (unchanged) */}
+              {(() => {
+                const value = um!.clientCount
+                const peak = um!.peakClients && um!.peakClients > 0 ? um!.peakClients : (um!.clientCount > 0 ? um!.clientCount : 1)
+                const color = '#4ADE80'
                 const effectivePeak = peak > 0 ? peak : 1
                 const fillPct = value !== null && value !== undefined ? Math.min((value / effectivePeak) * 100, 100) : 0
                 return (
-                  <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flex: 1 }}>
-                    <span style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-mono)', color, textAlign: 'center', whiteSpace: 'nowrap',  lineHeight: 1.1 }}>
-                      {valueText}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flex: 1 }}>
+                    <span style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-mono)', color, textAlign: 'center', whiteSpace: 'nowrap', lineHeight: 1.1 }}>
+                      {animClientCount}
                     </span>
-                    {unit && <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', color: 'rgba(200,200,200,0.4)', textAlign: 'center' }}>{unit}</span>}
                     <div style={{ width: '16px', height: '90px', background: '#222', borderRadius: '3px', position: 'relative', overflow: 'hidden' }}>
                       <div style={{
                         position: 'absolute',
@@ -716,10 +749,10 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
                         boxShadow: `0 0 6px ${color}`,
                       }} />
                     </div>
-                    <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'rgba(200,200,200,0.5)', letterSpacing: '0.04em', textAlign: 'center' }}>{label}</span>
+                    <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'rgba(200,200,200,0.5)', letterSpacing: '0.04em', textAlign: 'center' }}>CLIENTS</span>
                   </div>
                 )
-              })}
+              })()}
             </div>
           </>
         )}
