@@ -255,4 +255,58 @@ export async function debugRoutes(fastify: FastifyInstance) {
 
     return reply.send(result)
   })
+
+  /**
+   * GET /debug/docker-images
+   * Checks local vs remote image digests via the Docker socket.
+   * Shows exactly what the image update poll sees.
+   */
+  fastify.get('/debug/docker-images', async (_request, reply) => {
+    const DOCKER_SOCKET = '/var/run/docker.sock'
+    const results: Record<string, unknown>[] = []
+
+    // Step 1: Can we reach the Docker socket?
+    let images: Array<{ RepoTags?: string[]; RepoDigests?: string[] }>
+    try {
+      const res = await axios.get('http://localhost/v1.41/images/json', {
+        socketPath: DOCKER_SOCKET,
+        timeout: 10_000,
+      })
+      images = res.data ?? []
+    } catch (e: unknown) {
+      return reply.send({ error: 'Cannot reach Docker socket', detail: String(e) })
+    }
+
+    // Step 2: For each tagged image, compare local vs remote digest
+    for (const img of images) {
+      const tags = img.RepoTags ?? []
+      const localDigests = img.RepoDigests ?? []
+
+      for (const tag of tags) {
+        if (tag === '<none>:<none>' || !tag.includes('/')) continue
+
+        const localDigest = localDigests.find((d) => d.startsWith(tag.split(':')[0] + '@'))
+        if (!localDigest) {
+          results.push({ tag, status: 'skipped', reason: 'no local digest' })
+          continue
+        }
+
+        const localSha = localDigest.split('@')[1]
+
+        try {
+          const distRes = await axios.get(
+            `http://localhost/v1.41/distribution/${encodeURIComponent(tag)}/json`,
+            { socketPath: DOCKER_SOCKET, timeout: 10_000 },
+          )
+          const remoteDigest = distRes.data?.Descriptor?.digest as string | undefined
+          const match = localSha === remoteDigest
+          results.push({ tag, localSha, remoteDigest, match, updateAvailable: !match })
+        } catch (e: unknown) {
+          results.push({ tag, localSha, status: 'error', detail: String(e) })
+        }
+      }
+    }
+
+    return reply.send({ imageCount: images.length, checked: results.length, results })
+  })
 }
