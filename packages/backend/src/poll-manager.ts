@@ -1,4 +1,4 @@
-import type { DashboardSnapshot, ServiceStatus, NasStatus, PlexStream, PlexServerStats, ArrWebhookEvent, WeatherData } from '@coruscant/shared'
+import type { DashboardSnapshot, ServiceStatus, NasStatus, PlexStream, PlexServerStats, ArrWebhookEvent, WeatherData, PiHealthStatus } from '@coruscant/shared'
 import { eq } from 'drizzle-orm'
 import { getDb } from './db.js'
 import { kvStore } from './schema.js'
@@ -6,6 +6,7 @@ import { pollArr } from './adapters/arr.js'
 import { pollBazarr } from './adapters/bazarr.js'
 import { pollSabnzbd } from './adapters/sabnzbd.js'
 import { pollPihole } from './adapters/pihole.js'
+import { pollPiHealth } from './adapters/pi-health.js'
 import { pollNas, checkNasImageUpdates } from './adapters/nas.js'
 import { fetchPlexSessions, fetchPlexServerStats } from './adapters/plex.js'
 import { pollUnifi, resetUnifiCache } from './adapters/unifi.js'
@@ -18,6 +19,7 @@ export const PIHOLE_INTERVAL_MS = 60_000          // D-24: 60 seconds
 export const NAS_INTERVAL_MS = 1_000              // D-01: 1 second (was 3_000)
 export const PLEX_INTERVAL_MS = 5_000             // 5 second direct poll of PMS /status/sessions
 export const UNIFI_INTERVAL_MS = 1_000            // D-01: 1 second — real-time throughput feel
+export const PI_HEALTH_INTERVAL_MS = 30_000       // D-02: 30 seconds default
 export const IMAGE_UPDATE_INTERVAL_MS = 15 * 60 * 1000      // 15 minutes
 
 // Arr service metadata
@@ -114,6 +116,7 @@ export class PollManager {
   private nasData: NasStatus = { cpu: 0, ram: 0, networkMbpsUp: 0, networkMbpsDown: 0, volumes: [] }
   private plexStreams: PlexStream[] = []
   private plexServerStats: PlexServerStats | undefined = undefined
+  private piHealthData: PiHealthStatus | undefined = undefined
   private plexConfig: { baseUrl: string; token: string } | null = null
 
   // Separate timer for Docker image update checks (12h interval, D-18)
@@ -285,6 +288,29 @@ export class PollManager {
     if (serviceId === 'sabnzbd') {
       this.sabnzbdConfig = { baseUrl, apiKey }
       this.burstPollActive = false  // Reset burst state on reconfigure
+    }
+
+    // Pi health — top-level field like NAS, not in services[] (D-01)
+    if (serviceId === 'piHealth') {
+      const doPollPiHealth = async () => {
+        const result = await pollPiHealth(baseUrl)
+        this.piHealthData = result
+        this.broadcastSnapshot()
+      }
+      await doPollPiHealth()
+      // Custom interval from kvStore, fallback to default 30s (D-02, D-11)
+      let intervalMs = PI_HEALTH_INTERVAL_MS
+      try {
+        const db = getDb()
+        const row = db.select().from(kvStore).where(eq(kvStore.key, 'piHealth.pollInterval')).get()
+        if (row) {
+          const parsed = parseInt(row.value, 10)
+          if (parsed >= 5000) intervalMs = parsed
+        }
+      } catch { /* use default */ }
+      const timer = setInterval(doPollPiHealth, intervalMs)
+      this.timers.set('piHealth', timer)
+      return
     }
 
     // Plex uses direct 5-second polling of PMS /status/sessions.
@@ -481,6 +507,7 @@ export class PollManager {
       streams: this.plexStreams,
       plexServerStats: this.plexServerStats,
       weather,
+      piHealth: this.piHealthData,
       timestamp: new Date().toISOString(),
     }
   }
