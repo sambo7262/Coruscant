@@ -653,44 +653,43 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
         ) : (
           <>
             {/* Row 1: Health status label — styled like Pi-hole BLOCKING */}
-            <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <span className="text-glow" style={{
                 fontSize: '22px',
                 fontWeight: 600,
                 letterSpacing: '0.08em',
                 fontFamily: 'var(--font-mono)',
                 lineHeight: 1.1,
+                textAlign: 'center',
                 color: healthToLed === 'online' ? 'var(--cockpit-green)' : healthToLed === 'warning' ? 'var(--cockpit-amber)' : 'var(--cockpit-red)',
-                
               }}>
                 {healthLabel}
               </span>
             </div>
-            {/* Speed arcs (UP/DOWN) + vertical bar (CLIENTS) */}
-            <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', alignItems: 'flex-end', flex: 1, paddingTop: '8px', overflow: 'hidden' }}>
-              {/* UP / DOWN arc indicators */}
+            {/* Speed arcs (UP / DOWN) with CLIENTS count between */}
+            <div style={{ display: 'flex', gap: '0', justifyContent: 'center', alignItems: 'center', flex: 1, paddingTop: '8px' }}>
               {([
                 { label: 'UP', value: um!.wanTxMbps, color: '#FF3B3B', valueText: `${(animWanTx / 10).toFixed(1)}` },
                 { label: 'DOWN', value: um!.wanRxMbps, color: '#00c8ff', valueText: `${(animWanRx / 10).toFixed(1)}` },
-              ] as const).map(({ label, value, color, valueText }) => {
+              ] as const).map(({ label, value, color, valueText }, idx) => {
                 const mbps = typeof value === 'number' ? value : 0
                 const isOnline = um?.healthStatus === 'online' || um?.healthStatus === 'warning'
                 const litArcs = mbps >= 25 ? 3 : mbps >= 5 ? 2 : (mbps > 0 || isOnline) ? 1 : 0
                 const dimColor = 'rgba(255,255,255,0.08)'
                 const arcs = [
-                  { r: 14, strokeWidth: 4 },
-                  { r: 22, strokeWidth: 4 },
-                  { r: 30, strokeWidth: 4 },
+                  { r: 18, strokeWidth: 4 },
+                  { r: 27, strokeWidth: 4 },
+                  { r: 36, strokeWidth: 4 },
                 ]
-                return (
-                  <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flex: 1, minWidth: 0 }}>
+                const arcEl = (
+                  <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                     <span style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-mono)', color, textAlign: 'center', whiteSpace: 'nowrap', lineHeight: 1.1 }}>
                       {valueText}
                     </span>
                     <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', color: 'rgba(200,200,200,0.4)', textAlign: 'center' }}>Mbps</span>
-                    <svg width="66" height="42" viewBox="0 0 66 42">
+                    <svg width="78" height="48" viewBox="0 0 78 48">
                       {arcs.map((arc, i) => {
-                        const cx = 33, cy = 40
+                        const cx = 39, cy = 46
                         const startAngle = Math.PI + 0.35
                         const endAngle = 2 * Math.PI - 0.35
                         const x1 = cx + arc.r * Math.cos(startAngle)
@@ -718,36 +717,20 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
                     <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'rgba(200,200,200,0.5)', letterSpacing: '0.04em', textAlign: 'center' }}>{label}</span>
                   </div>
                 )
+                // Insert CLIENTS count between UP and DOWN
+                if (idx === 0) {
+                  return [
+                    arcEl,
+                    <div key="clients" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', padding: '0 4px' }}>
+                      <span style={{ fontSize: '18px', fontWeight: 600, fontFamily: 'var(--font-mono)', color: '#4ADE80', textAlign: 'center', whiteSpace: 'nowrap', lineHeight: 1.1 }}>
+                        {animClientCount}
+                      </span>
+                      <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'rgba(200,200,200,0.5)', letterSpacing: '0.04em', textAlign: 'center' }}>CLIENTS</span>
+                    </div>,
+                  ]
+                }
+                return arcEl
               })}
-              {/* CLIENTS vertical bar */}
-              {(() => {
-                const value = um!.clientCount
-                const peak = um!.peakClients && um!.peakClients > 0 ? um!.peakClients : (um!.clientCount > 0 ? um!.clientCount : 1)
-                const color = '#4ADE80'
-                const effectivePeak = peak > 0 ? peak : 1
-                const fillPct = value !== null && value !== undefined ? Math.min((value / effectivePeak) * 100, 100) : 0
-                return (
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flex: 1, minWidth: 0 }}>
-                    <span style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-mono)', color, textAlign: 'center', whiteSpace: 'nowrap', lineHeight: 1.1 }}>
-                      {animClientCount}
-                    </span>
-                    <div style={{ width: '16px', height: '90px', background: '#222', borderRadius: '3px', position: 'relative', overflow: 'hidden' }}>
-                      <div style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: `${fillPct}%`,
-                        background: color,
-                        borderRadius: '3px',
-                        transition: 'height 0.3s ease',
-                        boxShadow: `0 0 6px ${color}`,
-                      }} />
-                    </div>
-                    <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'rgba(200,200,200,0.5)', letterSpacing: '0.04em', textAlign: 'center' }}>CLIENTS</span>
-                  </div>
-                )
-              })()}
             </div>
           </>
         )}
