@@ -6,6 +6,7 @@ services:
       - "${PORT:-1688}:3000"
     volumes:
       - ${DATA_PATH:-/volume1/docker/coruscant}:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     user: "${PUID:-1000}:${PGID:-1000}"
     environment:
       - NODE_ENV=production

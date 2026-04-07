@@ -237,49 +237,44 @@ describe('NAS adapter', () => {
   })
 
   describe('checkNasImageUpdates', () => {
-    it('returns boolean from SYNO.Docker.Image list', async () => {
+    it('returns true when remote digest differs from local', async () => {
       mockAxios.get = vi.fn()
         .mockImplementationOnce(() => Promise.resolve({
-          data: { success: true, data: { sid: 'dsm-sid-img' } },
+          data: [
+            {
+              RepoTags: ['sambo7262/coruscant:v1.0.1'],
+              RepoDigests: ['sambo7262/coruscant@sha256:aaa'],
+            },
+          ],
         }))
         .mockImplementationOnce(() => Promise.resolve({
-          data: {
-            success: true,
-            data: {
-              images: [
-                { name: 'coruscant:latest', is_update_available: false },
-                { name: 'nginx:latest', is_update_available: true },
-              ],
-            },
-          },
+          data: { Descriptor: { digest: 'sha256:bbb' } },
         }))
 
       const { checkNasImageUpdates } = await import('../adapters/nas.js')
-      const result = await checkNasImageUpdates('http://nas.local:5000', 'admin', 'pass')
-
-      expect(result).toBe(true) // nginx has update available
-    })
-
-    it('detects update via canUpgrade field (ContainerManager namespace)', async () => {
-      mockAxios.get = vi.fn()
-        .mockImplementationOnce(() => Promise.resolve({
-          data: { success: true, data: { sid: 'dsm-sid-img2' } },
-        }))
-        .mockImplementationOnce(() => Promise.resolve({
-          data: {
-            success: true,
-            data: {
-              images: [
-                { name: 'coruscant:latest', canUpgrade: true },
-              ],
-            },
-          },
-        }))
-
-      const { checkNasImageUpdates } = await import('../adapters/nas.js')
-      const result = await checkNasImageUpdates('http://nas.local:5000', 'admin', 'pass')
+      const result = await checkNasImageUpdates()
 
       expect(result).toBe(true)
+    })
+
+    it('returns false when digests match', async () => {
+      mockAxios.get = vi.fn()
+        .mockImplementationOnce(() => Promise.resolve({
+          data: [
+            {
+              RepoTags: ['sambo7262/coruscant:v1.0.1'],
+              RepoDigests: ['sambo7262/coruscant@sha256:aaa'],
+            },
+          ],
+        }))
+        .mockImplementationOnce(() => Promise.resolve({
+          data: { Descriptor: { digest: 'sha256:aaa' } },
+        }))
+
+      const { checkNasImageUpdates } = await import('../adapters/nas.js')
+      const result = await checkNasImageUpdates()
+
+      expect(result).toBe(false)
     })
   })
 

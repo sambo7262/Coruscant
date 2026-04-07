@@ -398,7 +398,7 @@ export class PollManager {
       }
 
       const checkImages = async () => {
-        const available = await checkNasImageUpdates(baseUrl, username ?? '', apiKey)
+        const available = await checkNasImageUpdates()
         this.nasData = { ...this.nasData, imageUpdateAvailable: available }
       }
 

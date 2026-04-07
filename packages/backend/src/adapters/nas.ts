@@ -294,40 +294,50 @@ export async function fetchNasDockerStats(
 }
 
 /**
- * Check if any Docker images on the NAS have updates available.
- * Tries both SYNO.Docker.Image and SYNO.ContainerManager.Image namespaces and
- * multiple field names (is_update_available, canUpgrade, upgrade_available).
- * Runs on a separate 12-hour timer (D-18).
- * Returns false on any error (defensive).
+ * Check if any Docker images have updates available via the Docker socket.
+ * Lists local images, queries the registry digest via /distribution/{name}/json,
+ * and compares against the local digest. Returns false on any error (defensive).
  */
-export async function checkNasImageUpdates(baseUrl: string, username: string, password: string): Promise<boolean> {
+export async function checkNasImageUpdates(): Promise<boolean> {
+  const DOCKER_SOCKET = '/var/run/docker.sock'
+
   try {
-    const sid = await ensureSession(baseUrl, username, password)
+    // List all local images
+    const imagesRes = await axios.get('http://localhost/v1.41/images/json', {
+      socketPath: DOCKER_SOCKET,
+      timeout: TIMEOUT_MS,
+    })
 
-    for (const api of ['SYNO.Docker.Image', 'SYNO.ContainerManager.Image']) {
-      for (const version of ['1', '2']) {
-        const params = new URLSearchParams({
-          api,
-          version,
-          method: 'list',
-          _sid: sid,
-        })
+    const images: Array<{ RepoTags?: string[]; RepoDigests?: string[] }> = imagesRes.data ?? []
 
-        const response = await axios.get(`${baseUrl}/webapi/entry.cgi?${params.toString()}`, {
-          timeout: TIMEOUT_MS,
-        })
+    for (const img of images) {
+      const tags = img.RepoTags ?? []
+      const localDigests = img.RepoDigests ?? []
 
-        if (!response.data?.success) continue
+      for (const tag of tags) {
+        // Skip dangling/untagged images and local-only builds
+        if (tag === '<none>:<none>' || !tag.includes('/')) continue
 
-        const images: Array<Record<string, unknown>> = response.data?.data?.images ?? []
-        const hasUpdate = images.some(
-          (img) =>
-            img.is_update_available === true ||
-            img.canUpgrade === true ||
-            img.upgrade_available === true,
-        )
-        if (hasUpdate) return true
-        return false
+        const localDigest = localDigests.find((d) => d.startsWith(tag.split(':')[0] + '@'))
+        if (!localDigest) continue
+
+        try {
+          const distRes = await axios.get(
+            `http://localhost/v1.41/distribution/${encodeURIComponent(tag)}/json`,
+            { socketPath: DOCKER_SOCKET, timeout: TIMEOUT_MS },
+          )
+
+          const remoteDigest = distRes.data?.Descriptor?.digest as string | undefined
+          if (!remoteDigest) continue
+
+          const localSha = localDigest.split('@')[1]
+          if (localSha && remoteDigest !== localSha) {
+            return true
+          }
+        } catch {
+          // Registry unreachable or auth failed for this image — skip it
+          continue
+        }
       }
     }
 
