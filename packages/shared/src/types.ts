@@ -80,12 +80,30 @@ export interface WeatherData {
   timezone?: string   // IANA timezone from geocoding (e.g. "America/New_York")
 }
 
+export interface PiHealthStatus {
+  cpuTempC?: number
+  cpuPercent?: number
+  throttled?: boolean
+  throttledFlags?: string[]
+  memUsedMb?: number
+  memTotalMb?: number
+  wifiRssiDbm?: number
+  wifiLinkQuality?: string
+  nasLatencyMs?: number
+  sdFreeGb?: number
+  uptimeHours?: number
+  displayOn?: boolean
+  severity: 'normal' | 'warning' | 'critical' | 'stale'
+  lastPollAt: string
+}
+
 export interface DashboardSnapshot {
   services: ServiceStatus[]
   nas: NasStatus
   streams: PlexStream[]
   plexServerStats?: PlexServerStats  // optional — populated when Plex is configured
   weather?: WeatherData | null  // null = not configured; undefined = not yet loaded
+  piHealth?: PiHealthStatus  // optional — populated when Pi health is configured (top-level per D-01)
   timestamp: string // ISO 8601
 }
 
