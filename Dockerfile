@@ -1,6 +1,5 @@
 # =============================================================================
-# Stage 1: builder
-# Full Node.js image with all tools needed to compile TypeScript and Vite
+# Stage 1: builder — compile TypeScript and Vite
 # =============================================================================
 FROM node:22 AS builder
 WORKDIR /build
