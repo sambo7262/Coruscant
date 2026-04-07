@@ -344,7 +344,7 @@ export class PollManager {
         } else if (serviceId === 'nas') {
           // NAS stores metrics in nasData and marks itself configured in state
           const nasResult = await pollNas(baseUrl, username ?? '', apiKey)
-          this.nasData = nasResult
+          this.nasData = { ...nasResult, imageUpdateAvailable: this.nasData.imageUpdateAvailable }
           // Mark NAS as configured and online in the service status map so
           // App.tsx derives nasConfigured = true and shows the live gauge strip.
           this.state.set('nas', {
