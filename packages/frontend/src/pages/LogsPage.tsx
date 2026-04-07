@@ -217,8 +217,21 @@ export function LogsPage({ lastLogEntry }: LogsPageProps) {
   const [purging, setPurging] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Derive unique service names from loaded entries for the service filter dropdown
-  const serviceNames = Array.from(new Set(entries.map((e) => e.service).filter(Boolean))).sort()
+  // Fetch all distinct service names from backend (independent of current level/page filter)
+  const [serviceNames, setServiceNames] = useState<string[]>([])
+  useEffect(() => {
+    void (async () => {
+      try {
+        const res = await fetch('/api/logs/services')
+        if (res.ok) {
+          const data = await res.json() as { services: string[] }
+          setServiceNames(data.services)
+        }
+      } catch {
+        // fall back to empty — dropdown shows ALL only
+      }
+    })()
+  }, [entries.length])
 
   const fetchEntries = useCallback(async (level: LevelFilter, service: string, offset = 0) => {
     setLoading(true)

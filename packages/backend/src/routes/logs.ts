@@ -51,6 +51,17 @@ export async function logRoutes(fastify: FastifyInstance) {
   })
 
   /**
+   * GET /api/logs/services
+   * Returns { services: string[] } — all distinct service names in the logs table
+   */
+  fastify.get('/api/logs/services', async (_request, reply) => {
+    const db = getDb()
+    const rows = db.selectDistinct({ service: appLogs.service }).from(appLogs).all()
+    const services = rows.map((r) => r.service).filter(Boolean).sort()
+    return reply.send({ services })
+  })
+
+  /**
    * POST /api/logs/purge
    * Body: { olderThanDays: number }
    * Returns { deleted: number }
