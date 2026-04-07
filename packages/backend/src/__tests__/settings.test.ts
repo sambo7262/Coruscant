@@ -158,12 +158,12 @@ describe('Settings API', () => {
   })
 
   describe('GET /api/settings — list all services', () => {
-    it('returns an array with all 11 known services', async () => {
+    it('returns an array with all 12 known services', async () => {
       const res = await app.inject({ method: 'GET', url: '/api/settings' })
       expect(res.statusCode).toBe(200)
       const body = JSON.parse(res.body)
       expect(Array.isArray(body)).toBe(true)
-      expect(body.length).toBe(11)
+      expect(body.length).toBe(12)
 
       const serviceIds = body.map((s: { serviceName: string }) => s.serviceName)
       expect(serviceIds).toContain('radarr')
@@ -177,6 +177,7 @@ describe('Settings API', () => {
       expect(serviceIds).toContain('plex')
       expect(serviceIds).toContain('nas')
       expect(serviceIds).toContain('unifi')
+      expect(serviceIds).toContain('piHealth')
     })
 
     it('never includes plaintext API keys in list response', async () => {

@@ -6,7 +6,7 @@ const unifiHttpsAgent = new https.Agent({ rejectUnauthorized: false })
 
 const VALID_SERVICES = [
   'radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 'readarr', 'sabnzbd',
-  'pihole', 'plex', 'nas', 'unifi',
+  'pihole', 'plex', 'nas', 'unifi', 'piHealth',
 ] as const
 
 const ARR_SERVICES = new Set(['radarr', 'sonarr', 'lidarr', 'prowlarr', 'readarr'])
@@ -146,6 +146,15 @@ export async function testConnectionRoutes(fastify: FastifyInstance) {
         const sites = res.data?.data ?? []
         const siteName = sites[0]?.name ?? 'Unknown'
         return reply.send({ success: true, message: `Connected — ${siteName}` })
+      }
+
+      if (serviceId === 'piHealth') {
+        const response = await axios.get(`${baseUrl}/health`, { timeout })
+        if (typeof response.data?.cpu_temp_c !== 'number') {
+          return reply.send({ success: false, message: 'Unexpected response format — missing cpu_temp_c' })
+        }
+        const temp = response.data.cpu_temp_c
+        return reply.send({ success: true, message: `Connected - CPU ${temp.toFixed(1)}C` })
       }
 
       // Should not reach here given the valid service list

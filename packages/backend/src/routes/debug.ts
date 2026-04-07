@@ -309,4 +309,25 @@ export async function debugRoutes(fastify: FastifyInstance) {
 
     return reply.send({ imageCount: images.length, checked: results.length, results })
   })
+
+  /**
+   * GET /debug/pi-health
+   * Hits the Pi health Flask endpoint directly and returns the raw response.
+   * No encryption needed — piHealth has no API key (D-12).
+   */
+  fastify.get('/debug/pi-health', async (_request, reply) => {
+    const db = getDb()
+    const row = db.select().from(serviceConfig).where(eq(serviceConfig.serviceName, 'piHealth')).get()
+    if (!row?.baseUrl) {
+      return reply.status(404).send({ error: 'Pi health not configured' })
+    }
+    const baseUrl = row.baseUrl.replace(/\/$/, '')
+    try {
+      const response = await axios.get(`${baseUrl}/health`, { timeout: 10_000 })
+      return reply.send({ raw: response.data, status: response.status, baseUrl })
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err)
+      return reply.send({ error: message, baseUrl })
+    }
+  })
 }

@@ -14,6 +14,7 @@ import { testConnectionRoutes } from './routes/test-connection.js'
 import { tautulliWebhookRoutes } from './routes/tautulli-webhook.js'
 import { arrWebhookRoutes } from './routes/arr-webhooks.js'
 import { debugRoutes } from './routes/debug.js'
+import { piHealthRestartRoutes } from './routes/pi-health-restart.js'
 import { logRoutes } from './routes/logs.js'
 import { weatherSettingsRoutes } from './routes/weather-settings.js'
 import { startWeatherPoller } from './weather-poller.js'
@@ -51,6 +52,7 @@ await fastify.register(testConnectionRoutes)
 await fastify.register(tautulliWebhookRoutes)
 await fastify.register(arrWebhookRoutes)
 await fastify.register(debugRoutes)
+await fastify.register(piHealthRestartRoutes)
 await fastify.register(logRoutes)
 await fastify.register(weatherSettingsRoutes)
 
@@ -95,6 +97,15 @@ try {
   const configs = db.select().from(serviceConfig).all()
   const seed = process.env.ENCRYPTION_KEY_SEED ?? ''
   for (const cfg of configs) {
+    // piHealth has no API key (D-12) — skip encryptedApiKey check
+    if (cfg.serviceName === 'piHealth' && cfg.enabled && cfg.baseUrl) {
+      await pollManager.reload(cfg.serviceName, {
+        baseUrl: cfg.baseUrl,
+        apiKey: '',
+        username: cfg.username ?? undefined,
+      })
+      continue
+    }
     if (cfg.enabled && cfg.baseUrl && cfg.encryptedApiKey) {
       const apiKey = decrypt(cfg.encryptedApiKey, seed)
       await pollManager.reload(cfg.serviceName, {

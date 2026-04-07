@@ -7,7 +7,7 @@ import { pollManager } from '../poll-manager.js'
 
 const VALID_SERVICES = [
   'radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 'readarr', 'sabnzbd',
-  'pihole', 'plex', 'nas', 'unifi',
+  'pihole', 'plex', 'nas', 'unifi', 'piHealth',
 ] as const
 
 type ValidService = (typeof VALID_SERVICES)[number]
@@ -91,7 +91,7 @@ export async function settingsRoutes(fastify: FastifyInstance) {
    */
   fastify.post<{
     Params: { serviceId: string }
-    Body: { baseUrl?: string; apiKey?: string; username?: string }
+    Body: { baseUrl?: string; apiKey?: string; username?: string; pollInterval?: number }
   }>('/api/settings/:serviceId', async (request, reply) => {
     const { serviceId } = request.params
 
@@ -99,14 +99,38 @@ export async function settingsRoutes(fastify: FastifyInstance) {
       return reply.code(400).send({ error: `Unknown service: ${serviceId}` })
     }
 
+    const baseUrl = (request.body.baseUrl ?? '').trim()
+    const username = (request.body.username ?? '').trim()
+
+    // piHealth has no API key (D-12) — skip encryption seed requirement
+    if (serviceId === 'piHealth') {
+      const db = getDb()
+      db.insert(serviceConfig)
+        .values({ serviceName: serviceId, baseUrl, encryptedApiKey: '', username, enabled: baseUrl !== '', updatedAt: new Date().toISOString() })
+        .onConflictDoUpdate({ target: serviceConfig.serviceName, set: { baseUrl, encryptedApiKey: '', username, enabled: baseUrl !== '', updatedAt: new Date().toISOString() } })
+        .run()
+      if (baseUrl === '') {
+        await pollManager.reload(serviceId, null)
+      } else {
+        await pollManager.reload(serviceId, { baseUrl, apiKey: '', username })
+      }
+      // Persist custom poll interval in kvStore (D-11)
+      const pollInterval = request.body.pollInterval
+      if (typeof pollInterval === 'number' && Number.isInteger(pollInterval) && pollInterval >= 5) {
+        db.insert(kvStore)
+          .values({ key: 'piHealth.pollInterval', value: String(pollInterval * 1000), updatedAt: new Date().toISOString() })
+          .onConflictDoUpdate({ target: kvStore.key, set: { value: String(pollInterval * 1000), updatedAt: new Date().toISOString() } })
+          .run()
+      }
+      return reply.send({ ok: true })
+    }
+
     const seed = process.env.ENCRYPTION_KEY_SEED
     if (!seed) {
       return reply.code(500).send({ error: 'ENCRYPTION_KEY_SEED is not configured' })
     }
 
-    const baseUrl = (request.body.baseUrl ?? '').trim()
     const apiKey = (request.body.apiKey ?? '').trim()
-    const username = (request.body.username ?? '').trim()
 
     // Both empty → disable the service
     if (baseUrl === '' && apiKey === '') {
@@ -250,4 +274,15 @@ export async function settingsRoutes(fastify: FastifyInstance) {
       return reply.send({ success: true, retentionDays })
     },
   )
+
+  /**
+   * GET /api/settings/pi-health-interval — read Pi health poll interval.
+   * Returns { intervalSeconds: number } (default 30 if not set).
+   */
+  fastify.get('/api/settings/pi-health-interval', async (_request, reply) => {
+    const db = getDb()
+    const row = db.select().from(kvStore).where(eq(kvStore.key, 'piHealth.pollInterval')).get()
+    const intervalSeconds = row ? Math.round(parseInt(row.value, 10) / 1000) : 30
+    return reply.send({ intervalSeconds })
+  })
 }
