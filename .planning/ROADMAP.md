@@ -234,7 +234,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. Notifications (Webhook Event Signaling) | 2/2 | Complete   | 2026-04-06 |
 | 8. Logging, Polish + Performance | 2/5 | In Progress|  |
 | 9. Local Weather + UI Final Polish | 4/4 | Complete   | 2026-04-06 |
-| 10. Production Deploy + Hardening | 0/3 | Planning complete | - |
+| 10. Production Deploy + Hardening | 1/3 | In Progress|  |
 | 11. Raspberry Pi Kiosk | — | Complete (manual) | 2026-04-05 |
 
 ### Phase 10: Production Deploy and Hardening
@@ -246,11 +246,11 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 - Final bug pass before v1.0 tag
 - Git cleanup (worktree branches, stale files, .gitignore)
 - Webhook logging hardened with dedicated filter category
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 - [ ] 10-01-PLAN.md — Fix pre-existing test failures + CI version tag support
-- [ ] 10-02-PLAN.md — Webhook logging hardening + Pi-hole BPM fix + MediaStackRow glow
+- [x] 10-02-PLAN.md — Webhook logging hardening + Pi-hole BPM fix + MediaStackRow glow
 - [ ] 10-03-PLAN.md — Git cleanup, .gitignore, compose.yaml pin, v1.0.0 tag + deploy verification
 ### Phase 11: Raspberry Pi Kiosk ✅
 
