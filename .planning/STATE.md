@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 10-02-PLAN.md
-last_updated: "2026-04-07T00:17:44.140Z"
+stopped_at: Completed 10-01-PLAN.md
+last_updated: "2026-04-07T00:26:21.713Z"
 last_activity: 2026-04-07
 progress:
   total_phases: 14
   completed_phases: 8
   total_plans: 52
-  completed_plans: 47
+  completed_plans: 48
   percent: 0
 ---
 
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-02)
 ## Current Position
 
 Phase: 10 (production-deploy-and-hardening) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Phase: 09 (production-deploy-and-hardening) — NEXT
 Status: Ready to execute
 Last activity: 2026-04-07
@@ -87,6 +87,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 09-local-weather-ui-polish P01 | 15min | 2 tasks | 10 files |
 | Phase 09-local-weather-ui-polish P04 | 15min | 2 tasks | 7 files |
 | Phase 10 P02 | 295s | 2 tasks | 4 files |
+| Phase 10-production-deploy-and-hardening P01 | 14min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -184,6 +185,9 @@ Recent decisions affecting current work:
 - [Phase 10]: Webhook log service field set to 'webhook' (not service.toUpperCase()) — single filter category in log viewer covers all arr+tautulli events
 - [Phase 10]: Pi-hole frequency field is QPS from FTL get_qps(); multiply by 60 for QPM display — matches Pi-hole dashboard behavior
 - [Phase 10]: MediaStackRow LED glow upgraded to 8px/3px spread with ledBreathe/ledFlashDown animations — aligns with StatusDot glow pattern; color property added for ledOverPulse currentColor support
+- [Phase 10-production-deploy-and-hardening]: SSE handler converted from async to sync with reply.hijack() — async handler + hijack + throw = inject() hangs indefinitely; sync handler avoids this
+- [Phase 10-production-deploy-and-hardening]: pihole queriesPerMinute uses frequency directly — frequency field is already QPM, not QPS; multiplication by 60 was incorrect
+- [Phase 10-production-deploy-and-hardening]: CI type=semver,pattern=v{{version}} preserves v prefix; type=raw,value=latest fires on both main branch and v* tag push
 
 ### Roadmap Evolution
 
@@ -221,6 +225,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-07T00:17:44.135Z
-Stopped at: Completed 10-02-PLAN.md
+Last session: 2026-04-07T00:26:21.707Z
+Stopped at: Completed 10-01-PLAN.md
 Resume file: None
