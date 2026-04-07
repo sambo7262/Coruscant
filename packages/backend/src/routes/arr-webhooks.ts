@@ -41,12 +41,16 @@ export async function arrWebhookRoutes(fastify: FastifyInstance) {
         return reply.code(200).send({ success: true, note: 'empty payload' })
       }
 
-      // Structured webhook log — [WEBHOOK] SERVICE -> event_type -> "title" (D-13 ISSUE-11)
+      // Structured webhook log — D-16 format: "service | eventType | title | HH:MM MM/DD/YYYY"
+      // service field set to 'webhook' (not service.toUpperCase()) so log viewer filter
+      // shows a single 'webhook' category covering all arr services (D-15)
       const eventType = classifyArrEvent((body.eventType as string) || '')
       const title = extractArrTitle(body) || 'unknown'
+      const now = new Date()
+      const ts = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} ${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}/${now.getFullYear()}`
       fastify.log.info(
-        { service: service.toUpperCase() },
-        `[WEBHOOK] ${service.toUpperCase()} -> ${eventType} -> "${title}"`
+        { service: 'webhook' },
+        `${service} | ${eventType} | ${title} | ${ts}`
       )
 
       // Forward to PollManager for classification, SSE broadcast, and burst poll

@@ -123,6 +123,23 @@ export async function tautulliWebhookRoutes(fastify: FastifyInstance) {
       })
     }
 
+    // Webhook log — D-15/D-16: service='webhook' for single filter category in log viewer
+    const logEvent = body.event ?? 'playback'
+    const logTitle = body.grandparent_title || body.title || 'unknown'
+    const now = new Date()
+    const ts = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} ${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}/${now.getFullYear()}`
+    if (isStop) {
+      fastify.log.info(
+        { service: 'webhook' },
+        `tautulli | stop | ${logTitle} | ${ts}`
+      )
+    } else {
+      fastify.log.info(
+        { service: 'webhook' },
+        `tautulli | ${logEvent} | ${logTitle} | ${ts}`
+      )
+    }
+
     return reply.code(200).send({ success: true })
   })
 }

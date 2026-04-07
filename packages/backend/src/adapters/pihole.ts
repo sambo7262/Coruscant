@@ -98,7 +98,8 @@ export async function pollPihole(baseUrl: string, password: string): Promise<Ser
       lastPollAt,
       metrics: {
         blockingActive: blocking === 'enabled',
-        queriesPerMinute: queries?.frequency ?? 0,
+        // queries.frequency is QPS from Pi-hole FTL get_qps() — multiply by 60 for QPM
+        queriesPerMinute: Math.round((queries?.frequency ?? 0) * 60),
         load1m: cpuLoad1m,
         memPercent,
         totalQueriesDay: queries?.total ?? 0,
