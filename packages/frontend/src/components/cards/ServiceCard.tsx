@@ -683,9 +683,9 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
                 // Arc paths: 3 concentric arcs (inner=small, outer=large)
                 // Each arc spans ~90° centered at bottom
                 const arcs = [
-                  { r: 18, strokeWidth: 4 },  // innermost (low)
-                  { r: 27, strokeWidth: 4 },  // middle (medium)
-                  { r: 36, strokeWidth: 4 },  // outermost (high)
+                  { r: 28, strokeWidth: 5 },  // innermost (low)
+                  { r: 42, strokeWidth: 5 },  // middle (medium)
+                  { r: 56, strokeWidth: 5 },  // outermost (high)
                 ]
                 return (
                   <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', flex: 1 }}>
@@ -693,9 +693,9 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
                       {valueText}
                     </span>
                     <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', color: 'rgba(200,200,200,0.4)', textAlign: 'center' }}>Mbps</span>
-                    <svg width="80" height="50" viewBox="0 0 80 50" style={{ overflow: 'visible' }}>
+                    <svg width="120" height="78" viewBox="0 0 120 78" style={{ overflow: 'visible' }}>
                       {arcs.map((arc, i) => {
-                        const cx = 40, cy = 48
+                        const cx = 60, cy = 76
                         const startAngle = Math.PI + 0.35  // ~200°
                         const endAngle = 2 * Math.PI - 0.35  // ~340°
                         const x1 = cx + arc.r * Math.cos(startAngle)
