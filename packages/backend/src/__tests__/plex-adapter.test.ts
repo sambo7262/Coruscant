@@ -248,10 +248,10 @@ describe('fetchPlexServerStats', () => {
     }
   }
 
-  it('returns PlexServerStats from first StatisticsResources entry (happy path)', async () => {
+  it('returns PlexServerStats from last StatisticsResources entry (happy path)', async () => {
     mockAxios.get = vi.fn().mockResolvedValue(
       makeStatisticsResponse([
-        { timeAt: 1712345678, cpuPercentage: 12.5, physMemMB: 512, totalPhysMemMB: 2048 },
+        { at: 1712345678, processCpuUtilization: 12.5, processMemoryUtilization: 25.0 },
       ])
     )
 
@@ -264,11 +264,11 @@ describe('fetchPlexServerStats', () => {
     })
   })
 
-  it('uses only the first entry (most recent) when multiple entries present', async () => {
+  it('uses only the last entry (most recent) when multiple entries present', async () => {
     mockAxios.get = vi.fn().mockResolvedValue(
       makeStatisticsResponse([
-        { timeAt: 1712345678, cpuPercentage: 30.0, physMemMB: 1024, totalPhysMemMB: 4096 },
-        { timeAt: 1712345600, cpuPercentage: 10.0, physMemMB: 256, totalPhysMemMB: 4096 },
+        { at: 1712345600, processCpuUtilization: 10.0, processMemoryUtilization: 6.25 },
+        { at: 1712345678, processCpuUtilization: 30.0, processMemoryUtilization: 25.0 },
       ])
     )
 
@@ -307,7 +307,7 @@ describe('fetchPlexServerStats', () => {
   it('returns bandwidthMbps=0 when sessionBandwidthKbps is 0', async () => {
     mockAxios.get = vi.fn().mockResolvedValue(
       makeStatisticsResponse([
-        { timeAt: 1712345678, cpuPercentage: 5.0, physMemMB: 100, totalPhysMemMB: 1000 },
+        { at: 1712345678, processCpuUtilization: 5.0, processMemoryUtilization: 10.0 },
       ])
     )
 
@@ -319,20 +319,20 @@ describe('fetchPlexServerStats', () => {
   it('rounds processRamPercent to 1 decimal place', async () => {
     mockAxios.get = vi.fn().mockResolvedValue(
       makeStatisticsResponse([
-        { timeAt: 1712345678, cpuPercentage: 10.0, physMemMB: 333, totalPhysMemMB: 1000 },
+        { at: 1712345678, processCpuUtilization: 10.0, processMemoryUtilization: 33.3 },
       ])
     )
 
     const result = await fetchPlexServerStats('http://plex:32400', 'TOKEN', 0)
 
-    // 333/1000 * 100 = 33.3
+    // processMemoryUtilization: 33.3 → processRamPercent: 33.3
     expect(result?.processRamPercent).toBe(33.3)
   })
 
   it('passes correct URL with timespan=6 and X-Plex-Token', async () => {
     mockAxios.get = vi.fn().mockResolvedValue(
       makeStatisticsResponse([
-        { timeAt: 1712345678, cpuPercentage: 5.0, physMemMB: 100, totalPhysMemMB: 1000 },
+        { at: 1712345678, processCpuUtilization: 5.0, processMemoryUtilization: 10.0 },
       ])
     )
 

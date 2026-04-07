@@ -16,7 +16,7 @@ describe('NAS adapter', () => {
       // Auth GET
       mockAxios.get = vi.fn()
         .mockImplementationOnce(() => Promise.resolve({
-          // SYNO.API.Auth login
+          // SYNO.API.Auth login (for pollNas)
           status: 200,
           data: { success: true, data: { sid: 'dsm-sid-001' } },
         }))
@@ -56,6 +56,16 @@ describe('NAS adapter', () => {
             success: true,
             data: { fan_speed: [{ id: 'fan1', rpm: 1200 }, { id: 'fan2', rpm: 1100 }] },
           },
+        }))
+        .mockImplementationOnce(() => Promise.resolve({
+          // fetchNasDockerStats: SYNO.Docker.Container.Resource (session reused, no re-auth)
+          status: 200,
+          data: { success: true, data: { resources: [] } },
+        }))
+        .mockImplementationOnce(() => Promise.resolve({
+          // SYNO.Core.System info (general — for nasName, called with .catch(() => null))
+          status: 200,
+          data: { success: true, data: { server_name: 'TheRock' } },
         }))
 
       const { pollNas } = await import('../adapters/nas.js')
@@ -103,6 +113,14 @@ describe('NAS adapter', () => {
         .mockImplementationOnce(() => Promise.resolve({
           data: { success: true, data: { fan_speed: [] } },
         }))
+        .mockImplementationOnce(() => Promise.resolve({
+          // fetchNasDockerStats: SYNO.Docker.Container.Resource (session reused)
+          data: { success: true, data: { resources: [] } },
+        }))
+        .mockImplementationOnce(() => Promise.resolve({
+          // SYNO.Core.System info (general — for nasName)
+          data: { success: false },
+        }))
 
       const { pollNas } = await import('../adapters/nas.js')
       const result = await pollNas('http://nas.local:5000', 'admin', 'pass')
@@ -142,6 +160,14 @@ describe('NAS adapter', () => {
         .mockImplementationOnce(() => Promise.resolve({
           // Fan speed returns empty array — should result in undefined fans, not []
           data: { success: true, data: { fan_speed: [] } },
+        }))
+        .mockImplementationOnce(() => Promise.resolve({
+          // fetchNasDockerStats: SYNO.Docker.Container.Resource (session reused)
+          data: { success: true, data: { resources: [] } },
+        }))
+        .mockImplementationOnce(() => Promise.resolve({
+          // SYNO.Core.System info (general — for nasName)
+          data: { success: false },
         }))
 
       const { pollNas } = await import('../adapters/nas.js')

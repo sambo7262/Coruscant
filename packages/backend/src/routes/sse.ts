@@ -24,7 +24,12 @@ function snapshotFingerprint(snapshot: DashboardSnapshot): string {
 }
 
 export async function sseRoutes(fastify: FastifyInstance) {
-  fastify.get('/api/sse', async (request, reply) => {
+  fastify.get('/api/sse', (request, reply) => {
+    // Hijack the reply so Fastify does not attempt to send its own response after
+    // the handler completes. This is required because we write directly to reply.raw
+    // for SSE streaming — without hijack, Fastify tries to send headers a second
+    // time after the async handler resolves, causing ERR_HTTP_HEADERS_SENT.
+    reply.hijack()
     reply.raw.setHeader('Content-Type', 'text/event-stream')
     reply.raw.setHeader('Cache-Control', 'no-cache')
     reply.raw.setHeader('Connection', 'keep-alive')
@@ -35,11 +40,15 @@ export async function sseRoutes(fastify: FastifyInstance) {
     let lastFingerprint = ''
 
     const send = () => {
-      const snapshot = pollManager.getSnapshot()
-      const fp = snapshotFingerprint(snapshot)
-      if (fp === lastFingerprint) return  // D-04: skip write when unchanged
-      lastFingerprint = fp
-      reply.raw.write(`event: dashboard-update\ndata: ${JSON.stringify(snapshot)}\n\n`)
+      try {
+        const snapshot = pollManager.getSnapshot()
+        const fp = snapshotFingerprint(snapshot)
+        if (fp === lastFingerprint) return  // D-04: skip write when unchanged
+        lastFingerprint = fp
+        reply.raw.write(`event: dashboard-update\ndata: ${JSON.stringify(snapshot)}\n\n`)
+      } catch {
+        // getSnapshot may fail (e.g. no DB configured) — skip write rather than crash
+      }
     }
 
     send() // immediate first payload
@@ -67,16 +76,13 @@ export async function sseRoutes(fastify: FastifyInstance) {
     }
     logEvents.on('entry', onLogEntry)
 
-    await new Promise<void>((resolve) => {
-      const cleanup = () => {
-        clearInterval(interval)
-        unsubscribeBroadcast()
-        unsubscribeArr()
-        logEvents.off('entry', onLogEntry)
-        resolve()
-      }
-      request.raw.on('close', cleanup)
-      reply.raw.on('close', cleanup)
-    })
+    const cleanup = () => {
+      clearInterval(interval)
+      unsubscribeBroadcast()
+      unsubscribeArr()
+      logEvents.off('entry', onLogEntry)
+    }
+    request.raw.on('close', cleanup)
+    reply.raw.on('close', cleanup)
   })
 }

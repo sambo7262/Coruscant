@@ -2,11 +2,27 @@ import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from 'vite
 import Fastify from 'fastify'
 import type { FastifyInstance } from 'fastify'
 
-// Mock pollManager to capture handleArrEvent calls
+// Mock pollManager to capture handleArrEvent calls.
+// Also export classifyArrEvent and extractArrTitle so the route module can import them.
 vi.mock('../poll-manager.js', () => {
   const handleArrEvent = vi.fn()
   const pollManager = { handleArrEvent }
-  return { pollManager }
+  // Minimal implementations matching the real functions — routes only call these, don't assert on return values
+  const classifyArrEvent = (raw: string): string => {
+    const map: Record<string, string> = {
+      Grab: 'grab',
+      Download: 'download_complete',
+      Health: 'health_issue',
+      ApplicationUpdate: 'update_available',
+    }
+    return map[raw] ?? 'unknown'
+  }
+  const extractArrTitle = (body: Record<string, unknown>): string | undefined => {
+    const movie = body.movie as Record<string, unknown> | undefined
+    const series = body.series as Record<string, unknown> | undefined
+    return (movie?.title as string) ?? (series?.title as string) ?? undefined
+  }
+  return { pollManager, classifyArrEvent, extractArrTitle }
 })
 
 describe('arrWebhookRoutes', () => {

@@ -1,11 +1,17 @@
+// Use in-memory SQLite for tests — getSnapshot() calls getDb() which must not open /app/data/
+process.env.DB_PATH = ':memory:'
+
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import Fastify from 'fastify'
 import { sseRoutes } from '../routes/sse.js'
+import { initDb } from '../db.js'
 
 describe('GET /api/sse', () => {
   const fastify = Fastify()
 
   beforeAll(async () => {
+    // Bootstrap schema so getSnapshot()'s kv_store query doesn't throw on the in-memory DB
+    initDb()
     await fastify.register(sseRoutes)
     await fastify.ready()
   })
