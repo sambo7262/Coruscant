@@ -1,6 +1,6 @@
 services:
   coruscant:
-    image: sambo7262/coruscant:v1.0.0
+    image: sambo7262/coruscant:v1.0.1
     restart: unless-stopped
     ports:
       - "${PORT:-1688}:3000"
