@@ -1,6 +1,6 @@
 services:
   coruscant:
-    image: ${DOCKER_HUB_REPO}:${IMAGE_TAG:-latest}
+    image: sambo7262/coruscant:v1.0.0
     restart: unless-stopped
     ports:
       - "${PORT:-1688}:3000"
