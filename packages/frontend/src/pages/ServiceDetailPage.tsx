@@ -275,7 +275,7 @@ function PiholeDetailView({ service, metrics }: { service: { status: string; con
   const totalBlockedDay = typeof metrics.totalBlockedDay === 'number' ? metrics.totalBlockedDay : 0
   const percentBlocked = typeof metrics.percentBlocked === 'number' ? metrics.percentBlocked : 0
   const domainsBlocked = typeof metrics.domainsBlocked === 'number' ? metrics.domainsBlocked : 0
-  const queriesPerMinute = typeof metrics.queriesPerMinute === 'number' ? metrics.queriesPerMinute : 0
+  const queriesPerSecond = typeof metrics.queriesPerSecond === 'number' ? metrics.queriesPerSecond : 0
   const load1m = typeof metrics.load1m === 'number' ? metrics.load1m : 0
   const memPercent = typeof metrics.memPercent === 'number' ? metrics.memPercent : 0
 
@@ -327,7 +327,7 @@ function PiholeDetailView({ service, metrics }: { service: { status: string; con
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <DotLeaderRow label="BLOCKLIST SIZE" value={domainsBlocked.toLocaleString()} />
-          <DotLeaderRow label="QUERIES / MIN" value={queriesPerMinute.toFixed(1)} />
+          <DotLeaderRow label="QUERIES / SEC" value={queriesPerSecond.toFixed(1)} />
           <DotLeaderRow label="SYSTEM LOAD" value={load1m.toFixed(2)} />
           <DotLeaderRow label="MEMORY USAGE" value={`${memPercent.toFixed(1)}%`} />
         </div>

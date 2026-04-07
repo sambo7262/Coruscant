@@ -73,7 +73,7 @@ describe('pollPihole', () => {
 
     const metrics = result.metrics as Record<string, unknown>
     expect(metrics.blockingActive).toBe(true)
-    expect(metrics.queriesPerMinute).toBe(8.3)
+    expect(metrics.queriesPerSecond).toBe(8.3)
     expect(metrics.totalQueriesDay).toBe(12000)
     expect(metrics.totalBlockedDay).toBe(3000)
     expect(metrics.percentBlocked).toBe(25)
