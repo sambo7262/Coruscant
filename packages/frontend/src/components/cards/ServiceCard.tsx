@@ -643,7 +643,7 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
       {/* RIGHT — Ubiquiti */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
         <div style={{ fontSize: '9px', color: unifiConfigured ? 'var(--cockpit-amber)' : '#555',
-          letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>
+          letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-mono)', textAlign: 'center' }}>
           UBIQUITI
         </div>
         {!unifiConfigured ? (
@@ -669,8 +669,8 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
             {/* Speed arcs (UP / DOWN) with CLIENTS count between */}
             <div style={{ display: 'flex', gap: '0', justifyContent: 'center', alignItems: 'center', flex: 1, paddingTop: '8px' }}>
               {([
-                { label: 'UP', value: um!.wanTxMbps, color: '#FF3B3B', valueText: `${(animWanTx / 10).toFixed(1)}` },
                 { label: 'DOWN', value: um!.wanRxMbps, color: '#00c8ff', valueText: `${(animWanRx / 10).toFixed(1)}` },
+                { label: 'UP', value: um!.wanTxMbps, color: '#FF3B3B', valueText: `${(animWanTx / 10).toFixed(1)}` },
               ] as const).map(({ label, value, color, valueText }, idx) => {
                 const mbps = typeof value === 'number' ? value : 0
                 const isOnline = um?.healthStatus === 'online' || um?.healthStatus === 'warning'
@@ -683,7 +683,7 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
                 ]
                 const arcEl = (
                   <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                    <span style={{ fontSize: '16px', fontWeight: 600, fontFamily: 'var(--font-mono)', color, textAlign: 'center', whiteSpace: 'nowrap', lineHeight: 1.1 }}>
+                    <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, fontFamily: 'var(--font-mono)', color, textAlign: 'center', whiteSpace: 'nowrap', lineHeight: 1.1 }}>
                       {valueText}
                     </span>
                     <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', color: 'rgba(200,200,200,0.4)', textAlign: 'center' }}>Mbps</span>
@@ -849,7 +849,7 @@ export function ServiceCard({ service, index, allServices, nasStatus }: ServiceC
       >
         {/* 20px amber ribbon header — same pattern as MEDIA tile */}
         <div style={{ height: '20px', background: 'var(--cockpit-amber)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '6px', paddingRight: '8px' }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '9px', color: '#1a1a1a', letterSpacing: '0.08em', fontWeight: 600 }}>NAS</span>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: '#1a1a1a', letterSpacing: '0.08em', fontWeight: 600 }}>NAS</span>
           <StatusDot status={isUnconfigured ? 'stale' : service.status} />
         </div>
         <div style={{ padding: '6px 10px 8px 10px', flex: 1 }}>
@@ -936,7 +936,7 @@ export function ServiceCard({ service, index, allServices, nasStatus }: ServiceC
         }}>
           <span style={{
             fontFamily: 'var(--font-mono)',
-            fontSize: '9px',
+            fontSize: '13px',
             color: '#1a1a1a',
             letterSpacing: '0.08em',
             fontWeight: 600,
