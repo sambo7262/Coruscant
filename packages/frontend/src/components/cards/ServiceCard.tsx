@@ -652,9 +652,8 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
           </span>
         ) : (
           <>
-            {/* Row 1: Health LED + status label — styled like Pi-hole BLOCKING */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <StatusDot status={healthToLed} />
+            {/* Row 1: Health status label — styled like Pi-hole BLOCKING */}
+            <div style={{ display: 'flex', alignItems: 'center' }}>
               <span className="text-glow" style={{
                 fontSize: '22px',
                 fontWeight: 600,
