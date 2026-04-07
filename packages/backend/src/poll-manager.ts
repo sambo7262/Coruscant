@@ -18,7 +18,7 @@ export const PIHOLE_INTERVAL_MS = 60_000          // D-24: 60 seconds
 export const NAS_INTERVAL_MS = 1_000              // D-01: 1 second (was 3_000)
 export const PLEX_INTERVAL_MS = 5_000             // 5 second direct poll of PMS /status/sessions
 export const UNIFI_INTERVAL_MS = 1_000            // D-01: 1 second — real-time throughput feel
-export const IMAGE_UPDATE_INTERVAL_MS = 12 * 60 * 60 * 1000 // D-18: 2x per day (12 hours)
+export const IMAGE_UPDATE_INTERVAL_MS = 15 * 60 * 1000      // 15 minutes
 
 // Arr service metadata
 const ARR_SERVICES: Record<string, { name: string }> = {
