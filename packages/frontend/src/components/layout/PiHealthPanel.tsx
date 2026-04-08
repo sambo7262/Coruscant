@@ -96,9 +96,22 @@ export function PiHealthPanel({ piHealth }: { piHealth?: PiHealthStatus }) {
   const pingPercent = (pingMs / 300) * 100
   const pingColor: BarColor = pingMs < 50 ? 'green' : pingMs < 150 ? 'yellow' : 'red'
 
-  // Throttle flags: just show as text row, no bar
+  // Throttle flags: human-readable labels
+  const THROTTLE_LABELS: Record<string, string> = {
+    'under-voltage': 'LOW POWER',
+    'arm-freq-capped': 'FREQ CAPPED',
+    'currently-throttled': 'THROTTLED',
+    'soft-temp-limit': 'TEMP LIMIT',
+    'under-voltage-occurred': 'LOW POWER (PREV)',
+    'arm-freq-capped-occurred': 'FREQ CAPPED (PREV)',
+    'throttled-occurred': 'THROTTLED (PREV)',
+    'soft-temp-limit-occurred': 'TEMP LIMIT (PREV)',
+  }
   const throttleText = piHealth?.throttledFlags?.length
-    ? piHealth.throttledFlags.join(', ')
+    ? piHealth.throttledFlags
+        .filter(f => !f.endsWith('-occurred'))  // skip historical flags — only show current state
+        .map(f => THROTTLE_LABELS[f] ?? f)
+        .join(', ') || 'NONE'
     : piHealth?.throttled === false ? 'NONE' : '\u2014'
   const throttleColor = piHealth?.throttledFlags?.length
     ? (piHealth.throttledFlags.some(f => f === 'currently-throttled' || f === 'under-voltage') ? 'red' : 'yellow')
