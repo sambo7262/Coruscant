@@ -54,7 +54,13 @@ export function StreamRow({ stream }: StreamRowProps) {
           }}>
             {isAudio ? 'AUDIO' : 'VIDEO'}
           </span>
-          <span style={{ color: 'var(--text-offwhite)' }}>{titleText}</span>
+          <span style={{
+            color: 'var(--text-offwhite)',
+            ...(stream.transcode ? {
+              animation: 'transcodeGlow 3s ease-in-out infinite',
+              color: '#FFD060',
+            } : {}),
+          }}>{titleText}</span>
         </span>
         <span
           className="text-label"
