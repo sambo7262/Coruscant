@@ -3,6 +3,13 @@ import { AnimatePresence, motion } from 'framer-motion'
 import type { PlexStream, PlexServerStats } from '@coruscant/shared'
 import { StreamRow } from './StreamRow.js'
 
+/** Return green / amber / red based on utilization percent */
+function statColor(pct: number, baseColor: string): string {
+  if (pct >= 90) return 'var(--cockpit-red)'
+  if (pct >= 70) return 'var(--cockpit-amber)'
+  return baseColor
+}
+
 interface NowPlayingBannerProps {
   streams: PlexStream[]
   plexServerStats?: PlexServerStats
@@ -78,12 +85,12 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
         {plexServerStats && (
           <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
             {plexServerStats.processCpuPercent != null && (
-              <span style={{ fontSize: '22px', color: '#4ADE80', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+              <span style={{ fontSize: '22px', color: statColor(plexServerStats.processCpuPercent, '#4ADE80'), fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
                 CPU {plexServerStats.processCpuPercent.toFixed(1)}%
               </span>
             )}
             {plexServerStats.processRamPercent != null && (
-              <span style={{ fontSize: '22px', color: '#00c8ff', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+              <span style={{ fontSize: '22px', color: statColor(plexServerStats.processRamPercent, '#00c8ff'), fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
                 RAM {plexServerStats.processRamPercent.toFixed(1)}%
               </span>
             )}
@@ -248,12 +255,12 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
           {plexServerStats && (
             <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
               {plexServerStats.processCpuPercent != null && (
-                <span style={{ fontSize: '22px', color: '#4ADE80', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+                <span style={{ fontSize: '22px', color: statColor(plexServerStats.processCpuPercent, '#4ADE80'), fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
                   CPU {plexServerStats.processCpuPercent.toFixed(1)}%
                 </span>
               )}
               {plexServerStats.processRamPercent != null && (
-                <span style={{ fontSize: '22px', color: '#00c8ff', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+                <span style={{ fontSize: '22px', color: statColor(plexServerStats.processRamPercent, '#00c8ff'), fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
                   RAM {plexServerStats.processRamPercent.toFixed(1)}%
                 </span>
               )}
