@@ -91,14 +91,21 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
       {/* Divider */}
       <div style={{ borderTop: '1px solid rgba(232,160,32,0.08)', margin: '2px 0' }} />
 
-      {/* DOWNLOADS sub-label — small proportional header */}
-      <div style={{ fontSize: '11px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '1px', fontWeight: 600 }}>
-        DOWNLOADS
+      {/* DOWNLOADS sub-label + time remaining on same line */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1px' }}>
+        <span style={{ fontSize: '11px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600 }}>
+          DOWNLOADS
+        </span>
+        {timeLeft && (
+          <span style={{ fontSize: '11px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em', fontWeight: 600 }}>
+            {timeLeft}
+          </span>
+        )}
       </div>
 
       {/* Active state: title + SABnzbd bar + speed only */}
       {hasAnyActivity && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           {/* Download title — 22px bold purple with marquee scroll for long titles */}
           {activeTitle && (
             <div style={{ overflow: 'hidden', maxWidth: '100%' }}>
@@ -117,12 +124,6 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
               }}>
                 {activeTitle}
               </span>
-            </div>
-          )}
-          {/* Time remaining — centered above progress bar */}
-          {timeLeft && (
-            <div style={{ fontSize: '11px', color: '#00c8ff', fontFamily: 'var(--font-mono)', textAlign: 'center', letterSpacing: '0.06em' }}>
-              {timeLeft}
             </div>
           )}
           {/* SABnzbd progress bar + speed */}
