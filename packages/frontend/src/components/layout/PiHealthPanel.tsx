@@ -3,6 +3,66 @@ import type { PiHealthStatus } from '@coruscant/shared'
 
 const STALE_THRESHOLD_MS = 60_000 // 2x 30s default poll interval
 
+type BarColor = 'green' | 'yellow' | 'red'
+
+function getBarColor(percent: number, yellowAt: number, redAt: number): BarColor {
+  if (percent >= redAt) return 'red'
+  if (percent >= yellowAt) return 'yellow'
+  return 'green'
+}
+
+const BAR_COLORS: Record<BarColor, string> = {
+  green: '#4ADE80',
+  yellow: '#E8A020',
+  red: '#FF3B3B',
+}
+
+function MetricBar({
+  label,
+  percent,
+  display,
+  color,
+  stale,
+}: {
+  label: string
+  percent: number
+  display: string
+  color: BarColor
+  stale: boolean
+}) {
+  const clamped = Math.max(0, Math.min(100, percent))
+  return (
+    <div style={{ opacity: stale ? 0.4 : 1, marginBottom: '6px' }}>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        fontFamily: 'var(--font-mono)',
+        fontSize: '11px',
+        lineHeight: '16px',
+        marginBottom: '3px',
+      }}>
+        <span style={{ color: 'var(--cockpit-amber)', letterSpacing: '0.06em' }}>{label}</span>
+        <span style={{ color: 'var(--text-offwhite)' }}>{display}</span>
+      </div>
+      <div style={{
+        width: '100%',
+        height: '6px',
+        background: 'rgba(255, 255, 255, 0.06)',
+        borderRadius: '3px',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          width: `${clamped}%`,
+          height: '100%',
+          background: BAR_COLORS[color],
+          borderRadius: '3px',
+          transition: 'width 0.6s ease, background 0.4s ease',
+        }} />
+      </div>
+    </div>
+  )
+}
+
 export function PiHealthPanel({ piHealth }: { piHealth?: PiHealthStatus }) {
   const isStale = !piHealth || (Date.now() - new Date(piHealth.lastPollAt).getTime() > STALE_THRESHOLD_MS)
 
@@ -10,28 +70,39 @@ export function PiHealthPanel({ piHealth }: { piHealth?: PiHealthStatus }) {
     ? `Last seen: ${Math.round((Date.now() - new Date(piHealth.lastPollAt).getTime()) / 60_000)}m ago`
     : 'No data'
 
-  function MetricRow({ label, value, unit }: { label: string; value: string | number | undefined; unit?: string }) {
-    const display = value != null ? `${value}${unit ?? ''}` : '\u2014'
-    return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'baseline',
-        fontFamily: 'var(--font-mono)',
-        fontSize: '13px',
-        lineHeight: '22px',
-        opacity: isStale ? 0.4 : 1,
-      }}>
-        <span style={{ color: 'var(--cockpit-amber)', flexShrink: 0 }}>{label}</span>
-        <span style={{
-          flex: 1,
-          borderBottom: '1px dotted rgba(232, 160, 32, 0.2)',
-          margin: '0 6px',
-          minWidth: '20px',
-        }} />
-        <span style={{ color: 'var(--text-offwhite)', flexShrink: 0 }}>{display}</span>
-      </div>
-    )
-  }
+  // CPU Temp: green <65°C, yellow 65-80°C, red >80°C — range 30-90°C
+  const tempC = piHealth?.cpuTempC ?? 0
+  const tempPercent = ((tempC - 30) / 60) * 100
+  const tempColor = getBarColor(tempC, 65, 80)
+
+  // CPU %: green <60%, yellow 60-85%, red >85%
+  const cpuPct = piHealth?.cpuPercent ?? 0
+  const cpuColor = getBarColor(cpuPct, 60, 85)
+
+  // Memory: green <70%, yellow 70-90%, red >90%
+  const memUsed = piHealth?.memUsedMb ?? 0
+  const memTotal = piHealth?.memTotalMb ?? 1
+  const memPercent = (memUsed / memTotal) * 100
+  const memColor = getBarColor(memPercent, 70, 90)
+
+  // WiFi RSSI: -30 dBm = perfect, -70 dBm = weak, -80 dBm = bad
+  // Invert: stronger signal = more green. Map -90 to -20 range
+  const rssi = piHealth?.wifiRssiDbm ?? -90
+  const wifiPercent = Math.max(0, Math.min(100, ((rssi + 90) / 70) * 100))
+  const wifiColor: BarColor = rssi > -50 ? 'green' : rssi > -70 ? 'yellow' : 'red'
+
+  // NAS Ping: green <50ms, yellow 50-150ms, red >150ms — range 0-300ms
+  const pingMs = piHealth?.nasLatencyMs ?? 0
+  const pingPercent = (pingMs / 300) * 100
+  const pingColor: BarColor = pingMs < 50 ? 'green' : pingMs < 150 ? 'yellow' : 'red'
+
+  // Throttle flags: just show as text row, no bar
+  const throttleText = piHealth?.throttledFlags?.length
+    ? piHealth.throttledFlags.join(', ')
+    : piHealth?.throttled === false ? 'NONE' : '\u2014'
+  const throttleColor = piHealth?.throttledFlags?.length
+    ? (piHealth.throttledFlags.some(f => f === 'currently-throttled' || f === 'under-voltage') ? 'red' : 'yellow')
+    : 'green'
 
   return (
     <motion.div
@@ -50,7 +121,7 @@ export function PiHealthPanel({ piHealth }: { piHealth?: PiHealthStatus }) {
         overflow: 'hidden',
       }}
     >
-      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '10px 16px' }}>
+      <div style={{ padding: '10px 16px' }}>
         {isStale && (
           <div style={{
             fontFamily: 'var(--font-mono)',
@@ -62,12 +133,23 @@ export function PiHealthPanel({ piHealth }: { piHealth?: PiHealthStatus }) {
             {lastSeenText}
           </div>
         )}
-        <MetricRow label="CPU TEMP" value={piHealth?.cpuTempC != null ? piHealth.cpuTempC.toFixed(1) : undefined} unit={'\u00B0C'} />
-        <MetricRow label="CPU" value={piHealth?.cpuPercent != null ? piHealth.cpuPercent.toFixed(1) : undefined} unit="%" />
-        <MetricRow label="MEMORY" value={piHealth?.memUsedMb != null && piHealth?.memTotalMb != null ? `${piHealth.memUsedMb.toFixed(0)}/${piHealth.memTotalMb.toFixed(0)}` : undefined} unit=" MB" />
-        <MetricRow label="THROTTLE" value={piHealth?.throttledFlags?.length ? piHealth.throttledFlags.join(', ') : (piHealth?.throttled === false ? 'NONE' : undefined)} />
-        <MetricRow label="WIFI" value={piHealth?.wifiRssiDbm} unit=" dBm" />
-        <MetricRow label="NAS PING" value={piHealth?.nasLatencyMs != null ? piHealth.nasLatencyMs.toFixed(0) : undefined} unit=" ms" />
+        <MetricBar label="CPU TEMP" percent={tempPercent} display={`${tempC.toFixed(1)}°C`} color={tempColor} stale={isStale} />
+        <MetricBar label="CPU" percent={cpuPct} display={`${cpuPct.toFixed(1)}%`} color={cpuColor} stale={isStale} />
+        <MetricBar label="MEMORY" percent={memPercent} display={`${memUsed.toFixed(0)}/${memTotal.toFixed(0)} MB`} color={memColor} stale={isStale} />
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          fontFamily: 'var(--font-mono)',
+          fontSize: '11px',
+          lineHeight: '16px',
+          marginBottom: '6px',
+          opacity: isStale ? 0.4 : 1,
+        }}>
+          <span style={{ color: 'var(--cockpit-amber)', letterSpacing: '0.06em' }}>THROTTLE</span>
+          <span style={{ color: BAR_COLORS[throttleColor as BarColor] }}>{throttleText}</span>
+        </div>
+        <MetricBar label="WIFI" percent={wifiPercent} display={`${rssi} dBm`} color={wifiColor} stale={isStale} />
+        <MetricBar label="NAS PING" percent={pingPercent} display={`${pingMs.toFixed(0)} ms`} color={pingColor} stale={isStale} />
       </div>
     </motion.div>
   )
