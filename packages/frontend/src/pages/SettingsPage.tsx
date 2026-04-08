@@ -387,7 +387,7 @@ function WeatherTab() {
 const SECTIONS = [
   { id: 'media', label: 'MEDIA', services: ['radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 'readarr', 'plex', 'sabnzbd'] },
   { id: 'network', label: 'NETWORK', services: ['pihole', 'unifi'] },
-  { id: 'system', label: 'SYSTEM', services: ['nas', 'weather'] },
+  { id: 'system', label: 'SYSTEM', services: ['nas', 'piHealth', 'weather'] },
   { id: 'notifications', label: 'NOTIFICATIONS', services: ['notifications'] },
   { id: 'logs', label: 'LOGS', services: ['logs'] },
 ] as const
@@ -406,6 +406,7 @@ const SERVICES = [
   { id: 'plex', label: 'PLEX' },
   { id: 'nas', label: 'NAS' },
   { id: 'unifi', label: 'UBIQUITI' },
+  { id: 'piHealth', label: 'PI HEALTH' },
 ] as const
 
 type ServiceId = (typeof SERVICES)[number]['id']
@@ -499,6 +500,7 @@ function getCredentialLabel(serviceId: ServiceId): string {
   if (serviceId === 'plex') return 'Plex Token'
   if (serviceId === 'nas') return 'DSM Password'
   if (serviceId === 'unifi') return 'API Token'
+  if (serviceId === 'piHealth') return ''
   return 'API KEY'
 }
 
@@ -928,8 +930,8 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
               />
             </div>
 
-            {/* NAS-only: DSM Username field (between URL and password) */}
-            {activeTab === 'nas' && (
+            {/* NAS/piHealth: Username field (between URL and password) */}
+            {(activeTab === 'nas' || activeTab === 'piHealth') && (
               <div>
                 <label
                   className="text-label"
@@ -941,7 +943,7 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
                     letterSpacing: '0.06em',
                   }}
                 >
-                  DSM Username
+                  {activeTab === 'piHealth' ? 'SSH Username' : 'DSM Username'}
                 </label>
                 <input
                   type="text"
@@ -954,6 +956,8 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
               </div>
             )}
 
+            {/* Hide API key/password field for piHealth — no credentials needed */}
+            {activeTab !== 'piHealth' && (
             <div>
               <label
                 className="text-label"
@@ -998,6 +1002,7 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
                 </button>
               </div>
             </div>
+            )}
 
             {/* Plex-only: read-only Webhook URL with copy button (D-32) */}
             {activeTab === 'plex' && (
