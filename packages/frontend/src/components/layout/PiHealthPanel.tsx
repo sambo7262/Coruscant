@@ -70,10 +70,11 @@ export function PiHealthPanel({ piHealth }: { piHealth?: PiHealthStatus }) {
     ? `Last seen: ${Math.round((Date.now() - new Date(piHealth.lastPollAt).getTime()) / 60_000)}m ago`
     : 'No data'
 
-  // CPU Temp: green <65°C, yellow 65-80°C, red >80°C — range 30-90°C
+  // CPU Temp: convert C→F, green <149°F, yellow 149-176°F, red >176°F
   const tempC = piHealth?.cpuTempC ?? 0
-  const tempPercent = ((tempC - 30) / 60) * 100
-  const tempColor = getBarColor(tempC, 65, 80)
+  const tempF = tempC * 9 / 5 + 32
+  const tempPercent = ((tempF - 86) / 108) * 100  // range 86°F (30°C) to 194°F (90°C)
+  const tempColor = getBarColor(tempF, 149, 176)   // 65°C=149°F, 80°C=176°F
 
   // CPU %: green <60%, yellow 60-85%, red >85%
   const cpuPct = piHealth?.cpuPercent ?? 0
@@ -133,7 +134,7 @@ export function PiHealthPanel({ piHealth }: { piHealth?: PiHealthStatus }) {
             {lastSeenText}
           </div>
         )}
-        <MetricBar label="CPU TEMP" percent={tempPercent} display={`${tempC.toFixed(1)}°C`} color={tempColor} stale={isStale} />
+        <MetricBar label="CPU TEMP" percent={tempPercent} display={`${tempF.toFixed(1)}°F`} color={tempColor} stale={isStale} />
         <MetricBar label="CPU" percent={cpuPct} display={`${cpuPct.toFixed(1)}%`} color={cpuColor} stale={isStale} />
         <MetricBar label="MEMORY" percent={memPercent} display={`${memUsed.toFixed(0)}/${memTotal.toFixed(0)} MB`} color={memColor} stale={isStale} />
         <div style={{
