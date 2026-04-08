@@ -70,6 +70,7 @@ export async function pollArr(
   let activeTitle = ''
   let downloadQuality = ''
   let downloadProgress = 0
+  let timeLeft = ''
 
   if (queueResult.status === 'fulfilled') {
     const queueData = queueResult.value.data as {
@@ -79,6 +80,7 @@ export async function pollArr(
         quality?: { quality?: { name?: string } }
         sizeleft?: number
         size?: number
+        timeleft?: string
         movie?: { title?: string }
         series?: { title?: string }
         episode?: { title?: string }
@@ -100,6 +102,8 @@ export async function pollArr(
         && firstDownload.size > 0
         ? Math.round((1 - firstDownload.sizeleft / firstDownload.size) * 100)
         : 0
+
+      timeLeft = firstDownload.timeleft ?? ''
 
       if (serviceId === 'radarr') {
         activeTitle = firstDownload.movie?.title ?? ''
@@ -133,7 +137,7 @@ export async function pollArr(
       status: 'warning',
       configured: true,
       lastPollAt,
-      metrics: { healthWarnings, queue: queueCount, downloading, activeDownloads, activeTitle, downloadQuality, downloadProgress },
+      metrics: { healthWarnings, queue: queueCount, downloading, activeDownloads, activeTitle, downloadQuality, downloadProgress, timeLeft },
     }
   }
 
@@ -144,6 +148,6 @@ export async function pollArr(
     status: 'online',
     configured: true,
     lastPollAt,
-    metrics: { queue: queueCount, downloading, activeDownloads, activeTitle, downloadQuality, downloadProgress },
+    metrics: { queue: queueCount, downloading, activeDownloads, activeTitle, downloadQuality, downloadProgress, timeLeft },
   }
 }

@@ -76,6 +76,16 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
     return sabCurrentFilename ? cleanFilename(sabCurrentFilename) : ''
   })()
 
+  // Derive time remaining: arr first, then SABnzbd fallback
+  const timeLeft = (() => {
+    for (const s of activeArr) {
+      const m = s.metrics as Record<string, unknown>
+      if (typeof m.timeLeft === 'string' && m.timeLeft) return m.timeLeft
+    }
+    const sabTime = typeof sabMetrics?.timeLeft === 'string' ? sabMetrics.timeLeft : ''
+    return sabTime
+  })()
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', minHeight: 'auto' }}>
       {/* Divider */}
@@ -88,7 +98,7 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
 
       {/* Active state: title + SABnzbd bar + speed only */}
       {hasAnyActivity && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
           {/* Download title — 22px bold purple with marquee scroll for long titles */}
           {activeTitle && (
             <div style={{ overflow: 'hidden', maxWidth: '100%' }}>
@@ -107,6 +117,12 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
               }}>
                 {activeTitle}
               </span>
+            </div>
+          )}
+          {/* Time remaining — centered above progress bar */}
+          {timeLeft && (
+            <div style={{ fontSize: '11px', color: '#00c8ff', fontFamily: 'var(--font-mono)', textAlign: 'center', letterSpacing: '0.06em' }}>
+              {timeLeft}
             </div>
           )}
           {/* SABnzbd progress bar + speed */}
