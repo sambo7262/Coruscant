@@ -209,6 +209,13 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
                   const titleText = (s.season != null && s.episode != null)
                     ? `${s.title} S${s.season}E${s.episode}`
                     : s.title
+                  // Transcode glow style — per D-05/D-06
+                  const transcodeStyle = s.transcode ? {
+                    animation: `transcodeGlow 3s ease-in-out infinite${titleText.length > 28 ? ', downloadsMarquee 8s linear infinite' : ''}`,
+                    animationDelay: titleText.length > 28 ? '0s, 2s' : undefined,
+                    color: '#FFD060',
+                  } : {}
+
                   return (
                     <>
                       {s.state && s.state !== 'buffering' && (
@@ -223,9 +230,10 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
                       <span style={{
                         display: 'inline-block',
                         whiteSpace: 'nowrap',
-                        ...(titleText.length > 28
+                        ...(titleText.length > 28 && !s.transcode
                           ? { animation: 'downloadsMarquee 8s linear infinite', animationDelay: '2s' }
                           : {}),
+                        ...transcodeStyle,
                       }}>
                         {titleText}
                       </span>

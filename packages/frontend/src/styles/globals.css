@@ -130,6 +130,12 @@ body::after {
   50%       { opacity: 1.0; }
 }
 
+/* Transcode glow — warm amber text-shadow pulse for transcoding streams (D-05, ~3s cycle) */
+@keyframes transcodeGlow {
+  0%, 100% { text-shadow: 0 0 4px rgba(232, 160, 32, 0.3); }
+  50%      { text-shadow: 0 0 10px rgba(232, 160, 32, 0.7), 0 0 20px rgba(232, 160, 32, 0.3); }
+}
+
 /* Marquee ticker for Now Playing banner */
 @keyframes marquee {
   0%   { transform: translateX(0); }
