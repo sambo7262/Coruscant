@@ -1,15 +1,18 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Settings, List } from 'lucide-react'
-import type { ArrWebhookEvent, WeatherData } from '@coruscant/shared'
+import { AnimatePresence } from 'framer-motion'
+import type { ArrWebhookEvent, WeatherData, PiHealthStatus } from '@coruscant/shared'
 import { WeatherIcon } from '../weather/WeatherIcon.js'
 import { StaleIndicator } from '../ui/StaleIndicator.js'
+import { PiHealthPanel } from './PiHealthPanel.js'
 
 interface AppHeaderProps {
   connected: boolean
   showBack?: boolean
   lastArrEvent?: ArrWebhookEvent | null
   weatherData?: WeatherData | null
+  piHealth?: PiHealthStatus | null
 }
 
 function isWeatherStale(fetchedAt: string): boolean {
@@ -64,10 +67,21 @@ function buildTickerText(event: ArrWebhookEvent): string {
   return `${svc} \u25B8 ${eventVerb}`
 }
 
-export function AppHeader({ connected, showBack = false, lastArrEvent, weatherData }: AppHeaderProps) {
+const SEVERITY_TITLE_STYLES: Record<string, { color: string; animation?: string }> = {
+  normal:   { color: 'var(--cockpit-amber)' },
+  warning:  { color: '#FFD060', animation: 'ledPulseWarn 1s ease-in-out infinite' },
+  critical: { color: 'var(--cockpit-red)', animation: 'ledFlashDown 0.4s ease-in-out infinite' },
+  stale:    { color: 'var(--cockpit-amber)' },
+}
+
+export function AppHeader({ connected, showBack = false, lastArrEvent, weatherData, piHealth }: AppHeaderProps) {
   const [ticker, setTicker] = useState<{ text: string; color: string } | null>(null)
+  const [panelOpen, setPanelOpen] = useState(false)
   const tickerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const clock = useLocalClock(weatherData?.timezone)
+
+  const titleSeverity = piHealth?.severity ?? 'normal'
+  const titleStyle = SEVERITY_TITLE_STYLES[titleSeverity] ?? SEVERITY_TITLE_STYLES.normal
 
   useEffect(() => {
     if (!lastArrEvent || lastArrEvent.eventCategory === 'unknown') return
@@ -79,6 +93,7 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, weatherDa
   }, [lastArrEvent])
 
   return (
+    <>
     <header
       className="app-header-blur"
       style={{
@@ -111,18 +126,32 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, weatherDa
               to="/"
               className="text-display"
               style={{
-                color: 'var(--cockpit-amber)',
+                color: titleStyle.color,
                 cursor: 'pointer',
                 textDecoration: 'none',
                 fontSize: '28px',
+                animation: titleStyle.animation,
               }}
             >
               ← CORUSCANT
             </Link>
           ) : (
-            <span className="text-display" style={{ color: 'var(--cockpit-amber)', fontSize: '28px' }}>
-              CORUSCANT
-            </span>
+            <button
+              onClick={() => setPanelOpen(prev => !prev)}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+              }}
+              aria-label={panelOpen ? 'Close Pi health panel' : 'Open Pi health panel'}
+              aria-expanded={panelOpen}
+            >
+              <span className="text-display" style={{ color: titleStyle.color, fontSize: '28px', animation: titleStyle.animation }}>
+                CORUSCANT
+              </span>
+            </button>
           )}
         </div>
 
@@ -265,5 +294,11 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, weatherDa
         )}
       </div>
     </header>
+    <AnimatePresence>
+      {!showBack && panelOpen && (
+        <PiHealthPanel piHealth={piHealth ?? undefined} />
+      )}
+    </AnimatePresence>
+    </>
   )
 }
