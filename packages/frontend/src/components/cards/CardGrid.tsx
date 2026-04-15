@@ -87,17 +87,17 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
   })()
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', minHeight: 'auto' }}>
+    <div className="downloads">
       {/* Divider */}
-      <div style={{ borderTop: '1px solid rgba(232,160,32,0.08)', margin: '2px 0' }} />
+      <div className="downloads__divider" />
 
       {/* DOWNLOADS sub-label + time remaining on same line */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1px' }}>
-        <span style={{ fontSize: '11px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600 }}>
+      <div className="downloads__label-row">
+        <span className="downloads__label">
           DOWNLOADS
         </span>
         {timeLeft && (
-          <span style={{ fontSize: '11px', color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em', fontWeight: 600 }}>
+          <span className="downloads__time-left">
             {timeLeft}
           </span>
         )}
@@ -105,41 +105,30 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
 
       {/* Active state: title + SABnzbd bar + speed only */}
       {hasAnyActivity && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        <div className="downloads__active">
           {/* Download title — 22px bold purple with marquee scroll for long titles */}
           {activeTitle && (
-            <div style={{ overflow: 'hidden', maxWidth: '100%' }}>
-              <span style={{
-                display: 'inline-block',
-                fontSize: '22px',
-                fontWeight: 600,
-                color: 'var(--cockpit-purple)',
-                fontFamily: 'var(--font-mono)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-                whiteSpace: 'nowrap',
-                ...(activeTitle.length > 25
+            <div className="downloads__title-wrap">
+              <span
+                className="downloads__title"
+                style={activeTitle.length > 25
                   ? { animation: 'downloadsMarquee 8s linear infinite', animationDelay: '2s' }
-                  : {}),
-              }}>
+                  : undefined}
+              >
                 {activeTitle}
               </span>
             </div>
           )}
           {/* SABnzbd progress bar + speed */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div style={{ flex: 1, height: '12px', background: 'rgba(232,160,32,0.15)', borderRadius: '3px', overflow: 'hidden' }}>
-              <div style={{
-                height: '100%',
-                width: `${Math.min(Math.max(sabProgressPercent, 5), 100)}%`,
-                background: 'var(--cockpit-amber)',
-                borderRadius: '3px',
-                transition: 'width 1s ease',
-                boxShadow: '0 0 6px var(--cockpit-amber)',
-              }} />
+          <div className="downloads__bar-row">
+            <div className="downloads__bar-track">
+              <div
+                className="downloads__bar-fill"
+                style={{ width: `${Math.min(Math.max(sabProgressPercent, 5), 100)}%` }}
+              />
             </div>
-            <span style={{ fontSize: '22px', fontWeight: 600, color: '#00c8ff', fontFamily: 'var(--font-mono)', flexShrink: 0 }}>
-              {(animSpeedTimes10 / 10).toFixed(1)} <span style={{ fontSize: '11px', fontWeight: 400 }}>MB/s</span>
+            <span className="downloads__speed">
+              {(animSpeedTimes10 / 10).toFixed(1)} <span className="downloads__speed-unit">MB/s</span>
             </span>
           </div>
         </div>
@@ -152,16 +141,11 @@ export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
   if (!snapshot) {
     // Skeleton state: two placeholder cards
     return (
-      <div style={{ padding: '0 8px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', alignItems: 'start' }}>
+      <div className="card-grid--skeleton">
         {[0, 1].map((i) => (
           <div
             key={i}
-            className="chamfer-card"
-            style={{
-              height: '160px',
-              background: 'var(--bg-panel)',
-              border: '1px solid var(--border-rest)',
-            }}
+            className="chamfer-card card-grid__placeholder"
           />
         ))}
       </div>
@@ -191,7 +175,7 @@ export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
   let globalIndex = 0
 
   return (
-    <div style={{ padding: '0 8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <div className="card-grid">
 
       {/* Row 1: NAS tile — full width */}
       {nasService && (
@@ -205,43 +189,35 @@ export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
       )}
 
       {/* Row 2: 2-column — Media tile left, Network tile right */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', alignItems: 'start' }}>
+      <div className="card-grid__row-2col">
 
         {/* Media tile — arr LED rows + download activity section */}
         {arrServices.length > 0 && (
           <motion.div
-            className="chamfer-card"
+            className="chamfer-card media-tile"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: globalIndex * 0.08, duration: 0.3, ease: 'easeOut' }}
-            style={{
-              background: 'var(--bg-panel)',
-              border: '1px solid var(--border-rest)',
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
-              maxHeight: '227px',
-            }}
           >
             {/* 20px amber header strip with MEDIA label */}
-            <div style={{ height: '20px', background: 'var(--cockpit-amber)', flexShrink: 0, display: 'flex', alignItems: 'center', paddingLeft: '6px' }}>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: '#1a1a1a', letterSpacing: '0.08em', fontWeight: 600 }}>MEDIA</span>
+            <div className="media-tile__header">
+              <span className="ribbon-label">MEDIA</span>
             </div>
             {/* Two-column layout: L = Radarr/Sonarr/Lidarr, R = Prowlarr/Bazarr/Readarr */}
-            <div style={{ display: 'flex', padding: '3px 4px 0 4px', gap: '0' }}>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1px' }}>
+            <div className="media-tile__cols">
+              <div className="media-tile__col">
                 {leftColArr.map((service) => (
                   <MediaStackRow key={service.id} service={service} index={globalIndex++} lastArrEvent={lastArrEvent} />
                 ))}
               </div>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '1px' }}>
+              <div className="media-tile__col">
                 {rightColArr.map((service) => (
                   <MediaStackRow key={service.id} service={service} index={globalIndex++} lastArrEvent={lastArrEvent} />
                 ))}
               </div>
             </div>
             {/* Download activity section */}
-            <div style={{ padding: '0 4px 2px 4px' }}>
+            <div className="downloads__wrap">
               <DownloadActivity snapshot={snapshot} />
             </div>
           </motion.div>

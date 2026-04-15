@@ -440,6 +440,34 @@ body::after {
   flex-shrink: 0;
 }
 
+.downloads__speed-unit {
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.downloads__active {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.downloads__title-wrap {
+  overflow: hidden;
+  max-width: 100%;
+}
+
+.downloads__wrap {
+  padding: 0 4px 2px 4px;
+}
+
+.ribbon-label {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: #1a1a1a;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
 /* ---------- Service card ---------- */
 .service-card {
   position: relative;
