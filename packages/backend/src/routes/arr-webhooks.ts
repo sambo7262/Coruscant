@@ -5,6 +5,30 @@ import { pollManager, classifyArrEvent, extractArrTitle } from '../poll-manager.
 const ARR_SERVICES = ['radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 'readarr', 'sabnzbd'] as const
 
 /**
+ * Detect whether a Health webhook body is about an indexer being unavailable.
+ * Radarr/Sonarr/Lidarr/Readarr all run independent health checks that fire a
+ * "Health" event whenever any configured indexer is unreachable — so a single
+ * indexer outage produces simultaneous webhooks from every arr that uses it.
+ *
+ * When this returns true, the webhook route remaps the broadcast event's
+ * `service` field to 'prowlarr' so the frontend flashes only the indexer hub
+ * (Prowlarr) instead of every tile in the media stack.
+ *
+ * Heuristic: inspect the `type` field (e.g. IndexerLongTermStatusCheck,
+ * IndexerStatusCheck) and the `message` field (e.g. "Indexers unavailable...")
+ * for the substring "indexer" (case-insensitive). This is intentionally loose
+ * so it catches both the long-term and short-term status checks across all
+ * arr variants without hard-coding every known type string.
+ */
+function isIndexerHealthIssue(body: Record<string, unknown>): boolean {
+  const rawEventType = typeof body.eventType === 'string' ? body.eventType.toLowerCase() : ''
+  if (rawEventType !== 'health') return false
+  const type = typeof body.type === 'string' ? body.type.toLowerCase() : ''
+  const message = typeof body.message === 'string' ? body.message.toLowerCase() : ''
+  return type.includes('indexer') || message.includes('indexer')
+}
+
+/**
  * Arr webhook routes plugin — registers POST /api/webhooks/:service for all arr services.
  *
  * Receives arr application webhook events and forwards them to PollManager
@@ -112,13 +136,26 @@ export async function arrWebhookRoutes(fastify: FastifyInstance) {
       const title = extractArrTitle(body) || 'unknown'
       const now = new Date()
       const ts = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} ${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}/${now.getFullYear()}`
-      fastify.log.info(
-        { service: 'webhook' },
-        `${service} | ${eventType} | ${title} | ${ts}`
-      )
+
+      // Indexer-health remap: when any arr app fires a Health webhook about an
+      // indexer being unavailable, attribute the broadcast to 'prowlarr' so the
+      // frontend flashes only the indexer hub. The log line preserves the
+      // originating service for debugging.
+      const broadcastService = isIndexerHealthIssue(body) ? 'prowlarr' : service
+      if (broadcastService !== service) {
+        fastify.log.info(
+          { service: 'webhook', remap: { from: service, to: broadcastService } },
+          `${service} | ${eventType} | ${title} | ${ts} [remapped to prowlarr — indexer health]`
+        )
+      } else {
+        fastify.log.info(
+          { service: 'webhook' },
+          `${service} | ${eventType} | ${title} | ${ts}`
+        )
+      }
 
       // Forward to PollManager for classification, SSE broadcast, and burst poll
-      pollManager.handleArrEvent(service, body)
+      pollManager.handleArrEvent(broadcastService, body)
 
       return reply.code(200).send({ success: true })
     })
