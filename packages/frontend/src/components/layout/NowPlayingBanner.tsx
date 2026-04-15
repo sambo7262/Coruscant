@@ -39,63 +39,32 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
   // Idle state: Plex configured but no streams active
   if (!hasStreams) {
     return (
-      <div
-        style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '48px',
-          zIndex: 30,
-          background: 'var(--bg-panel)',
-          borderTop: '1px solid rgba(232,160,32,0.2)',
-          display: 'flex',
-          alignItems: 'center',
-          padding: '0 12px',
-          gap: '8px',
-        }}
-      >
+      <div className="now-playing-banner--idle">
         {/* Left: PLEX label */}
-        <span style={{
-          fontFamily: 'var(--font-mono)',
-          fontSize: '22px',
-          color: 'var(--cockpit-amber)',
-          letterSpacing: '0.08em',
-          flexShrink: 0,
-          fontWeight: 600,
-        }}>
+        <span className="now-playing-banner__label">
           PLEX
         </span>
 
         {/* Center: idle label */}
-        <span
-          style={{
-            flex: 1,
-            fontSize: '22px',
-            fontWeight: 600,
-            color: '#666666',
-            fontFamily: 'var(--font-mono)',
-            letterSpacing: '0.08em',
-          }}
-        >
+        <span className="now-playing-banner__message">
           NO ACTIVE STREAMS
         </span>
 
         {/* Plex server stats */}
         {plexServerStats && (
-          <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
+          <div className="now-playing-banner__stats">
             {plexServerStats.processCpuPercent != null && (
-              <span style={{ fontSize: '22px', color: statColor(plexServerStats.processCpuPercent, '#4ADE80'), fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+              <span className="now-playing-banner__stat" style={{ color: statColor(plexServerStats.processCpuPercent, '#4ADE80') }}>
                 CPU {plexServerStats.processCpuPercent.toFixed(1)}%
               </span>
             )}
             {plexServerStats.processRamPercent != null && (
-              <span style={{ fontSize: '22px', color: statColor(plexServerStats.processRamPercent, '#00c8ff'), fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+              <span className="now-playing-banner__stat" style={{ color: statColor(plexServerStats.processRamPercent, '#00c8ff') }}>
                 RAM {plexServerStats.processRamPercent.toFixed(1)}%
               </span>
             )}
             {plexServerStats.bandwidthMbps != null && (
-              <span style={{ fontSize: '22px', color: '#C8C8C8', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+              <span className="now-playing-banner__stat now-playing-banner__stat--bw">
                 {plexServerStats.bandwidthMbps.toFixed(1)}M
               </span>
             )}
@@ -116,32 +85,18 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
           onClick={() => setExpanded(false)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 25,
-            background: 'rgba(0, 0, 0, 0.4)',
-          }}
+          className="now-playing-banner__backdrop"
         />
       )}
 
       <motion.div
         key="banner"
-        className="banner-blur-bg"
+        className={`banner-blur-bg now-playing-banner__active ${expanded ? 'now-playing-banner__active--expanded' : ''}`}
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 40, opacity: 0 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
         aria-live="polite"
-        style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: expanded ? 30 : 20,
-          background: 'rgba(13, 13, 13, 0.95)',
-          borderTop: '1px solid rgba(232, 160, 32, 0.30)',
-        }}
       >
         {/* Collapsed strip — 48px (D-02 viewport budget) */}
         <div
@@ -152,39 +107,15 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
           onKeyDown={(e) => {
             if (e.key === 'Enter' || e.key === ' ') setExpanded(!expanded)
           }}
-          style={{
-            height: '48px',
-            display: 'flex',
-            alignItems: 'center',
-            padding: '0 12px',
-            gap: '8px',
-            cursor: 'pointer',
-            overflow: 'hidden',
-          }}
+          className="now-playing-banner"
         >
           {/* Left: PLEX label — always visible (D-29) */}
-          <span style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '22px',
-            color: 'var(--cockpit-amber)',
-            letterSpacing: '0.08em',
-            flexShrink: 0,
-            fontWeight: 600,
-          }}>
+          <span className="now-playing-banner__label">
             PLEX
           </span>
 
           {/* Center: cycling stream title (D-24) */}
-          <div style={{
-            flex: 1,
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
-            textOverflow: 'ellipsis',
-            position: 'relative',
-            height: '28px',
-            display: 'flex',
-            alignItems: 'center',
-          }}>
+          <div className="now-playing-banner__title-wrap">
             <AnimatePresence mode="wait">
               <motion.span
                 key={activeIdx}
@@ -192,21 +123,7 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.3 }}
-                className="text-body"
-                style={{
-                  color: 'var(--text-offwhite)',
-                  fontSize: '22px',
-                  fontWeight: 600,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
+                className="text-body now-playing-banner__title"
               >
                 {(() => {
                   const s = streams[activeIdx] ?? streams[0]
@@ -226,22 +143,22 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
                   return (
                     <>
                       {s.state && s.state !== 'buffering' && (
-                        <span style={{
-                          fontSize: '9px',
-                          color: s.state === 'paused' ? '#666' : 'var(--cockpit-amber)',
-                          flexShrink: 0,
-                        }}>
+                        <span
+                          className="now-playing-banner__state-icon"
+                          style={{ color: s.state === 'paused' ? '#666' : 'var(--cockpit-amber)' }}
+                        >
                           {s.state === 'playing' ? '▶' : '⏸'}
                         </span>
                       )}
-                      <span style={{
-                        display: 'inline-block',
-                        whiteSpace: 'nowrap',
-                        ...(titleText.length > 28 && !s.transcode
-                          ? { animation: 'downloadsMarquee 8s linear infinite', animationDelay: '2s' }
-                          : {}),
-                        ...transcodeStyle,
-                      }}>
+                      <span
+                        className="now-playing-banner__title-inner"
+                        style={{
+                          ...(titleText.length > 28 && !s.transcode
+                            ? { animation: 'downloadsMarquee 8s linear infinite', animationDelay: '2s' }
+                            : {}),
+                          ...transcodeStyle,
+                        }}
+                      >
                         {titleText}
                       </span>
                     </>
@@ -253,19 +170,19 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
 
           {/* Plex server stats in collapsed strip */}
           {plexServerStats && (
-            <div style={{ display: 'flex', gap: '8px', flexShrink: 0, alignItems: 'center' }}>
+            <div className="now-playing-banner__stats">
               {plexServerStats.processCpuPercent != null && (
-                <span style={{ fontSize: '22px', color: statColor(plexServerStats.processCpuPercent, '#4ADE80'), fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+                <span className="now-playing-banner__stat" style={{ color: statColor(plexServerStats.processCpuPercent, '#4ADE80') }}>
                   CPU {plexServerStats.processCpuPercent.toFixed(1)}%
                 </span>
               )}
               {plexServerStats.processRamPercent != null && (
-                <span style={{ fontSize: '22px', color: statColor(plexServerStats.processRamPercent, '#00c8ff'), fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+                <span className="now-playing-banner__stat" style={{ color: statColor(plexServerStats.processRamPercent, '#00c8ff') }}>
                   RAM {plexServerStats.processRamPercent.toFixed(1)}%
                 </span>
               )}
               {plexServerStats.bandwidthMbps != null && (
-                <span style={{ fontSize: '22px', color: '#C8C8C8', fontFamily: 'var(--font-mono)', fontWeight: 600 }}>
+                <span className="now-playing-banner__stat now-playing-banner__stat--bw">
                   {plexServerStats.bandwidthMbps.toFixed(1)}M
                 </span>
               )}
@@ -281,13 +198,7 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.3, ease: 'easeInOut' }}
-              style={{
-                overflow: 'hidden',
-                maxHeight: 'min(60vh, 320px)',
-                overflowY: 'auto',
-                padding: '0 16px',
-                borderTop: '1px solid var(--cockpit-amber)',
-              }}
+              className="now-playing-banner__expanded"
             >
               {streams.map((stream, i) => (
                 <StreamRow key={`${stream.user}-${stream.title}-${i}`} stream={stream} />

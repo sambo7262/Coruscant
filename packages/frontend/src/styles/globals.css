@@ -713,6 +713,80 @@ body::after {
   border-top: 1px solid var(--cockpit-amber);
 }
 
+.now-playing-banner__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.now-playing-banner__active {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background: rgba(13, 13, 13, 0.95);
+  border-top: 1px solid rgba(232, 160, 32, 0.30);
+}
+
+.now-playing-banner__active--expanded {
+  z-index: 30;
+}
+
+.now-playing-banner__title-wrap {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  position: relative;
+  height: 28px;
+  display: flex;
+  align-items: center;
+}
+
+.now-playing-banner__title {
+  color: var(--text-offwhite);
+  font-size: var(--tile-font-value);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.now-playing-banner__state-icon {
+  font-size: 9px;
+  flex-shrink: 0;
+}
+
+.now-playing-banner__title-inner {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.now-playing-banner__stats {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.now-playing-banner__stat {
+  font-size: var(--tile-font-value);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.now-playing-banner__stat--bw {
+  color: #C8C8C8;
+}
+
 /* ---------- Pi-health panel ---------- */
 .pi-health__inner {
   padding: 10px 16px;
