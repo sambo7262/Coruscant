@@ -95,41 +95,21 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, weatherDa
   return (
     <>
     <header
-      className="app-header-blur"
+      className="app-header-blur app-header"
       style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 10,
-        background: 'rgba(13, 13, 13, 0.95)',
         borderBottom: `1px solid ${ticker ? ticker.color : 'rgba(232, 160, 32, 0.30)'}`,
-        boxShadow: '0 1px 8px rgba(232, 160, 32, 0.15)',
       }}
     >
       {/* Single title row — 44px height */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr auto 1fr',
-          alignItems: 'center',
-          height: '44px',
-          padding: '0 12px',
-          maxWidth: '800px',
-          margin: '0 auto',
-        }}
-      >
+      <div className="app-header__title-row">
         {/* Left: title or back link */}
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div className="app-header__title-left">
           {showBack ? (
             <Link
               to="/"
-              className="text-display"
+              className="text-display app-header__title app-header__back-link"
               style={{
                 color: titleStyle.color,
-                cursor: 'pointer',
-                textDecoration: 'none',
-                fontSize: '28px',
                 animation: titleStyle.animation,
               }}
             >
@@ -138,17 +118,14 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, weatherDa
           ) : (
             <button
               onClick={() => setPanelOpen(prev => !prev)}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                fontFamily: 'inherit',
-              }}
+              className="app-header__title-button"
               aria-label={panelOpen ? 'Close Pi health panel' : 'Open Pi health panel'}
               aria-expanded={panelOpen}
             >
-              <span className="text-display" style={{ color: titleStyle.color, fontSize: '28px', animation: titleStyle.animation }}>
+              <span
+                className="text-display app-header__title"
+                style={{ color: titleStyle.color, animation: titleStyle.animation }}
+              >
                 CORUSCANT
               </span>
             </button>
@@ -158,30 +135,12 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, weatherDa
         {/* Center+Right: ticker overlay when active, or normal content */}
         {!showBack && ticker ? (
           /* Ticker overlay — covers center + right columns (gridColumn 2/3) per D-12 */
-          <div
-            aria-live="polite"
-            style={{
-              gridColumn: '2 / 4',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: '12px',
-              fontWeight: 400,
-              color: 'var(--cockpit-amber)',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              padding: '0 12px',
-              opacity: 1,
-              transition: 'opacity 0.4s ease-out',
-            }}
-          >
+          <div aria-live="polite" className="app-header__ticker">
             {ticker.text.split('\u25B8').map((segment, i, arr) => (
               <span key={i}>
                 {segment}
                 {i < arr.length - 1 && (
-                  <span style={{ color: 'rgba(232, 160, 32, 0.5)' }}>{'\u25B8'}</span>
+                  <span className="app-header__ticker-sep">{'\u25B8'}</span>
                 )}
               </span>
             ))}
@@ -190,42 +149,20 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, weatherDa
           <>
             {/* Center: connection status indicators (hidden when showBack) */}
             {!showBack && (
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                }}
-              >
+              <div className="app-header__center">
                 {/* Local clock — flashing colon */}
-                <span style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '22px',
-                  fontWeight: 700,
-                  color: 'var(--cockpit-amber)',
-                  letterSpacing: '-0.02em',
-                }}>
+                <span className="app-header__clock">
                   {(() => {
                     const [hm, ampm] = clock.time.split(' ')
                     const [h, m] = hm.split(':')
-                    return <>{h}<span style={{ opacity: clock.colonVisible ? 1 : 0 }}>:</span>{m} <span style={{ fontSize: '12px', fontWeight: 400 }}>{ampm}</span></>
+                    return <>{h}<span style={{ opacity: clock.colonVisible ? 1 : 0 }}>:</span>{m} <span className="app-header__clock-ampm">{ampm}</span></>
                   })()}
                 </span>
                 {/* Disconnected indicator */}
                 {!connected && (
                   <span
                     title="Connection lost. Reconnecting..."
-                    style={{
-                      display: 'inline-block',
-                      width: '10px',
-                      height: '10px',
-                      borderRadius: '50%',
-                      backgroundColor: '#ff4444',
-                      boxShadow: '0 0 8px 3px rgba(255, 68, 68, 0.7)',
-                      animation: 'ledFlashDown 0.4s ease-in-out infinite',
-                      flexShrink: 0,
-                    }}
+                    className="app-header__disconnected-dot"
                   />
                 )}
               </div>
@@ -233,24 +170,12 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, weatherDa
 
             {/* Right: weather widget + nav icons (hidden when showBack) */}
             {!showBack ? (
-              <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end', alignItems: 'center' }}>
+              <div className="app-header__right">
                 {/* Weather widget — renders nothing when weatherData is null/undefined */}
                 {weatherData && (
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    height: '44px',
-                    paddingRight: '4px',
-                  }}>
+                  <div className="app-header__weather">
                     <WeatherIcon wmoCode={weatherData.wmo_code} size={30} />
-                    <span style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: '22px',
-                      fontWeight: 700,
-                      color: 'var(--cockpit-amber)',
-                      letterSpacing: '-0.02em',
-                    }}>
+                    <span className="app-header__weather-temp">
                       {Math.round(weatherData.temp_f)}°
                     </span>
                     {isWeatherStale(weatherData.fetched_at) && (
@@ -261,28 +186,14 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, weatherDa
                 <Link
                   to="/settings"
                   aria-label="Open Settings"
-                  style={{
-                    color: 'var(--cockpit-amber)',
-                    width: '40px',
-                    height: '40px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
+                  className="app-header__icon-button"
                 >
                   <Settings size={26} />
                 </Link>
                 <Link
                   to="/logs"
                   aria-label="Open Logs"
-                  style={{
-                    color: 'var(--cockpit-amber)',
-                    width: '40px',
-                    height: '40px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
+                  className="app-header__icon-button"
                 >
                   <List size={26} />
                 </Link>
