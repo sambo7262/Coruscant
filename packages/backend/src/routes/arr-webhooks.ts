@@ -52,7 +52,12 @@ export async function arrWebhookRoutes(fastify: FastifyInstance) {
         const moviesIdx = segments.indexOf('movies')
 
         let title: string
-        const body: Record<string, unknown> = { eventType: 'SubtitleDownload' }
+        // NOTE: eventType is set to 'Download' (not 'SubtitleDownload') so that
+        // classifyArrEvent returns 'download_complete' — the frontend AppHeader
+        // ticker and ServiceCard glow both early-return on eventCategory === 'unknown',
+        // so a category is required for Bazarr events to surface in the UI.
+        // rawEventType is preserved for log clarity via a separate field below.
+        const body: Record<string, unknown> = { eventType: 'Download' }
 
         if (tvIdx >= 0 && segments.length > tvIdx + 1) {
           const showTitle = segments[tvIdx + 1]
