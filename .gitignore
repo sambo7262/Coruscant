@@ -30,3 +30,6 @@ packages/frontend/vite.config.d.ts.map
 .DS_Store
 .claude/
 .planning/
+
+# Pi-side reference script (runs on the Raspberry Pi, not in the repo)
+pi-health/
