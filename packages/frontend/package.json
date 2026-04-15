@@ -6,7 +6,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "lint": "node ../../scripts/verify-viewport-isolation.mjs"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.4.0",
