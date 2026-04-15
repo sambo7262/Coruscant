@@ -1,0 +1,3 @@
+{
+  "packages/frontend/src/styles/viewport-iphone.css": "node scripts/verify-viewport-isolation.mjs"
+}

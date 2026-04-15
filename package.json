@@ -9,12 +9,16 @@
     "build:frontend": "npm run build --workspace=packages/frontend",
     "dev:backend": "npm run dev --workspace=packages/backend",
     "dev:frontend": "npm run dev --workspace=packages/frontend",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepare": "husky",
+    "lint": "node scripts/verify-viewport-isolation.mjs"
   },
   "devDependencies": {
     "typescript": "^6.0.2",
     "tsx": "^4.21.0",
     "vitest": "^4.1.2",
-    "@types/node": "^22.0.0"
+    "@types/node": "^22.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0"
   }
 }
