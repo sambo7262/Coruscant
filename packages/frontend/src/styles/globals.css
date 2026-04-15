@@ -511,6 +511,683 @@ body::after {
   min-height: 60px;
 }
 
+.service-card__empty-label {
+  color: rgba(200, 200, 200, 0.3);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.service-card--default {
+  min-height: 160px;
+}
+
+.service-card--pihole {
+  height: 227px;
+}
+
+.service-card__thin-strip {
+  height: 6px;
+  background: var(--cockpit-amber);
+  flex-shrink: 0;
+}
+
+.service-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px 0 12px;
+}
+
+.service-card__name {
+  color: var(--cockpit-amber);
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.service-card__stale-row {
+  display: flex;
+  justify-content: flex-end;
+  padding: 2px 12px 0 12px;
+}
+
+.service-card--nas__body {
+  padding: 6px 10px 8px 10px;
+  flex: 1;
+}
+
+.service-card--nas__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+}
+
+.service-card--nas__placeholder-text {
+  color: rgba(200, 200, 200, 0.3);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* ---------- NAS instrument (legacy detail) ---------- */
+.nas-instrument {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nas-instrument__row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.nas-instrument__label {
+  color: #C8C8C8;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.nas-instrument__value {
+  font-size: 9px;
+}
+
+.nas-instrument__track {
+  height: 4px;
+  background: rgba(232, 160, 32, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.nas-instrument__fill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+/* ---------- NAS gauge column ---------- */
+.nas-gauge-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.nas-gauge-col__label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  text-transform: uppercase;
+  color: rgba(232, 160, 32, 0.6);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 36px;
+  text-align: center;
+}
+
+.nas-gauge-col__track {
+  background: rgba(232, 160, 32, 0.15);
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.nas-gauge-col__fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-radius: 2px;
+  transition: height 0.6s ease;
+}
+
+.nas-gauge-col__value {
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+/* ---------- NAS tile instrument (D-21) ---------- */
+.nas-tile {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 0 8px;
+  align-items: stretch;
+}
+
+.nas-tile__col-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+
+.nas-tile__col-center {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  justify-content: center;
+  height: 100%;
+}
+
+.nas-tile__col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding-left: 8px;
+}
+
+.nas-tile__section-label {
+  font-size: 9px;
+  color: rgba(232, 160, 32, 0.6);
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.nas-tile__name {
+  margin-bottom: 2px;
+}
+
+.nas-tile__docker-label {
+  margin-bottom: 2px;
+  width: 100%;
+}
+
+.nas-tile__disks {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.nas-tile__disk-row {
+  display: flex;
+  gap: 8px;
+}
+
+.nas-tile__disk {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.nas-tile__disk-led {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}
+
+.nas-tile__disk-temp {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+
+.nas-tile__disk-label {
+  font-size: 8px;
+  color: rgba(200, 200, 200, 0.4);
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.nas-tile__metric-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.nas-tile__metric-label {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  color: rgba(232, 160, 32, 0.6);
+  width: 28px;
+  flex-shrink: 0;
+}
+
+.nas-tile__metric-track {
+  flex: 1;
+  height: 14px;
+  background: rgba(232, 160, 32, 0.15);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.nas-tile__metric-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.nas-tile__metric-value {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  width: 32px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.nas-tile__docker-stat {
+  font-size: var(--tile-font-value);
+  line-height: 1.2;
+  color: var(--cockpit-amber);
+  font-family: var(--font-mono);
+}
+
+.nas-tile__docker-update {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.nas-tile__docker-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.nas-tile__docker-dot--on {
+  background: #E8A020;
+  box-shadow: 0 0 4px #E8A020;
+}
+
+.nas-tile__docker-dot--off {
+  background: #444;
+}
+
+.nas-tile__docker-update-label {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.nas-tile__docker-update-label--on {
+  color: #E8A020;
+}
+
+.nas-tile__docker-update-label--off {
+  color: #444;
+}
+
+/* ---------- Arr instrument ---------- */
+.arr-instrument {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.arr-instrument__status-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.arr-instrument__led {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.arr-instrument__status-text {
+  color: var(--text-offwhite);
+  font-size: var(--tile-font-value);
+  font-weight: 600;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.arr-instrument__sub-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.arr-instrument__sub-text {
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.arr-instrument__dl {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.arr-instrument__dl-title {
+  color: var(--cockpit-purple);
+  font-size: var(--tile-font-value);
+  font-weight: 600;
+  line-height: 1.1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.arr-instrument__dl-quality {
+  color: rgba(139, 92, 246, 0.6);
+  font-size: 8px;
+  text-transform: uppercase;
+}
+
+.arr-instrument__idle {
+  color: #444;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+/* ---------- Plex instrument ---------- */
+.plex-instrument__bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  margin-bottom: 4px;
+}
+
+.plex-instrument__bar {
+  width: 6px;
+  border-radius: 1px;
+}
+
+.plex-instrument__active {
+  color: #C8C8C8;
+  font-size: 9px;
+}
+
+.plex-instrument__stats {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.plex-instrument__stat {
+  font-size: 9px;
+}
+
+.plex-instrument__stat--cpu {
+  color: #4ADE80;
+}
+
+.plex-instrument__stat--ram {
+  color: #00c8ff;
+}
+
+.plex-instrument__stat--bw {
+  color: #C8C8C8;
+}
+
+/* ---------- SABnzbd instrument ---------- */
+.sab-instrument {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--font-mono);
+}
+
+.sab-instrument__idle {
+  color: #444;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.sab-instrument__filename {
+  font-size: 9px;
+  color: var(--cockpit-amber);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.sab-instrument__speed-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.sab-instrument__speed {
+  font-size: 20px;
+  color: var(--cockpit-amber);
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.sab-instrument__speed-unit {
+  font-size: var(--tile-font-label);
+  font-weight: 400;
+}
+
+.sab-instrument__eta {
+  font-size: 9px;
+  color: var(--text-offwhite);
+}
+
+.sab-instrument__track {
+  margin: 4px 0 2px;
+  height: 16px;
+  background: rgba(232, 160, 32, 0.15);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.sab-instrument__fill {
+  height: 100%;
+  background: var(--cockpit-amber);
+  border-radius: 2px;
+  transition: width 1s ease;
+  box-shadow: 0 0 6px var(--cockpit-amber);
+}
+
+/* ---------- Throughput bar ---------- */
+.throughput-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.throughput-bar__label {
+  font-size: 8px;
+  color: var(--text-offwhite);
+  font-family: var(--font-mono);
+  width: 14px;
+}
+
+.throughput-bar__track {
+  flex: 1;
+  height: 16px;
+  background: #222;
+  border-radius: 3px;
+}
+
+.throughput-bar__fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* ---------- Network instrument (Pi-hole + Ubiquiti) ---------- */
+.net-instrument {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 8px;
+}
+
+.net-instrument__col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.net-instrument__section-label {
+  font-size: 9px;
+  color: var(--cockpit-amber);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+
+.net-instrument__section-label--center {
+  text-align: center;
+}
+
+.net-instrument__stat {
+  font-size: var(--tile-font-value);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  font-family: var(--font-mono);
+  line-height: 1.1;
+}
+
+.net-instrument__stat--amber {
+  color: var(--cockpit-amber);
+}
+
+.net-instrument__stat--center {
+  text-align: center;
+}
+
+.net-instrument__sub-label {
+  font-size: 8px;
+  color: rgba(200, 200, 200, 0.4);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.net-instrument__not-configured {
+  font-size: 9px;
+  color: #444;
+  font-family: var(--font-mono);
+}
+
+.net-instrument__health-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.net-instrument__arcs {
+  display: flex;
+  gap: 0;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  padding-top: 8px;
+}
+
+.net-instrument__arc {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.net-instrument__arc-value {
+  font-size: var(--tile-font-value);
+  font-weight: 600;
+  font-family: var(--font-mono);
+  text-align: center;
+  white-space: nowrap;
+  line-height: 1.1;
+}
+
+.net-instrument__arc-unit {
+  font-size: 8px;
+  font-family: var(--font-mono);
+  color: rgba(200, 200, 200, 0.4);
+  text-align: center;
+}
+
+.net-instrument__arc-path {
+  transition: stroke 0.3s ease;
+}
+
+.net-instrument__arc-label {
+  font-size: 8px;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  color: rgba(200, 200, 200, 0.5);
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+.net-instrument__clients {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0 4px;
+}
+
+.net-instrument__clients-value {
+  font-size: 18px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: #4ADE80;
+  text-align: center;
+  white-space: nowrap;
+  line-height: 1.1;
+}
+
+/* ---------- Sabnzbd LED (inline absorb card) ---------- */
+.sabnzbd-led--active {
+  background: var(--cockpit-purple);
+  box-shadow: 0 0 6px var(--cockpit-purple);
+}
+
+/* ---------- Media stack row ---------- */
+.media-stack-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--tile-gap);
+  padding: 6px 8px;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  overflow: hidden;
+}
+
+.media-stack-row__flash {
+  position: absolute;
+  inset: 0;
+  animation: arrFlash 10s linear forwards;
+  pointer-events: none;
+}
+
+.media-stack-row__led {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.media-stack-row__name {
+  font-size: var(--tile-font-value);
+  font-weight: 600;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
 /* ---------- Status LED (geometry only; color+glow are data-driven) ---------- */
 .status-led {
   width: var(--led-size);

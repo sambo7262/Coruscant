@@ -56,45 +56,25 @@ function NasInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   ]
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+    <div className="nas-instrument">
       {gauges.map(({ label, value, unit, percent, isThreshold }) => {
         const barColor = isThreshold ? getBarColor(percent) : 'var(--cockpit-amber)'
         return (
           <div key={label}>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                marginBottom: '2px',
-              }}
-            >
-              <span
-                className="text-label"
-                style={{ color: '#C8C8C8', fontSize: '9px', textTransform: 'uppercase' }}
-              >
+            <div className="nas-instrument__row">
+              <span className="text-label nas-instrument__label">
                 {label}
               </span>
-              <span
-                className="text-label text-glow"
-                style={{ color: barColor, fontSize: '9px' }}
-              >
+              <span className="text-label text-glow nas-instrument__value" style={{ color: barColor }}>
                 {value}{unit}
               </span>
             </div>
-            <div
-              style={{
-                height: '4px',
-                background: 'rgba(232,160,32,0.15)',
-                borderRadius: '2px',
-                overflow: 'hidden',
-              }}
-            >
+            <div className="nas-instrument__track">
               <div
+                className="nas-instrument__fill"
                 style={{
-                  height: '100%',
                   width: `${Math.min(Math.max(percent, 0), 100)}%`,
                   background: barColor,
-                  borderRadius: '2px',
                 }}
               />
             </div>
@@ -127,76 +107,28 @@ function NasGaugeColumn({
 }) {
   const clampedFill = Math.max(0, Math.min(100, fillPct))
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        gap: '2px',
-      }}
-    >
-      <span
-        style={{
-          fontFamily: 'var(--font-mono)',
-          fontSize: '9px',
-          textTransform: 'uppercase',
-          color: 'rgba(232,160,32,0.6)',
-          letterSpacing: '0.06em',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          maxWidth: '36px',
-          textAlign: 'center',
-        }}
-      >
+    <div className="nas-gauge-col">
+      <span className="nas-gauge-col__label">
         {label}
       </span>
       <div
-        style={{
-          width: barWidth,
-          height: barHeight,
-          background: 'rgba(232,160,32,0.15)',
-          borderRadius: '2px',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
+        className="nas-gauge-col__track"
+        style={{ width: barWidth, height: barHeight }}
       >
         <div
+          className="nas-gauge-col__fill"
           style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
             height: `${clampedFill}%`,
             background: color,
-            borderRadius: '2px',
-            transition: 'height 0.6s ease',
             boxShadow: `0 0 4px ${color}`,
           }}
         />
       </div>
-      <span
-        style={{
-          fontFamily: 'var(--font-mono)',
-          fontSize: '10px',
-          color,
-                  }}
-      >
+      <span className="nas-gauge-col__value" style={{ color }}>
         {valueText}
       </span>
     </div>
   )
-}
-
-// Section label style for NAS tile column headers
-const NAS_SECTION_LABEL_STYLE: React.CSSProperties = {
-  fontSize: '9px',
-  color: 'rgba(232,160,32,0.6)',
-  fontFamily: 'var(--font-mono)',
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  textAlign: 'center',
-  marginBottom: '4px',
 }
 
 // NAS standalone tile instrument (D-21) — 3-column layout: disk LEDs | CPU/RAM/volume bars | Docker stats
@@ -207,38 +139,40 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
   const animDockerRam = useAnimatedNumber(nasStatus.docker?.ramPercent ?? 0)
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 1fr', gap: '0 8px', alignItems: 'stretch' }}>
+    <div className="nas-tile">
 
       {/* LEFT col — disk temp LED indicators: 4-per-row grid, last row centered */}
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+      <div className="nas-tile__col-left">
         {/* DISKS section label */}
-        <div style={NAS_SECTION_LABEL_STYLE}>DISKS</div>
-        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div className="nas-tile__section-label">DISKS</div>
+        <div className="nas-tile__disks">
           {nasStatus.disks && (() => {
             const rows: typeof nasStatus.disks[] = []
             for (let i = 0; i < nasStatus.disks.length; i += 4) rows.push(nasStatus.disks.slice(i, i + 4))
             return rows.map((row, rowIdx) => (
-              <div key={rowIdx} style={{
-                display: 'flex',
-                justifyContent: row.length < 4 ? 'center' : 'flex-start',
-                gap: '8px',
-                marginBottom: rowIdx < rows.length - 1 ? '8px' : 0,
-              }}>
+              <div
+                key={rowIdx}
+                className="nas-tile__disk-row"
+                style={{
+                  justifyContent: row.length < 4 ? 'center' : 'flex-start',
+                  marginBottom: rowIdx < rows.length - 1 ? '8px' : 0,
+                }}
+              >
                 {row.map((disk, colIdx) => {
                   const idx = rowIdx * 4 + colIdx
                   const tempC = disk.tempC
                   const dotColor = tempC > 55 ? '#FF3B3B' : tempC >= 45 ? '#E8A020' : '#4ADE80'
                   const tempF = Math.round(tempC * 9 / 5 + 32)
                   return (
-                    <div key={disk.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                      <div style={{
-                        width: '14px', height: '14px', borderRadius: '50%',
-                        background: dotColor, boxShadow: `0 0 6px ${dotColor}`,
-                      }} />
-                      <span style={{ fontSize: '10px', color: dotColor, fontFamily: 'var(--font-mono)', lineHeight: 1 }}>
+                    <div key={disk.id} className="nas-tile__disk">
+                      <div
+                        className="nas-tile__disk-led"
+                        style={{ background: dotColor, boxShadow: `0 0 6px ${dotColor}` }}
+                      />
+                      <span className="nas-tile__disk-temp" style={{ color: dotColor }}>
                         {tempF}°
                       </span>
-                      <span style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em', textTransform: 'uppercase', lineHeight: 1 }}>
+                      <span className="nas-tile__disk-label">
                         D{idx + 1}
                       </span>
                     </div>
@@ -251,9 +185,9 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
       </div>
 
       {/* CENTER col — horizontal bars for CPU, RAM, HD volumes */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', justifyContent: 'center', height: '100%' }}>
+      <div className="nas-tile__col-center">
         {/* NAS device name label */}
-        <div style={{ ...NAS_SECTION_LABEL_STYLE, marginBottom: '2px' }}>{nasStatus.name || 'TheRock'}</div>
+        <div className="nas-tile__section-label nas-tile__name">{nasStatus.name || 'TheRock'}</div>
         {[
           { label: 'CPU', value: nasStatus.cpu, valueText: `${animCpu}%` },
           { label: 'RAM', value: nasStatus.ram, valueText: `${animRam}%` },
@@ -265,45 +199,45 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
         ].map(({ label, value, valueText }) => {
           const color = getBarColor(value)
           return (
-            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'rgba(232,160,32,0.6)', width: '28px', flexShrink: 0 }}>{label}</span>
-              <div style={{ flex: 1, height: '14px', background: `rgba(232,160,32,0.15)`, borderRadius: '3px', overflow: 'hidden' }}>
-                <div style={{
-                  height: '100%',
-                  width: `${Math.min(Math.max(value, 0), 100)}%`,
-                  background: color,
-                  borderRadius: '3px',
-                  transition: 'width 0.6s ease',
-                  boxShadow: `0 0 6px ${color}`,
-                }} />
+            <div key={label} className="nas-tile__metric-row">
+              <span className="nas-tile__metric-label">{label}</span>
+              <div className="nas-tile__metric-track">
+                <div
+                  className="nas-tile__metric-fill"
+                  style={{
+                    width: `${Math.min(Math.max(value, 0), 100)}%`,
+                    background: color,
+                    boxShadow: `0 0 6px ${color}`,
+                  }}
+                />
               </div>
-              <span style={{ fontSize: '12px', fontFamily: 'var(--font-mono)', color,  width: '32px', textAlign: 'right', flexShrink: 0 }}>{valueText}</span>
+              <span className="nas-tile__metric-value" style={{ color }}>{valueText}</span>
             </div>
           )
         })}
       </div>
 
       {/* RIGHT col — Docker stats */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', justifyContent: 'center', alignItems: 'center', height: '100%', paddingLeft: '8px' }}>
+      <div className="nas-tile__col-right">
         {nasStatus.docker ? (
           <>
-            <div style={{ ...NAS_SECTION_LABEL_STYLE, marginBottom: '2px', width: '100%' }}>DOCKER</div>
-            <span className="text-glow" style={{ fontSize: '22px', lineHeight: 1.2, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)' }}>
+            <div className="nas-tile__section-label nas-tile__docker-label">DOCKER</div>
+            <span className="text-glow nas-tile__docker-stat">
               CPU {animDockerCpu}%
             </span>
-            <span className="text-glow" style={{ fontSize: '22px', lineHeight: 1.2, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)' }}>
+            <span className="text-glow nas-tile__docker-stat">
               RAM {animDockerRam}%
             </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
+            <div className="nas-tile__docker-update">
               {nasStatus.imageUpdateAvailable === true ? (
                 <>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#E8A020', boxShadow: '0 0 4px #E8A020', flexShrink: 0 }} />
-                  <span style={{ fontSize: '10px', color: '#E8A020', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Update Available</span>
+                  <div className="nas-tile__docker-dot nas-tile__docker-dot--on" />
+                  <span className="nas-tile__docker-update-label nas-tile__docker-update-label--on">Update Available</span>
                 </>
               ) : (
                 <>
-                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#444', flexShrink: 0 }} />
-                  <span style={{ fontSize: '10px', color: '#444', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>No Update Available</span>
+                  <div className="nas-tile__docker-dot nas-tile__docker-dot--off" />
+                  <span className="nas-tile__docker-update-label nas-tile__docker-update-label--off">No Update Available</span>
                 </>
               )}
             </div>
@@ -343,23 +277,14 @@ function ArrInstrument({ service, metrics }: { service: ServiceStatus; metrics: 
       : '#ff3b3b'
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+    <div className="arr-instrument">
       {/* Row 1: large status LED + status text */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <div className="arr-instrument__status-row">
         <div
-          style={{
-            width: '10px',
-            height: '10px',
-            borderRadius: '50%',
-            background: ledColor,
-            boxShadow: `0 0 6px ${ledColor}`,
-            flexShrink: 0,
-          }}
+          className="arr-instrument__led"
+          style={{ background: ledColor, boxShadow: `0 0 6px ${ledColor}` }}
         />
-        <span
-          className="text-label text-glow"
-          style={{ color: 'var(--text-offwhite)', fontSize: '22px', fontWeight: 600, lineHeight: 1.1, textTransform: 'uppercase' }}
-        >
+        <span className="text-label text-glow arr-instrument__status-text">
           {statusText}
         </span>
       </div>
@@ -367,14 +292,10 @@ function ArrInstrument({ service, metrics }: { service: ServiceStatus; metrics: 
       {/* Row 2: download indicator or subtitle grab indicator */}
       {isBazarr ? (
         /* Bazarr: subtitle grab indicator */
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div className="arr-instrument__sub-row">
           <span
-            className="text-label"
-            style={{
-              color: activeSubtitleGrabs > 0 ? 'var(--cockpit-amber)' : '#444',
-              fontSize: '9px',
-              textTransform: 'uppercase',
-            }}
+            className="text-label arr-instrument__sub-text"
+            style={{ color: activeSubtitleGrabs > 0 ? 'var(--cockpit-amber)' : '#444' }}
           >
             {activeSubtitleGrabs > 0
               ? `SUBTITLES  x${activeSubtitleGrabs}`
@@ -383,37 +304,21 @@ function ArrInstrument({ service, metrics }: { service: ServiceStatus; metrics: 
         </div>
       ) : downloading && activeDownloads > 0 ? (
         /* Active download: show clean title */
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          <span
-            className="text-label"
-            style={{
-              color: 'var(--cockpit-purple)',
-              fontSize: '22px',
-              fontWeight: 600,
-              lineHeight: 1.1,
-              textTransform: 'uppercase',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              maxWidth: '100%',
-            }}
-          >
+        <div className="arr-instrument__dl">
+          <span className="text-label arr-instrument__dl-title">
             {typeof metrics.activeTitle === 'string' && metrics.activeTitle
               ? metrics.activeTitle
               : `x${activeDownloads}`}
           </span>
           {downloadQuality && (
-            <span className="text-label" style={{ color: 'rgba(139,92,246,0.6)', fontSize: '8px', textTransform: 'uppercase' }}>
+            <span className="text-label arr-instrument__dl-quality">
               {downloadQuality}
             </span>
           )}
         </div>
       ) : (
         /* Idle */
-        <span
-          className="text-label"
-          style={{ color: '#444', fontSize: '9px', textTransform: 'uppercase' }}
-        >
+        <span className="text-label arr-instrument__idle">
           IDLE
         </span>
       )}
@@ -434,43 +339,39 @@ function PlexInstrument({ metrics }: { metrics: Record<string, unknown> }) {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'flex-end', gap: '3px', marginBottom: '4px' }}>
+      <div className="plex-instrument__bars">
         {barHeights.map((h, i) => (
           <div
             key={i}
+            className="plex-instrument__bar"
             style={{
-              width: '6px',
               height: `${h}px`,
               background:
                 i < Math.min(activeStreams, maxStreams)
                   ? 'var(--cockpit-green)'
                   : 'rgba(232,160,32,0.15)',
-              borderRadius: '1px',
             }}
           />
         ))}
       </div>
-      <div
-        className="text-label text-glow"
-        style={{ color: '#C8C8C8', fontSize: '9px' }}
-      >
+      <div className="text-label text-glow plex-instrument__active">
         {activeStreams} ACTIVE
       </div>
       {/* Plex server stats — D-22 */}
       {(cpuPct !== null || ramPct !== null || bwMbps !== null) && (
-        <div style={{ display: 'flex', gap: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
+        <div className="plex-instrument__stats">
           {cpuPct !== null && (
-            <span className="text-label text-glow" style={{ color: '#4ADE80', fontSize: '9px' }}>
+            <span className="text-label text-glow plex-instrument__stat plex-instrument__stat--cpu">
               CPU {cpuPct}%
             </span>
           )}
           {ramPct !== null && (
-            <span className="text-label text-glow" style={{ color: '#00c8ff', fontSize: '9px' }}>
+            <span className="text-label text-glow plex-instrument__stat plex-instrument__stat--ram">
               RAM {ramPct}%
             </span>
           )}
           {bwMbps !== null && (
-            <span className="text-label text-glow" style={{ color: '#C8C8C8', fontSize: '9px' }}>
+            <span className="text-label text-glow plex-instrument__stat plex-instrument__stat--bw">
               {bwMbps}M
             </span>
           )}
@@ -494,58 +395,38 @@ function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
 
   if (!hasActivity && !filename) {
     return (
-      <span
-        className="text-label"
-        style={{ color: '#444', fontSize: '9px', textTransform: 'uppercase' }}
-      >
+      <span className="text-label sab-instrument__idle">
         IDLE
       </span>
     )
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', fontFamily: 'var(--font-mono)' }}>
+    <div className="sab-instrument">
       {/* Filename — truncated, always amber (D-04) */}
       {filename && (
-        <div style={{
-          fontSize: '9px',
-          color: 'var(--cockpit-amber)',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          maxWidth: '100%',
-        }}>
+        <div className="sab-instrument__filename">
           {filename}
         </div>
       )}
       {/* Speed + ETA row — text always amber (D-05) */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-        <span style={{ fontSize: '20px', color: 'var(--cockpit-amber)', fontWeight: 700, fontFamily: 'var(--font-mono)' }}>
-          {speed} <span style={{ fontSize: '11px', fontWeight: 400 }}>MB/s</span>
+      <div className="sab-instrument__speed-row">
+        <span className="sab-instrument__speed">
+          {speed} <span className="sab-instrument__speed-unit">MB/s</span>
         </span>
         {eta && (
-          <span style={{ fontSize: '9px', color: 'var(--text-offwhite)' }}>
+          <span className="sab-instrument__eta">
             ETA {eta}
           </span>
         )}
       </div>
       {/* Progress bar — only when actively downloading */}
       {hasActivity && (
-        <div style={{
-          margin: '4px 0 2px',
-          height: '16px',
-          background: 'rgba(232,160,32,0.15)',
-          borderRadius: '3px',
-          overflow: 'hidden',
-        }}>
-          <div style={{
-            height: '100%',
-            width: `${typeof metrics.progressPercent === 'number' ? metrics.progressPercent : 0}%`,
-            background: 'var(--cockpit-amber)',
-            borderRadius: '2px',
-            transition: 'width 1s ease',
-            boxShadow: '0 0 6px var(--cockpit-amber)',
-          }} />
+        <div className="sab-instrument__track">
+          <div
+            className="sab-instrument__fill"
+            style={{ width: `${typeof metrics.progressPercent === 'number' ? metrics.progressPercent : 0}%` }}
+          />
         </div>
       )}
     </div>
@@ -558,12 +439,15 @@ function ThroughputBar({ label, value, peak, color }: { label: string; value: nu
   const effectivePeak = peak > 0 ? peak : 100  // fallback to 100 Mbps until peaks are established
   const pct = value !== null ? Math.min((value / effectivePeak) * 100, 100) : 0
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flex: 1 }}>
-      <span style={{ fontSize: '8px', color: 'var(--text-offwhite)', fontFamily: 'var(--font-mono)', width: '14px' }}>
+    <div className="throughput-bar">
+      <span className="throughput-bar__label">
         {label}
       </span>
-      <div style={{ flex: 1, height: '16px', background: '#222', borderRadius: '3px' }}>
-        <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: '3px', transition: 'width 0.3s ease', boxShadow: `0 0 6px ${color}` }} />
+      <div className="throughput-bar__track">
+        <div
+          className="throughput-bar__fill"
+          style={{ width: `${pct}%`, background: color, boxShadow: `0 0 6px ${color}` }}
+        />
       </div>
     </div>
   )
@@ -606,68 +490,61 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
     : 'OFFLINE'
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 8px' }}>
+    <div className="net-instrument">
       {/* LEFT — Pi-hole */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-        <div style={{ fontSize: '9px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em',
-          textTransform: 'uppercase', fontFamily: 'var(--font-mono)' }}>PI-HOLE</div>
-        <span className="text-glow" style={{
-          fontSize: '22px',
-          fontWeight: 600,
-          letterSpacing: '0.08em',
-          fontFamily: 'var(--font-mono)',
-          lineHeight: 1.1,
-          color: blocking === 'BLOCKING' ? 'var(--cockpit-green)' : 'var(--cockpit-red)',
-          
-        }}>
+      <div className="net-instrument__col">
+        <div className="net-instrument__section-label">PI-HOLE</div>
+        <span
+          className="text-glow net-instrument__stat"
+          style={{ color: blocking === 'BLOCKING' ? 'var(--cockpit-green)' : 'var(--cockpit-red)' }}
+        >
           {blocking}
         </span>
-        <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>BLOCKING</div>
-        <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1 }}>
+        <div className="net-instrument__sub-label">BLOCKING</div>
+        <span className="text-glow net-instrument__stat net-instrument__stat--amber">
           {qpsDisplay}
         </span>
-        <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>QPS</div>
+        <div className="net-instrument__sub-label">QPS</div>
         {hasPercentData && (
           <>
-            <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1 }}>
+            <span className="text-glow net-instrument__stat net-instrument__stat--amber">
               {percentBlockedDisplay}%
             </span>
-            <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>BLOCKED</div>
+            <div className="net-instrument__sub-label">BLOCKED</div>
           </>
         )}
-        <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, color: 'var(--cockpit-amber)', fontFamily: 'var(--font-mono)', lineHeight: 1.1 }}>
+        <span className="text-glow net-instrument__stat net-instrument__stat--amber">
           {memDisplay}
         </span>
-        <div style={{ fontSize: '8px', color: 'rgba(200,200,200,0.4)', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>MEM</div>
+        <div className="net-instrument__sub-label">MEM</div>
       </div>
       {/* RIGHT — Ubiquiti */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-        <div style={{ fontSize: '9px', color: unifiConfigured ? 'var(--cockpit-amber)' : '#555',
-          letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-mono)', textAlign: 'center' }}>
+      <div className="net-instrument__col">
+        <div
+          className="net-instrument__section-label net-instrument__section-label--center"
+          style={{ color: unifiConfigured ? 'var(--cockpit-amber)' : '#555' }}
+        >
           UBIQUITI
         </div>
         {!unifiConfigured ? (
-          <span style={{ fontSize: '9px', color: '#444', fontFamily: 'var(--font-mono)' }}>
+          <span className="net-instrument__not-configured">
             NOT CONFIGURED
           </span>
         ) : (
           <>
             {/* Row 1: Health status label — styled like Pi-hole BLOCKING */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span className="text-glow" style={{
-                fontSize: '22px',
-                fontWeight: 600,
-                letterSpacing: '0.08em',
-                fontFamily: 'var(--font-mono)',
-                lineHeight: 1.1,
-                textAlign: 'center',
-                color: healthToLed === 'online' ? 'var(--cockpit-green)' : healthToLed === 'warning' ? 'var(--cockpit-amber)' : 'var(--cockpit-red)',
-              }}>
+            <div className="net-instrument__health-row">
+              <span
+                className="text-glow net-instrument__stat net-instrument__stat--center"
+                style={{
+                  color: healthToLed === 'online' ? 'var(--cockpit-green)' : healthToLed === 'warning' ? 'var(--cockpit-amber)' : 'var(--cockpit-red)',
+                }}
+              >
                 {healthLabel}
               </span>
             </div>
             {/* Speed arcs (UP / DOWN) with CLIENTS count between */}
-            <div style={{ display: 'flex', gap: '0', justifyContent: 'center', alignItems: 'center', flex: 1, paddingTop: '8px' }}>
+            <div className="net-instrument__arcs">
               {([
                 { label: 'DOWN', value: um!.wanRxMbps, color: '#00c8ff', valueText: `${(animWanRx / 10).toFixed(1)}` },
                 { label: 'UP', value: um!.wanTxMbps, color: '#FF3B3B', valueText: `${(animWanTx / 10).toFixed(1)}` },
@@ -682,11 +559,14 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
                   { r: 36, strokeWidth: 4 },
                 ]
                 const arcEl = (
-                  <div key={label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                    <span className="text-glow" style={{ fontSize: '22px', fontWeight: 600, fontFamily: 'var(--font-mono)', color, textAlign: 'center', whiteSpace: 'nowrap', lineHeight: 1.1 }}>
+                  <div key={label} className="net-instrument__arc">
+                    <span
+                      className="text-glow net-instrument__arc-value"
+                      style={{ color }}
+                    >
                       {valueText}
                     </span>
-                    <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', color: 'rgba(200,200,200,0.4)', textAlign: 'center' }}>Mbps</span>
+                    <span className="net-instrument__arc-unit">Mbps</span>
                     <svg width="78" height="48" viewBox="0 0 78 48">
                       {arcs.map((arc, i) => {
                         const cx = 39, cy = 46
@@ -706,26 +586,26 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
                             stroke={isLit ? color : dimColor}
                             strokeWidth={arc.strokeWidth}
                             strokeLinecap="round"
+                            className="net-instrument__arc-path"
                             style={{
-                              transition: 'stroke 0.3s ease',
                               filter: isLit ? `drop-shadow(0 0 4px ${color})` : 'none',
                             }}
                           />
                         )
                       })}
                     </svg>
-                    <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'rgba(200,200,200,0.5)', letterSpacing: '0.04em', textAlign: 'center' }}>{label}</span>
+                    <span className="net-instrument__arc-label">{label}</span>
                   </div>
                 )
                 // Insert CLIENTS count between UP and DOWN
                 if (idx === 0) {
                   return [
                     arcEl,
-                    <div key="clients" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px', padding: '0 4px' }}>
-                      <span style={{ fontSize: '18px', fontWeight: 600, fontFamily: 'var(--font-mono)', color: '#4ADE80', textAlign: 'center', whiteSpace: 'nowrap', lineHeight: 1.1 }}>
+                    <div key="clients" className="net-instrument__clients">
+                      <span className="net-instrument__clients-value">
                         {animClientCount}
                       </span>
-                      <span style={{ fontSize: '8px', fontFamily: 'var(--font-mono)', textTransform: 'uppercase', color: 'rgba(200,200,200,0.5)', letterSpacing: '0.04em', textAlign: 'center' }}>CLIENTS</span>
+                      <span className="net-instrument__arc-label">CLIENTS</span>
                     </div>,
                   ]
                 }
@@ -781,18 +661,7 @@ function SabnzbdLed({ service }: { service: ServiceStatus }) {
   const queueCount = typeof metrics?.queueCount === 'number' ? metrics.queueCount : 0
   const isActive = speedMBs > 0 || queueCount > 0
   if (isActive) {
-    return (
-      <div
-        style={{
-          width: '8px',
-          height: '8px',
-          borderRadius: '50%',
-          background: 'var(--cockpit-purple)',
-          boxShadow: '0 0 6px var(--cockpit-purple)',
-          flexShrink: 0,
-        }}
-      />
-    )
+    return <div className="status-led sabnzbd-led sabnzbd-led--active" />
   }
   return <StatusDot status="online" />
 }
@@ -835,27 +704,22 @@ export function ServiceCard({ service, index, allServices, nasStatus }: ServiceC
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, ease: 'easeOut', delay: index * 0.08 }}
-        className="chamfer-card"
+        className="chamfer-card service-card--nas"
         style={{
-          position: 'relative',
-          background: 'var(--bg-panel)',
           border: `1px solid ${hovered ? 'rgba(232,160,32,0.60)' : 'var(--border-rest)'}`,
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
         }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
         {/* 20px amber ribbon header — same pattern as MEDIA tile */}
-        <div style={{ height: '20px', background: 'var(--cockpit-amber)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '6px', paddingRight: '8px' }}>
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', color: '#1a1a1a', letterSpacing: '0.08em', fontWeight: 600 }}>NAS</span>
+        <div className="service-card__ribbon">
+          <span className="ribbon-label">NAS</span>
           <StatusDot status={isUnconfigured ? 'stale' : service.status} />
         </div>
-        <div style={{ padding: '6px 10px 8px 10px', flex: 1 }}>
+        <div className="service-card--nas__body">
           {isUnconfigured || !nasStatus ? (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60px' }}>
-              <span className="text-label" style={{ color: 'rgba(200,200,200,0.3)', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            <div className="service-card--nas__placeholder">
+              <span className="text-label service-card--nas__placeholder-text">
                 {isUnconfigured ? 'NOT CONFIGURED' : 'LOADING...'}
               </span>
             </div>
@@ -869,28 +733,14 @@ export function ServiceCard({ service, index, allServices, nasStatus }: ServiceC
 
   // Unconfigured cards show the NOT CONFIGURED label instead of service instruments
   const instrumentBody = isUnconfigured ? (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100%',
-        minHeight: '60px',
-      }}
-    >
-      <span
-        className="text-label"
-        style={{
-          color: 'rgba(200, 200, 200, 0.3)',
-          fontSize: '10px',
-          textTransform: 'uppercase',
-          letterSpacing: '1px',
-        }}
-      >
+    <div className="service-card__empty-state">
+      <span className="text-label service-card__empty-label">
         NOT CONFIGURED
       </span>
     </div>
   ) : renderInstrumentBody(service, allServices)
+
+  const isPihole = service.id === 'pihole'
 
   return (
     <motion.div
@@ -907,40 +757,16 @@ export function ServiceCard({ service, index, allServices, nasStatus }: ServiceC
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="chamfer-card"
+      className={`chamfer-card service-card ${isPihole ? 'service-card--pihole' : 'service-card--default'}`}
       style={{
-        position: 'relative',
-        minHeight: service.id === 'pihole' ? undefined : '160px',
-        height: service.id === 'pihole' ? '227px' : undefined,
-        padding: 0,
-        background: 'var(--bg-panel)',
         border: `1px solid ${hovered ? 'rgba(232,160,32,0.60)' : 'var(--border-rest)'}`,
-        cursor: 'pointer',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
         boxShadow: getCardGlow(isUnconfigured ? 'stale' : service.status),
       }}
     >
       {/* Banner header: 20px strip for pihole (with LED inside), or 6px strip for all others */}
-      {service.id === 'pihole' ? (
-        <div style={{
-          height: '20px',
-          background: 'var(--cockpit-amber)',
-          flexShrink: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingLeft: '6px',
-          paddingRight: '8px',
-        }}>
-          <span style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '13px',
-            color: '#1a1a1a',
-            letterSpacing: '0.08em',
-            fontWeight: 600,
-          }}>
+      {isPihole ? (
+        <div className="service-card__ribbon">
+          <span className="ribbon-label">
             NETWORK
           </span>
           <StatusDot status={isUnconfigured ? 'stale' : service.status} />
@@ -948,32 +774,11 @@ export function ServiceCard({ service, index, allServices, nasStatus }: ServiceC
       ) : (
         <>
           {/* 6px amber header strip (D-17) */}
-          <div
-            style={{
-              height: '6px',
-              background: 'var(--cockpit-amber)',
-              flexShrink: 0,
-            }}
-          />
+          <div className="service-card__thin-strip" />
 
           {/* Header row: service name + status LED */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '8px 12px 0 12px',
-            }}
-          >
-            <span
-              className="text-label"
-              style={{
-                color: 'var(--cockpit-amber)',
-                textTransform: 'uppercase',
-                fontWeight: 600,
-                fontSize: '11px',
-              }}
-            >
+          <div className="service-card__header">
+            <span className="text-label service-card__name">
               {service.name}
             </span>
             <StatusDot status={isUnconfigured ? 'stale' : service.status} />
@@ -982,19 +787,13 @@ export function ServiceCard({ service, index, allServices, nasStatus }: ServiceC
       )}
 
       {/* Stale indicator row */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          padding: '2px 12px 0 12px',
-        }}
-      >
+      <div className="service-card__stale-row">
         <StaleIndicator lastPollAt={service.lastPollAt} />
       </div>
 
       {/* Instrument body (service-specific or NOT CONFIGURED label) */}
       {instrumentBody && (
-        <div style={{ padding: '8px 12px 12px 12px', flex: 1 }}>{instrumentBody}</div>
+        <div className="service-card__body">{instrumentBody}</div>
       )}
     </motion.div>
   )
@@ -1117,18 +916,10 @@ export function MediaStackRow({ service, index, lastArrEvent }: ServiceCardProps
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') handleClick()
       }}
+      className="media-stack-row"
       style={{
-        position: 'relative',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        padding: '6px 8px',
-        cursor: 'pointer',
-        borderRadius: '3px',
         border: flashColor ? `1px solid ${flashColor}` : '1px solid transparent',
         boxShadow: flashColor ? `0 0 8px 2px ${flashColor}66` : 'none',
-        transition: 'border-color 0.15s, background 0.15s, box-shadow 0.15s',
-        overflow: 'hidden',
       }}
       onMouseEnter={(e) => {
         if (!flashColor) {
@@ -1146,22 +937,14 @@ export function MediaStackRow({ service, index, lastArrEvent }: ServiceCardProps
       {/* Flash glow overlay — fades out using arrFlash keyframe (opacity only, DASH-08) */}
       {flashColor && (
         <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: `${flashColor}1a`,
-            animation: 'arrFlash 10s linear forwards',
-            pointerEvents: 'none',
-          }}
+          className="media-stack-row__flash"
+          style={{ background: `${flashColor}1a` }}
         />
       )}
       {/* 10px LED dot — over-pulse on status transition (D-19) */}
       <div
+        className="media-stack-row__led"
         style={{
-          width: '10px',
-          height: '10px',
-          borderRadius: '50%',
-          flexShrink: 0,
           ...getLedStyle(),
           ...(ledPulsing ? { animation: 'ledOverPulse 0.6s ease-out' } : {}),
         }}
@@ -1169,15 +952,8 @@ export function MediaStackRow({ service, index, lastArrEvent }: ServiceCardProps
       />
       {/* Service label */}
       <span
-        className="text-label text-glow"
-        style={{
-          color: isUnconfigured ? '#666' : 'var(--text-offwhite)',
-          fontSize: '22px',
-          fontWeight: 600,
-          lineHeight: 1.1,
-          textTransform: 'uppercase',
-          letterSpacing: '0.06em',
-        }}
+        className="text-label text-glow media-stack-row__name"
+        style={{ color: isUnconfigured ? '#666' : 'var(--text-offwhite)' }}
       >
         {service.name}
       </span>
