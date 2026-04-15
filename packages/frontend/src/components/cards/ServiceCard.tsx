@@ -5,6 +5,7 @@ import type { ServiceStatus, UnifiMetrics, ArrWebhookEvent, NasStatus, NasVolume
 import { StatusDot } from '../ui/StatusDot.js'
 import { StaleIndicator } from '../ui/StaleIndicator.js'
 import { useAnimatedNumber } from '../../hooks/useAnimatedNumber.js'
+import { canHover } from '../../viewport/index.js'
 
 // Event flash colors for arr webhook events — used by MediaStackRow flash
 const EVENT_COLORS: Record<string, string> = {
@@ -677,6 +678,8 @@ interface ServiceCardProps {
 export function ServiceCard({ service, index, allServices, nasStatus }: ServiceCardProps) {
   const navigate = useNavigate()
   const [hovered, setHovered] = useState(false)
+  // RESP-17: only desktop with real mouse engages hover state; kiosk/touch never gets stuck hover
+  const hoverCapable = canHover()
 
   // D-20: Plex does not render as a grid card (in NowPlayingBanner)
   if (service.id === 'plex') return null
@@ -708,8 +711,8 @@ export function ServiceCard({ service, index, allServices, nasStatus }: ServiceC
         style={{
           border: `1px solid ${hovered ? 'rgba(232,160,32,0.60)' : 'var(--border-rest)'}`,
         }}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onMouseEnter={() => { if (hoverCapable) setHovered(true); }}
+        onMouseLeave={() => { if (hoverCapable) setHovered(false); }}
       >
         {/* 20px amber ribbon header — same pattern as MEDIA tile */}
         <div className="service-card__ribbon">
@@ -755,8 +758,8 @@ export function ServiceCard({ service, index, allServices, nasStatus }: ServiceC
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') handleClick()
       }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={() => { if (hoverCapable) setHovered(true); }}
+      onMouseLeave={() => { if (hoverCapable) setHovered(false); }}
       className={`chamfer-card service-card ${isPihole ? 'service-card--pihole' : 'service-card--default'}`}
       style={{
         border: `1px solid ${hovered ? 'rgba(232,160,32,0.60)' : 'var(--border-rest)'}`,
