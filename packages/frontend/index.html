@@ -2,6 +2,41 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- Viewport detection — MUST run synchronously before first paint.
+         Sets <html data-viewport="kiosk|iphone-portrait|iphone-landscape|desktop">.
+         Detection precedence (D-04):
+           1. URL query param ?viewport=…
+           2. navigator.userAgent contains "CoruscantKiosk"
+           3. matchMedia iPhone portrait/landscape with DPR>=2 gate
+           4. Fall through → desktop
+    -->
+    <script>
+      (function () {
+        var VALID = { 'kiosk': 1, 'iphone-portrait': 1, 'iphone-landscape': 1, 'desktop': 1 };
+        var vp;
+        try {
+          var qs = window.location.search;
+          var m = qs.match(/[?&]viewport=([^&]+)/);
+          if (m && VALID[m[1]]) { vp = m[1]; }
+        } catch (e) {}
+        if (!vp) {
+          try {
+            if (navigator.userAgent.indexOf('CoruscantKiosk') !== -1) { vp = 'kiosk'; }
+          } catch (e) {}
+        }
+        if (!vp) {
+          try {
+            if (window.matchMedia('(orientation: portrait) and (max-width: 500px) and (-webkit-min-device-pixel-ratio: 2)').matches) {
+              vp = 'iphone-portrait';
+            } else if (window.matchMedia('(orientation: landscape) and (max-width: 950px) and (max-height: 500px) and (-webkit-min-device-pixel-ratio: 2)').matches) {
+              vp = 'iphone-landscape';
+            }
+          } catch (e) {}
+        }
+        if (!vp) { vp = 'desktop'; }
+        document.documentElement.setAttribute('data-viewport', vp);
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Coruscant</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
