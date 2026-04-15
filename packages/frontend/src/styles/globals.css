@@ -814,6 +814,43 @@ body::after {
   overflow: hidden;
 }
 
+.pi-health {
+  position: fixed;
+  top: 44px;
+  left: 0;
+  right: 0;
+  z-index: 9;
+  background: rgba(13, 13, 13, 0.97);
+  border-bottom: 1px solid rgba(232, 160, 32, 0.25);
+  overflow: hidden;
+}
+
+.pi-health__metric-row {
+  margin-bottom: 6px;
+}
+
+.pi-health__metric-value {
+  color: var(--text-offwhite);
+}
+
+.pi-health__bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease, background 0.4s ease;
+}
+
+.pi-health__stale-notice {
+  font-family: var(--font-mono);
+  font-size: var(--tile-font-label);
+  color: #999;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.pi-health__throttle-row {
+  margin-bottom: 6px;
+}
+
 /* ============================================================
    HOVER RULES — D-18 / RESP-17
    Any :hover rule added to this file OR to future CSS must be

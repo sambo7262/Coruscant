@@ -32,32 +32,16 @@ function MetricBar({
 }) {
   const clamped = Math.max(0, Math.min(100, percent))
   return (
-    <div style={{ opacity: stale ? 0.4 : 1, marginBottom: '6px' }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        fontFamily: 'var(--font-mono)',
-        fontSize: '11px',
-        lineHeight: '16px',
-        marginBottom: '3px',
-      }}>
-        <span style={{ color: 'var(--cockpit-amber)', letterSpacing: '0.06em' }}>{label}</span>
-        <span style={{ color: 'var(--text-offwhite)' }}>{display}</span>
+    <div className="pi-health__metric-row" style={{ opacity: stale ? 0.4 : 1 }}>
+      <div className="pi-health__metric-label-row">
+        <span className="pi-health__metric-label">{label}</span>
+        <span className="pi-health__metric-value">{display}</span>
       </div>
-      <div style={{
-        width: '100%',
-        height: '6px',
-        background: 'rgba(255, 255, 255, 0.06)',
-        borderRadius: '3px',
-        overflow: 'hidden',
-      }}>
-        <div style={{
-          width: `${clamped}%`,
-          height: '100%',
-          background: BAR_COLORS[color],
-          borderRadius: '3px',
-          transition: 'width 0.6s ease, background 0.4s ease',
-        }} />
+      <div className="pi-health__bar-track">
+        <div
+          className="pi-health__bar-fill"
+          style={{ width: `${clamped}%`, background: BAR_COLORS[color] }}
+        />
       </div>
     </div>
   )
@@ -107,46 +91,26 @@ export function PiHealthPanel({ piHealth }: { piHealth?: PiHealthStatus }) {
 
   return (
     <motion.div
+      className="pi-health"
       initial={{ height: 0, opacity: 0 }}
       animate={{ height: 'auto', opacity: 1 }}
       exit={{ height: 0, opacity: 0 }}
       transition={{ duration: 0.25, ease: 'easeInOut' }}
-      style={{
-        position: 'fixed',
-        top: '44px',
-        left: 0,
-        right: 0,
-        zIndex: 9,
-        background: 'rgba(13, 13, 13, 0.97)',
-        borderBottom: '1px solid rgba(232, 160, 32, 0.25)',
-        overflow: 'hidden',
-      }}
     >
-      <div style={{ padding: '10px 16px' }}>
+      <div className="pi-health__inner">
         {isStale && (
-          <div style={{
-            fontFamily: 'var(--font-mono)',
-            fontSize: '11px',
-            color: '#999',
-            marginBottom: '6px',
-            textAlign: 'center',
-          }}>
+          <div className="pi-health__stale-notice">
             {lastSeenText}
           </div>
         )}
         <MetricBar label="CPU TEMP" percent={tempPercent} display={`${tempF.toFixed(1)}°F`} color={tempColor} stale={isStale} />
         <MetricBar label="CPU" percent={cpuPct} display={`${cpuPct.toFixed(1)}%`} color={cpuColor} stale={isStale} />
         <MetricBar label="MEMORY" percent={memPercent} display={`${memUsed.toFixed(0)}/${memTotal.toFixed(0)} MB`} color={memColor} stale={isStale} />
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          fontFamily: 'var(--font-mono)',
-          fontSize: '11px',
-          lineHeight: '16px',
-          marginBottom: '6px',
-          opacity: isStale ? 0.4 : 1,
-        }}>
-          <span style={{ color: 'var(--cockpit-amber)', letterSpacing: '0.06em' }}>THROTTLE</span>
+        <div
+          className="pi-health__metric-label-row pi-health__throttle-row"
+          style={{ opacity: isStale ? 0.4 : 1 }}
+        >
+          <span className="pi-health__metric-label">THROTTLE</span>
           <span style={{ color: BAR_COLORS[throttleColor as BarColor] }}>{throttleText}</span>
         </div>
         <MetricBar label="WIFI" percent={wifiPercent} display={`${rssi} dBm`} color={wifiColor} stale={isStale} />
