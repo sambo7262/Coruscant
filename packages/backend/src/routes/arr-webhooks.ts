@@ -33,15 +33,62 @@ export async function arrWebhookRoutes(fastify: FastifyInstance) {
   })
 
   for (const service of ARR_SERVICES) {
-    // GET health responder — arr apps (notably Bazarr via Apprise) probe the webhook
-    // URL with GET during the Test/Save flow before they'll accept the configuration.
-    // Returns a 200 JSON payload describing the endpoint; real events use POST below.
-    fastify.get(`/api/webhooks/${service}`, async (_request, reply) => {
+    // GET handler — two modes:
+    //   (1) Bazarr real events: GET /api/webhooks/bazarr?path=/data/media/tv/Show/Season%201
+    //       Bazarr's custom-URL notification sends subtitle-download completions as GET
+    //       with the media path in a query param. Parse the path into a title and forward
+    //       to pollManager.handleArrEvent so the UI gets an SSE broadcast + log entry.
+    //   (2) Reachability probes from any arr app Test button: return a 200 health payload.
+    fastify.get(`/api/webhooks/${service}`, async (request, reply) => {
+      const query = request.query as Record<string, string | undefined>
+
+      if (service === 'bazarr' && typeof query.path === 'string' && query.path.length > 0) {
+        const decodedPath = query.path
+        const segments = decodedPath.split('/').filter(Boolean)
+
+        // Parse "/data/media/tv/<Show>/Season <N>[/<Episode>]" or
+        //       "/data/media/movies/<Movie>"
+        const tvIdx = segments.indexOf('tv')
+        const moviesIdx = segments.indexOf('movies')
+
+        let title: string
+        const body: Record<string, unknown> = { eventType: 'SubtitleDownload' }
+
+        if (tvIdx >= 0 && segments.length > tvIdx + 1) {
+          const showTitle = segments[tvIdx + 1]
+          const seasonSeg = segments[tvIdx + 2]
+          title = seasonSeg && seasonSeg.startsWith('Season')
+            ? `${showTitle} · ${seasonSeg}`
+            : showTitle
+          body.series = { title }
+        } else if (moviesIdx >= 0 && segments.length > moviesIdx + 1) {
+          title = segments[moviesIdx + 1]
+          body.movie = { title }
+        } else {
+          title = segments[segments.length - 1] || decodedPath
+          body.series = { title }
+        }
+
+        const now = new Date()
+        const ts = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} ${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}/${now.getFullYear()}`
+        fastify.log.info(
+          { service: 'webhook' },
+          `${service} | SubtitleDownload | ${title} | ${ts}`
+        )
+
+        pollManager.handleArrEvent(service, body)
+
+        return reply.code(200).send({ success: true, title })
+      }
+
+      // Reachability probe (Test button / browser hit / no path query)
       return reply.code(200).send({
         success: true,
         service,
-        method: 'POST',
-        message: `${service} webhook endpoint. Real events use POST with JSON body.`
+        method: service === 'bazarr' ? 'GET?path=...' : 'POST',
+        message: service === 'bazarr'
+          ? 'Bazarr webhook endpoint. Real events use GET with ?path=<media path>.'
+          : `${service} webhook endpoint. Real events use POST with JSON body.`
       })
     })
 
