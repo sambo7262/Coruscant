@@ -33,6 +33,18 @@ export async function arrWebhookRoutes(fastify: FastifyInstance) {
   })
 
   for (const service of ARR_SERVICES) {
+    // GET health responder — arr apps (notably Bazarr via Apprise) probe the webhook
+    // URL with GET during the Test/Save flow before they'll accept the configuration.
+    // Returns a 200 JSON payload describing the endpoint; real events use POST below.
+    fastify.get(`/api/webhooks/${service}`, async (_request, reply) => {
+      return reply.code(200).send({
+        success: true,
+        service,
+        method: 'POST',
+        message: `${service} webhook endpoint. Real events use POST with JSON body.`
+      })
+    })
+
     fastify.post(`/api/webhooks/${service}`, async (request, reply) => {
       const body = request.body as Record<string, unknown> | null | undefined
 
