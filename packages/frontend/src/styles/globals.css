@@ -29,6 +29,13 @@
 
   /* Typography */
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Tile-sizing tokens — Phase 14 RESP-04 / D-17 — kiosk defaults harvested from source */
+  --tile-padding: 8px;
+  --tile-gap: 8px;
+  --tile-font-label: 11px;
+  --tile-font-value: 22px;
+  --led-size: 8px;
 }
 
 *, *::before, *::after {
@@ -285,3 +292,329 @@ body::after {
     animation: none;
   }
 }
+
+/* ============================================================
+   PHASE 14 RESP-04 — Inline-style extraction classNames
+   Layout-only rules. Data-driven values (hover state, percent
+   widths, severity colors, stale opacity, etc.) remain inline
+   in the components per the Path-A/Path-B split in
+   .planning/phases/14-kiosk-isolation-infrastructure/14-RESEARCH.md §5
+   ============================================================ */
+
+/* ---------- CardGrid ---------- */
+.card-grid {
+  padding: 0 var(--tile-padding);
+  display: flex;
+  flex-direction: column;
+  gap: var(--tile-gap);
+}
+
+.card-grid--skeleton {
+  padding: 0 var(--tile-padding);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--tile-gap);
+  align-items: start;
+}
+
+.card-grid__placeholder {
+  height: 160px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-rest);
+}
+
+.card-grid__row-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--tile-gap);
+  align-items: start;
+}
+
+/* ---------- Media tile ---------- */
+.media-tile {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-rest);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: 227px;
+}
+
+.media-tile__header {
+  height: 20px;
+  background: var(--cockpit-amber);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding-left: 6px;
+}
+
+.media-tile__cols {
+  display: flex;
+  padding: 3px 4px 0 4px;
+  gap: 0;
+}
+
+.media-tile__col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+/* ---------- Downloads (inside Media tile) ---------- */
+.downloads {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: auto;
+}
+
+.downloads__divider {
+  border-top: 1px solid rgba(232, 160, 32, 0.08);
+  margin: 2px 0;
+}
+
+.downloads__label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1px;
+}
+
+.downloads__label {
+  font-size: var(--tile-font-label);
+  color: var(--cockpit-amber);
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.downloads__time-left {
+  font-size: var(--tile-font-label);
+  color: var(--cockpit-amber);
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.downloads__title {
+  display: inline-block;
+  font-size: var(--tile-font-value);
+  font-weight: 600;
+  color: var(--cockpit-purple);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.downloads__bar-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.downloads__bar-track {
+  flex: 1;
+  height: 12px;
+  background: rgba(232, 160, 32, 0.15);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.downloads__bar-fill {
+  height: 100%;
+  background: var(--cockpit-amber);
+  border-radius: 3px;
+  transition: width 1s ease;
+  box-shadow: 0 0 6px var(--cockpit-amber);
+}
+
+.downloads__speed {
+  font-size: var(--tile-font-value);
+  font-weight: 600;
+  color: #00c8ff;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+/* ---------- Service card ---------- */
+.service-card {
+  position: relative;
+  padding: 0;
+  background: var(--bg-panel);
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.service-card--nas {
+  position: relative;
+  background: var(--bg-panel);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.service-card__ribbon {
+  height: 20px;
+  background: var(--cockpit-amber);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 6px;
+  padding-right: 8px;
+}
+
+.service-card__body {
+  padding: 8px 12px 12px 12px;
+  flex: 1;
+}
+
+.service-card__empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 60px;
+}
+
+/* ---------- Status LED (geometry only; color+glow are data-driven) ---------- */
+.status-led {
+  width: var(--led-size);
+  height: var(--led-size);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ---------- Metric bar (track only; fill width/color data-driven) ---------- */
+.metric-bar__track {
+  flex: 1;
+  height: 14px;
+  background: rgba(232, 160, 32, 0.15);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.metric-bar__fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+/* ---------- App header ---------- */
+.app-header__title-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: 44px;
+  padding: 0 12px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.app-header__title {
+  font-size: 28px;
+}
+
+.app-header__icon-button {
+  color: var(--cockpit-amber);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- Now Playing banner ---------- */
+.now-playing-banner {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: var(--tile-gap);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.now-playing-banner--idle {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 48px;
+  z-index: 30;
+  background: var(--bg-panel);
+  border-top: 1px solid rgba(232, 160, 32, 0.2);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: var(--tile-gap);
+}
+
+.now-playing-banner__label {
+  font-family: var(--font-mono);
+  font-size: var(--tile-font-value);
+  color: var(--cockpit-amber);
+  letter-spacing: 0.08em;
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.now-playing-banner__message {
+  flex: 1;
+  font-size: var(--tile-font-value);
+  font-weight: 600;
+  color: #666666;
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+}
+
+.now-playing-banner__expanded {
+  overflow: hidden;
+  max-height: min(60vh, 320px);
+  overflow-y: auto;
+  padding: 0 16px;
+  border-top: 1px solid var(--cockpit-amber);
+}
+
+/* ---------- Pi-health panel ---------- */
+.pi-health__inner {
+  padding: 10px 16px;
+}
+
+.pi-health__metric-label-row {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: var(--tile-font-label);
+  line-height: 16px;
+  margin-bottom: 3px;
+}
+
+.pi-health__metric-label {
+  color: var(--cockpit-amber);
+  letter-spacing: 0.06em;
+}
+
+.pi-health__bar-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+/* ============================================================
+   HOVER RULES — D-18 / RESP-17
+   Any :hover rule added to this file OR to future CSS must be
+   wrapped in @media (hover: hover) and (pointer: fine) to
+   prevent sticky iOS hover states. The current codebase has
+   zero raw :hover rules — hover is implemented via React
+   useState gated on canHover() (see ServiceCard.tsx and
+   viewport/hoverCapability.ts).
+   ============================================================ */
