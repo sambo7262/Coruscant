@@ -1,0 +1,16 @@
+/* ============================================================
+   viewport-iphone.css
+   ============================================================
+   iPhone-scope CSS overrides. Phase 14 creates this file empty;
+   Phase 15 will populate it with rules.
+
+   CONTRACT (enforced by scripts/verify-viewport-isolation.mjs):
+     1. Every selector MUST start with html[data-viewport^="iphone"]
+        (or the exact-match variant html[data-viewport="iphone-portrait"]
+        or html[data-viewport="iphone-landscape"]).
+     2. NO !important anywhere in this file.
+     3. NO @media anywhere in this file (use attribute scoping instead).
+
+   Adding a rule that violates the contract will fail CI and
+   the pre-commit hook.
+   ============================================================ */
