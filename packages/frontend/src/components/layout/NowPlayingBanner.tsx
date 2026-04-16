@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { PlexStream, PlexServerStats } from '@coruscant/shared'
 import { StreamRow } from './StreamRow.js'
+import { useViewport } from '../../viewport/index.js'
 
 /** Return green / amber / red based on utilization percent */
 function statColor(pct: number, baseColor: string): string {
@@ -19,6 +20,11 @@ interface NowPlayingBannerProps {
 export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: NowPlayingBannerProps) {
   const [expanded, setExpanded] = useState(false)
   const [activeIdx, setActiveIdx] = useState(0)
+
+  const viewport = useViewport()
+  const isPortrait = viewport === 'iphone-portrait'
+  const isIphone = viewport.startsWith('iphone')
+  const collapsedHeight = isPortrait ? 56 : 48
 
   // Cycle through stream titles every ~4 seconds when multiple streams active (D-24)
   useEffect(() => {
@@ -92,9 +98,9 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
       <motion.div
         key="banner"
         className={`banner-blur-bg now-playing-banner__active ${expanded ? 'now-playing-banner__active--expanded' : ''}`}
-        initial={{ y: 40, opacity: 0 }}
+        initial={{ y: collapsedHeight, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 40, opacity: 0 }}
+        exit={{ y: collapsedHeight, opacity: 0 }}
         transition={{ duration: 0.25, ease: 'easeOut' }}
         aria-live="polite"
       >
@@ -134,11 +140,16 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
                     ? `${s.title} S${s.season}E${s.episode}`
                     : s.title
                   // Transcode glow style — per D-05/D-06
-                  const transcodeStyle = s.transcode ? {
-                    animation: `transcodeGlow 3s ease-in-out infinite${titleText.length > 28 ? ', downloadsMarquee 8s linear infinite' : ''}`,
-                    animationDelay: titleText.length > 28 ? '0s, 2s' : undefined,
-                    color: '#FFD060',
-                  } : {}
+                  // RESP-18: Skip text-shadow animation on iPhone; CSS filter: drop-shadow() handles glow
+                  const transcodeStyle = s.transcode
+                    ? isIphone
+                      ? { color: '#FFD060' }
+                      : {
+                          animation: `transcodeGlow 3s ease-in-out infinite${titleText.length > 28 ? ', downloadsMarquee 8s linear infinite' : ''}`,
+                          animationDelay: titleText.length > 28 ? '0s, 2s' : undefined,
+                          color: '#FFD060',
+                        }
+                    : {}
 
                   return (
                     <>
