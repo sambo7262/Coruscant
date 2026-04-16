@@ -6,6 +6,7 @@ import type { ArrWebhookEvent, WeatherData, PiHealthStatus } from '@coruscant/sh
 import { WeatherIcon } from '../weather/WeatherIcon.js'
 import { StaleIndicator } from '../ui/StaleIndicator.js'
 import { PiHealthPanel } from './PiHealthPanel.js'
+import { useViewport } from '../../viewport/index.js'
 
 interface AppHeaderProps {
   connected: boolean
@@ -21,12 +22,13 @@ function isWeatherStale(fetchedAt: string): boolean {
   return age > 20 * 60 * 1000 // 20 minutes (15 min poll + 5 min grace)
 }
 
-function useLocalClock(timezone?: string): { time: string; colonVisible: boolean } {
+function useLocalClock(timezone?: string, enabled = true): { time: string; colonVisible: boolean } {
   const [now, setNow] = useState(Date.now())
   useEffect(() => {
+    if (!enabled) return
     const id = setInterval(() => setNow(Date.now()), 1000)
     return () => clearInterval(id)
-  }, [])
+  }, [enabled])
   const tz = timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone
   const d = new Date(now)
   const parts = new Intl.DateTimeFormat('en-US', {
@@ -76,10 +78,12 @@ const SEVERITY_TITLE_STYLES: Record<string, { color: string; animation?: string 
 }
 
 export function AppHeader({ connected, showBack = false, lastArrEvent, activeOutages, weatherData, piHealth }: AppHeaderProps) {
+  const viewport = useViewport()
+  const isPortrait = viewport === 'iphone-portrait'
   const [ticker, setTicker] = useState<{ text: string; color: string } | null>(null)
   const [panelOpen, setPanelOpen] = useState(false)
   const tickerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const clock = useLocalClock(weatherData?.timezone)
+  const clock = useLocalClock(weatherData?.timezone, !isPortrait)
 
   const titleSeverity = piHealth?.severity ?? 'normal'
   const titleStyle = SEVERITY_TITLE_STYLES[titleSeverity] ?? SEVERITY_TITLE_STYLES.normal
@@ -175,8 +179,8 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, activeOut
           </div>
         ) : (
           <>
-            {/* Center: connection status indicators (hidden when showBack) */}
-            {!showBack && (
+            {/* Center: clock — hidden in portrait per D-10 */}
+            {!showBack && !isPortrait && (
               <div className="app-header__center">
                 {/* Local clock — flashing colon */}
                 <span className="app-header__clock">
@@ -194,6 +198,13 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, activeOut
                   />
                 )}
               </div>
+            )}
+            {/* Portrait: show disconnected dot standalone if needed */}
+            {!showBack && isPortrait && !connected && (
+              <span
+                title="Connection lost. Reconnecting..."
+                className="app-header__disconnected-dot"
+              />
             )}
 
             {/* Right: weather widget + nav icons (hidden when showBack) */}
@@ -218,13 +229,15 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, activeOut
                 >
                   <Settings size={26} />
                 </Link>
-                <Link
-                  to="/logs"
-                  aria-label="Open Logs"
-                  className="app-header__icon-button"
-                >
-                  <List size={26} />
-                </Link>
+                {!isPortrait && (
+                  <Link
+                    to="/logs"
+                    aria-label="Open Logs"
+                    className="app-header__icon-button"
+                  >
+                    <List size={26} />
+                  </Link>
+                )}
               </div>
             ) : (
               <div />
