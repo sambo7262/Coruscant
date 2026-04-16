@@ -672,6 +672,7 @@ interface ServiceCardProps {
   index: number
   allServices?: ServiceStatus[]
   lastArrEvent?: ArrWebhookEvent | null
+  activeOutages?: Map<string, { message?: string; since: string }>
   nasStatus?: NasStatus | null
 }
 
@@ -806,7 +807,7 @@ export function ServiceCard({ service, index, allServices, nasStatus }: ServiceC
  *  Renders a single tight row with a status LED and service label.
  *  Tappable — navigates to service detail view.
  */
-export function MediaStackRow({ service, index, lastArrEvent }: ServiceCardProps) {
+export function MediaStackRow({ service, index, lastArrEvent, activeOutages }: ServiceCardProps) {
   const navigate = useNavigate()
 
   const metrics = service.metrics as Record<string, unknown> | undefined
@@ -829,16 +830,39 @@ export function MediaStackRow({ service, index, lastArrEvent }: ServiceCardProps
     }
   }, [service.status])
 
+  // Persistent outage: if this service has an active health outage, hold red
+  // until the HealthRestored event clears it — no 10s fade.
+  const hasActiveOutage = activeOutages?.has(service.id) ?? false
+
+  useEffect(() => {
+    if (hasActiveOutage) {
+      if (flashTimerRef.current) clearTimeout(flashTimerRef.current)
+      setFlashColor(EVENT_COLORS.health_issue)
+      return
+    }
+    // Outage cleared — remove persistent red if no transient flash is active
+    if (flashColor === EVENT_COLORS.health_issue && !lastArrEvent) {
+      setFlashColor(null)
+    }
+  }, [hasActiveOutage])
+
   useEffect(() => {
     if (!lastArrEvent || lastArrEvent.service !== service.id) return
     if (lastArrEvent.eventCategory === 'unknown') return
+    if (lastArrEvent.eventCategory === 'health_restored') {
+      setFlashColor(null)
+      if (flashTimerRef.current) clearTimeout(flashTimerRef.current)
+      return
+    }
     if (!ARR_FLASH_IDS.has(service.id)) return
     const color = EVENT_COLORS[lastArrEvent.eventCategory]
     if (!color) return
     if (flashTimerRef.current) clearTimeout(flashTimerRef.current)
     setFlashColor(color)
+    // If there's an active outage, don't fade — hold until restored
+    if (lastArrEvent.eventCategory === 'health_issue' && hasActiveOutage) return
     flashTimerRef.current = setTimeout(() => setFlashColor(null), 10_000)
-  }, [lastArrEvent, service.id])
+  }, [lastArrEvent, service.id, hasActiveOutage])
 
   // D-11 LED color logic for arr services
   // Green: online, no download activity

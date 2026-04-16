@@ -11,6 +11,7 @@ interface AppHeaderProps {
   connected: boolean
   showBack?: boolean
   lastArrEvent?: ArrWebhookEvent | null
+  activeOutages?: Map<string, { message?: string; since: string }>
   weatherData?: WeatherData | null
   piHealth?: PiHealthStatus | null
 }
@@ -74,7 +75,7 @@ const SEVERITY_TITLE_STYLES: Record<string, { color: string; animation?: string 
   stale:    { color: 'var(--cockpit-amber)' },
 }
 
-export function AppHeader({ connected, showBack = false, lastArrEvent, weatherData, piHealth }: AppHeaderProps) {
+export function AppHeader({ connected, showBack = false, lastArrEvent, activeOutages, weatherData, piHealth }: AppHeaderProps) {
   const [ticker, setTicker] = useState<{ text: string; color: string } | null>(null)
   const [panelOpen, setPanelOpen] = useState(false)
   const tickerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -83,14 +84,41 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, weatherDa
   const titleSeverity = piHealth?.severity ?? 'normal'
   const titleStyle = SEVERITY_TITLE_STYLES[titleSeverity] ?? SEVERITY_TITLE_STYLES.normal
 
+  // Persistent outage ticker: if any service has an active health outage,
+  // hold the ticker at the outage message until HealthRestored clears it.
+  const outageCount = activeOutages?.size ?? 0
+
+  useEffect(() => {
+    if (outageCount > 0) {
+      const entries = [...(activeOutages?.entries() ?? [])]
+      const [svc, info] = entries[0]
+      const text = entries.length === 1
+        ? `${svc.toUpperCase()} \u25B8 INDEXER DOWN${info.message ? ` \u25B8 ${info.message}` : ''}`
+        : `${entries.length} SERVICES \u25B8 HEALTH ISSUES`
+      if (tickerTimerRef.current) clearTimeout(tickerTimerRef.current)
+      setTicker({ text, color: EVENT_COLORS.health_issue })
+      return
+    }
+    // All outages cleared — remove persistent ticker
+    if (ticker?.color === EVENT_COLORS.health_issue) {
+      setTicker(null)
+    }
+  }, [outageCount])
+
   useEffect(() => {
     if (!lastArrEvent || lastArrEvent.eventCategory === 'unknown') return
+    if (lastArrEvent.eventCategory === 'health_restored') {
+      // Don't show "restored" in ticker — the outage effect handles clearing
+      return
+    }
+    // If there's an active outage, the outage ticker takes priority — skip transient events
+    if (outageCount > 0) return
     const text = buildTickerText(lastArrEvent)
     const color = EVENT_COLORS[lastArrEvent.eventCategory] ?? 'transparent'
     if (tickerTimerRef.current) clearTimeout(tickerTimerRef.current)
     setTicker({ text, color })
     tickerTimerRef.current = setTimeout(() => setTicker(null), 10_000)
-  }, [lastArrEvent])
+  }, [lastArrEvent, outageCount])
 
   return (
     <>
