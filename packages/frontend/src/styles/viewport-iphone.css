@@ -89,3 +89,84 @@ html[data-viewport^="iphone"] .now-playing-banner__title-wrap {
   will-change: transform;
   transform: translateZ(0);
 }
+
+/* ===================== PORTRAIT ONLY ===================== */
+/* Rules specific to portrait orientation.
+   Use html[data-viewport="iphone-portrait"] as the prefix. */
+
+/* --- Token overrides (D-19, D-20) --- */
+html[data-viewport="iphone-portrait"] {
+  --tile-padding: 10px;
+  --tile-gap: 10px;
+  --tile-font-label: 12px;
+  --tile-font-value: 20px;
+  --led-size: 8px;
+}
+
+/* --- Grid: single column (RESP-06, D-01) --- */
+html[data-viewport="iphone-portrait"] .card-grid__row-2col {
+  grid-template-columns: 1fr;
+}
+
+/* --- Release fixed tile heights for portrait scroll --- */
+html[data-viewport="iphone-portrait"] .media-tile {
+  max-height: none;
+}
+
+html[data-viewport="iphone-portrait"] .service-card--pihole {
+  height: auto;
+}
+
+/* --- Typography scale (RESP-07, D-18) per SS5 table --- */
+html[data-viewport="iphone-portrait"] .text-display { font-size: 18px; }
+html[data-viewport="iphone-portrait"] .text-heading { font-size: 15px; }
+html[data-viewport="iphone-portrait"] .text-body { font-size: 14px; }
+
+/* --- AppHeader compact (D-11) --- */
+html[data-viewport="iphone-portrait"] .app-header__title-row {
+  grid-template-columns: 1fr auto;
+  height: 44px;
+  padding: 0 8px;
+}
+
+html[data-viewport="iphone-portrait"] .app-header__title {
+  font-size: 17px;
+}
+
+html[data-viewport="iphone-portrait"] .app-header__weather-temp {
+  font-size: 16px;
+}
+
+/* --- NowPlayingBanner mini-bar (D-04, D-07) --- */
+html[data-viewport="iphone-portrait"] .now-playing-banner {
+  height: 56px;
+}
+
+html[data-viewport="iphone-portrait"] .now-playing-banner--idle {
+  height: 56px;
+}
+
+html[data-viewport="iphone-portrait"] .now-playing-banner__label { font-size: 14px; }
+html[data-viewport="iphone-portrait"] .now-playing-banner__title { font-size: 14px; }
+html[data-viewport="iphone-portrait"] .now-playing-banner__stat { font-size: 13px; }
+html[data-viewport="iphone-portrait"] .now-playing-banner__message { font-size: 14px; }
+
+/* --- Expanded drawer — use 100dvh (RESP-09) --- */
+html[data-viewport="iphone-portrait"] .now-playing-banner__expanded {
+  max-height: min(60dvh, 320px);
+}
+
+/* --- Media stack rows --- */
+html[data-viewport="iphone-portrait"] .media-stack-row__name { font-size: 14px; }
+
+/* --- Network instrument --- */
+html[data-viewport="iphone-portrait"] .net-instrument__stat { font-size: 18px; }
+
+/* --- NAS tile --- */
+html[data-viewport="iphone-portrait"] .nas-tile__docker-stat { font-size: 16px; }
+
+/* --- Ribbon labels --- */
+html[data-viewport="iphone-portrait"] .ribbon-label { font-size: 12px; }
+
+/* ===================== LANDSCAPE ONLY (Phase 16) ===================== */
+/* Reserved -- empty in Phase 15. */
