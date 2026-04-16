@@ -14,6 +14,7 @@ export function useDashboardSSE() {
   const [snapshot, setSnapshot] = useState<DashboardSnapshot | null>(null)
   const [connected, setConnected] = useState(false)
   const [lastArrEvent, setLastArrEvent] = useState<ArrWebhookEvent | null>(null)
+  const [activeOutages, setActiveOutages] = useState<Map<string, { message?: string; since: string }>>(new Map())
   const [lastLogEntry, setLastLogEntry] = useState<LogEntry | null>(null)
 
   useEffect(() => {
@@ -29,7 +30,22 @@ export function useDashboardSSE() {
       })
 
       es.addEventListener('arr-event', (e: MessageEvent) => {
-        setLastArrEvent(JSON.parse(e.data) as ArrWebhookEvent)
+        const event = JSON.parse(e.data) as ArrWebhookEvent
+        setLastArrEvent(event)
+
+        if (event.eventCategory === 'health_issue') {
+          setActiveOutages(prev => {
+            const next = new Map(prev)
+            next.set(event.service, { message: event.title, since: new Date().toISOString() })
+            return next
+          })
+        } else if (event.eventCategory === 'health_restored') {
+          setActiveOutages(prev => {
+            const next = new Map(prev)
+            next.delete(event.service)
+            return next
+          })
+        }
       })
 
       es.addEventListener('log-entry', (e: MessageEvent) => {
@@ -52,5 +68,5 @@ export function useDashboardSSE() {
     }
   }, [])
 
-  return { snapshot, connected, lastArrEvent, lastLogEntry }
+  return { snapshot, connected, lastArrEvent, activeOutages, lastLogEntry }
 }

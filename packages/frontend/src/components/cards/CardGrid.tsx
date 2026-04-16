@@ -15,6 +15,7 @@ const RIGHT_COL_IDS = ['prowlarr', 'bazarr', 'readarr']
 interface CardGridProps {
   snapshot: DashboardSnapshot | null
   lastArrEvent?: ArrWebhookEvent | null
+  activeOutages?: Map<string, { message?: string; since: string }>
   nasStatus?: NasStatus | null
 }
 
@@ -137,7 +138,7 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
   )
 }
 
-export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
+export function CardGrid({ snapshot, lastArrEvent, activeOutages, nasStatus }: CardGridProps) {
   if (!snapshot) {
     // Skeleton state: two placeholder cards
     return (
@@ -207,12 +208,12 @@ export function CardGrid({ snapshot, lastArrEvent, nasStatus }: CardGridProps) {
             <div className="media-tile__cols">
               <div className="media-tile__col">
                 {leftColArr.map((service) => (
-                  <MediaStackRow key={service.id} service={service} index={globalIndex++} lastArrEvent={lastArrEvent} />
+                  <MediaStackRow key={service.id} service={service} index={globalIndex++} lastArrEvent={lastArrEvent} activeOutages={activeOutages} />
                 ))}
               </div>
               <div className="media-tile__col">
                 {rightColArr.map((service) => (
-                  <MediaStackRow key={service.id} service={service} index={globalIndex++} lastArrEvent={lastArrEvent} />
+                  <MediaStackRow key={service.id} service={service} index={globalIndex++} lastArrEvent={lastArrEvent} activeOutages={activeOutages} />
                 ))}
               </div>
             </div>
