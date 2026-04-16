@@ -10,7 +10,7 @@
     "dev:backend": "npm run dev --workspace=packages/backend",
     "dev:frontend": "npm run dev --workspace=packages/frontend",
     "test": "vitest run",
-    "prepare": "husky",
+    "prepare": "husky || true",
     "lint": "node scripts/verify-viewport-isolation.mjs"
   },
   "devDependencies": {
