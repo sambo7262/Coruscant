@@ -14,3 +14,78 @@
    Adding a rule that violates the contract will fail CI and
    the pre-commit hook.
    ============================================================ */
+
+/* ===================== SHARED (portrait + landscape) ===================== */
+/* Rules that apply to ALL iPhone viewports regardless of orientation.
+   Use html[data-viewport^="iphone"] as the prefix. */
+
+/* --- Safe-area insets (RESP-05) --- */
+html[data-viewport^="iphone"] .app-header {
+  padding-top: env(safe-area-inset-top);
+}
+
+html[data-viewport^="iphone"] .now-playing-banner__active,
+html[data-viewport^="iphone"] .now-playing-banner--idle {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+html[data-viewport^="iphone"] .pi-health {
+  top: calc(44px + env(safe-area-inset-top));
+}
+
+/* --- Body scroll release + 100dvh (RESP-09) --- */
+html[data-viewport^="iphone"] body {
+  height: auto;
+  min-height: 100dvh;
+  max-height: none;
+  overscroll-behavior-y: contain;
+}
+
+html[data-viewport^="iphone"] {
+  background: var(--space-deep);
+  overscroll-behavior-y: contain;
+}
+
+/* --- CRT sweep disable (saves GPU, fixes 100vh in keyframe) --- */
+html[data-viewport^="iphone"] .crt-sweep {
+  display: none;
+}
+
+/* --- Touch targets >= 44px (RESP-08) --- */
+html[data-viewport^="iphone"] .app-header__icon-button {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+html[data-viewport^="iphone"] .media-stack-row {
+  min-height: 44px;
+}
+
+/* --- touch-action: manipulation (D-24) --- */
+html[data-viewport^="iphone"] button,
+html[data-viewport^="iphone"] a,
+html[data-viewport^="iphone"] select,
+html[data-viewport^="iphone"] input,
+html[data-viewport^="iphone"] .service-card,
+html[data-viewport^="iphone"] .media-stack-row,
+html[data-viewport^="iphone"] .now-playing-banner,
+html[data-viewport^="iphone"] .now-playing-banner--idle,
+html[data-viewport^="iphone"] .app-header__title-button,
+html[data-viewport^="iphone"] .app-header__icon-button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* --- Input auto-zoom prevention (font-size < 16px triggers iOS Safari zoom) --- */
+html[data-viewport^="iphone"] input,
+html[data-viewport^="iphone"] select,
+html[data-viewport^="iphone"] textarea {
+  font-size: 16px;
+}
+
+/* --- RESP-18: Transcode glow GPU-composited filter replaces text-shadow paint storms --- */
+html[data-viewport^="iphone"] .now-playing-banner__title-wrap {
+  filter: drop-shadow(0 0 3px rgba(232, 160, 32, 0.4));
+  will-change: transform;
+  transform: translateZ(0);
+}
