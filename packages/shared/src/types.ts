@@ -146,7 +146,7 @@ export interface UnifiMetrics {
 
 export interface ArrWebhookEvent {
   service: string          // 'radarr' | 'sonarr' | 'lidarr' | 'bazarr' | 'prowlarr' | 'readarr' | 'sabnzbd'
-  eventCategory: 'grab' | 'download_complete' | 'health_issue' | 'update_available' | 'unknown'
+  eventCategory: 'grab' | 'download_complete' | 'health_issue' | 'health_restored' | 'update_available' | 'unknown'
   title?: string           // content title for ticker display
   rawEventType: string     // original eventType from arr payload, for logging
 }

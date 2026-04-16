@@ -82,6 +82,7 @@ export function classifyArrEvent(rawEventType: string): ArrWebhookEvent['eventCa
     case 'grab': return 'grab'
     case 'download': return 'download_complete'
     case 'health': return 'health_issue'
+    case 'healthrestored': return 'health_restored'
     case 'applicationupdate': return 'update_available'
     default: return 'unknown'
   }
