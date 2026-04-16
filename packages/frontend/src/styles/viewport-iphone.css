@@ -138,35 +138,40 @@ html[data-viewport="iphone-portrait"] .app-header__weather-temp {
 }
 
 /* --- NowPlayingBanner mini-bar — 2-row portrait layout (D-04, D-07) ---
-   Row 1: Plex stats (CPU/RAM/BW)
-   Row 2: Now playing title or "NO ACTIVE STREAMS"
-   Both idle and active states use the same 2-row pattern. */
+   Row 1: Plex stats (CPU/RAM/BW) — full width via flex-basis: 100%
+   Row 2: "PLEX: NO ACTIVE STREAMS" or "PLEX ▶ Title" — label + content side-by-side
+   flex-wrap: wrap lets stats claim row 1, remaining children share row 2. */
 html[data-viewport="iphone-portrait"] .now-playing-banner {
   height: auto;
-  min-height: 56px;
-  flex-direction: column;
+  min-height: 48px;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
-  gap: 2px;
-  padding-top: 6px;
-  padding-bottom: calc(6px + env(safe-area-inset-bottom));
+  gap: 1px 6px;
+  padding: 3px 12px calc(3px + env(safe-area-inset-bottom));
+  overflow: visible;
 }
 
 html[data-viewport="iphone-portrait"] .now-playing-banner--idle {
   height: auto;
-  min-height: 56px;
-  flex-direction: column;
+  min-height: 48px;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
-  gap: 2px;
-  padding-top: 6px;
-  padding-bottom: calc(6px + env(safe-area-inset-bottom));
+  gap: 1px 6px;
+  padding: 3px 12px calc(3px + env(safe-area-inset-bottom));
+  overflow: visible;
 }
 
-/* Stats row floats to top in both idle and active */
+/* Stats row floats to top and claims full width (row 1) */
 html[data-viewport="iphone-portrait"] .now-playing-banner__stats {
   order: -1;
-  width: 100%;
+  flex-basis: 100%;
   justify-content: center;
 }
+
+/* Bump stats font for portrait readability */
+html[data-viewport="iphone-portrait"] .now-playing-banner__stat { font-size: 14px; }
 
 html[data-viewport="iphone-portrait"] .now-playing-banner__label { font-size: 14px; }
 html[data-viewport="iphone-portrait"] .now-playing-banner__title { font-size: 14px; }
