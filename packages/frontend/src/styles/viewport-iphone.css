@@ -143,7 +143,13 @@ html[data-viewport="iphone-portrait"] .now-playing-banner {
 }
 
 html[data-viewport="iphone-portrait"] .now-playing-banner--idle {
-  height: 56px;
+  height: auto;
+  min-height: 56px;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-top: 6px;
+  padding-bottom: calc(6px + env(safe-area-inset-bottom));
 }
 
 html[data-viewport="iphone-portrait"] .now-playing-banner__label { font-size: 14px; }
@@ -156,13 +162,22 @@ html[data-viewport="iphone-portrait"] .now-playing-banner__expanded {
   max-height: min(60dvh, 320px);
 }
 
-/* --- Media stack rows --- */
-html[data-viewport="iphone-portrait"] .media-stack-row__name { font-size: 14px; }
+/* --- Media stack rows — increased text for portrait readability --- */
+html[data-viewport="iphone-portrait"] .media-stack-row__name { font-size: 16px; }
 
 /* --- Network instrument --- */
 html[data-viewport="iphone-portrait"] .net-instrument__stat { font-size: 18px; }
 
-/* --- NAS tile --- */
+/* --- NAS tile — disk LEDs reflow to 3-per-row for portrait breathing room --- */
+html[data-viewport="iphone-portrait"] .nas-tile__disks {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+html[data-viewport="iphone-portrait"] .nas-tile__disk-row {
+  display: contents;
+}
+
 html[data-viewport="iphone-portrait"] .nas-tile__docker-stat { font-size: 16px; }
 
 /* --- Ribbon labels --- */

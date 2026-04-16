@@ -83,7 +83,7 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, activeOut
   const [ticker, setTicker] = useState<{ text: string; color: string } | null>(null)
   const [panelOpen, setPanelOpen] = useState(false)
   const tickerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const clock = useLocalClock(weatherData?.timezone, !isPortrait)
+  const clock = useLocalClock(weatherData?.timezone)
 
   const titleSeverity = piHealth?.severity ?? 'normal'
   const titleStyle = SEVERITY_TITLE_STYLES[titleSeverity] ?? SEVERITY_TITLE_STYLES.normal
@@ -179,8 +179,8 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, activeOut
           </div>
         ) : (
           <>
-            {/* Center: clock — hidden in portrait per D-10 */}
-            {!showBack && !isPortrait && (
+            {/* Center: clock */}
+            {!showBack && (
               <div className="app-header__center">
                 {/* Local clock — flashing colon */}
                 <span className="app-header__clock">
@@ -199,14 +199,6 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, activeOut
                 )}
               </div>
             )}
-            {/* Portrait: show disconnected dot standalone if needed */}
-            {!showBack && isPortrait && !connected && (
-              <span
-                title="Connection lost. Reconnecting..."
-                className="app-header__disconnected-dot"
-              />
-            )}
-
             {/* Right: weather widget + nav icons (hidden when showBack) */}
             {!showBack ? (
               <div className="app-header__right">
