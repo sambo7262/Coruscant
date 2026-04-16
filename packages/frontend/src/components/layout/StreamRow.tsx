@@ -1,10 +1,13 @@
 import type { PlexStream } from '@coruscant/shared'
+import { useViewport } from '../../viewport/index.js'
 
 interface StreamRowProps {
   stream: PlexStream
 }
 
 export function StreamRow({ stream }: StreamRowProps) {
+  const viewport = useViewport()
+  const isIphone = viewport.startsWith('iphone')
   const isAudio = stream.mediaType === 'audio'
 
   // Format title based on media type (D-26)
@@ -56,10 +59,11 @@ export function StreamRow({ stream }: StreamRowProps) {
           </span>
           <span style={{
             color: 'var(--text-offwhite)',
-            ...(stream.transcode ? {
-              animation: 'transcodeGlow 3s ease-in-out infinite',
-              color: '#FFD060',
-            } : {}),
+            ...(stream.transcode
+              ? isIphone
+                ? { color: '#FFD060' }  // RESP-18: Glow via CSS filter: drop-shadow()
+                : { animation: 'transcodeGlow 3s ease-in-out infinite', color: '#FFD060' }
+              : {}),
           }}>{titleText}</span>
         </span>
         <span
