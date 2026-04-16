@@ -1,0 +1,32 @@
+name: CI (lint + test)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build shared workspace
+        run: npm run build --workspace=packages/shared
+
+      - name: Isolation lint
+        run: node scripts/verify-viewport-isolation.mjs
+
+      - name: Frontend tests
+        run: npm run test --workspace=packages/frontend
