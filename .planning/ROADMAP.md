@@ -86,10 +86,10 @@ Task sequence (non-negotiable per research SUMMARY.md):
   4. AppHeader renders as a compact title bar in which Pi health severity (normal amber / warning / critical red-pulse) remains unmistakable, and the expandable Pi health panel shows all 6 metric rows readable without horizontal scroll or truncation
   5. Every interactive element (tiles, LEDs, title bar, banner expand, settings rows) has a touch target >= 44x44 pt
   6. Phase 15 close gate: kiosk pixel-diff = zero at 800x480, CI lint + vitest green, real iPhone 15 portrait smoke test passes
-**Plans:** 1/5 plans executed
+**Plans:** 2/5 plans executed
 Plans:
 - [x] 15-01-PLAN.md — Portrait CSS foundation: token overrides, grid, safe-area, typography, touch targets, scroll, 100dvh, RESP-18 drop-shadow
-- [ ] 15-02-PLAN.md — AppHeader portrait: useViewport to hide clock + logs icon, disable useLocalClock timer
+- [x] 15-02-PLAN.md — AppHeader portrait: useViewport to hide clock + logs icon, disable useLocalClock timer
 - [ ] 15-03-PLAN.md — NowPlayingBanner portrait: useViewport for Framer Motion mini-bar heights, RESP-18 transcode glow fix
 - [ ] 15-04-PLAN.md — App.tsx + pages adaptations: body overflow, main padding, LogsPage 100dvh, SettingsPage stacking
 - [ ] 15-05-PLAN.md — Close gate: automated checks + real iPhone 15 portrait smoke test + kiosk regression check
@@ -135,5 +135,5 @@ Plans:
 | 12. Pi Health Backend & Settings | v1.1 | 2/2 | Complete   | 2026-04-07 |
 | 13. Title Bar Alerts & Detail View | v1.1 | 2/2 | Complete   | 2026-04-15 |
 | 14. Kiosk-Isolation Infrastructure | v1.2 | 6/6 | Complete   | 2026-04-16 |
-| 15. iPhone Portrait | v1.2 | 1/5 | In Progress|  |
+| 15. iPhone Portrait | v1.2 | 2/5 | In Progress|  |
 | 16. iPhone Landscape | v1.2 | 0/? | Not started | - |
