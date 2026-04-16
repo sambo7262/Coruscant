@@ -16,7 +16,7 @@
 - [x] **RESP-07**: Typography and LED sizing in iPhone portrait are calibrated for arm's-length viewing (~30 cm) — body, labels, metric numerals, tile headers, and the CORUSCANT title all render legibly at hand-held distance while preserving the cockpit aesthetic
 - [ ] **RESP-08**: All interactive elements (tiles, LEDs, title bar, banner expand, settings rows) have touch targets of at least 44×44 pt in iPhone portrait per Apple HIG
 - [x] **RESP-09**: `100vh` is replaced by `100dvh` in iPhone scope so the NowPlayingBanner and other viewport-height-relying elements do not jump when Safari's address bar collapses
-- [ ] **RESP-10**: NowPlayingBanner renders as a mini-bar (56–64 pt tall, plus safe-area bottom inset) in iPhone portrait following the Apple Music / Spotify / Plex pattern, with main content `padding-bottom` adjusted so the last tile is never hidden under the banner
+- [x] **RESP-10**: NowPlayingBanner renders as a mini-bar (56–64 pt tall, plus safe-area bottom inset) in iPhone portrait following the Apple Music / Spotify / Plex pattern, with main content `padding-bottom` adjusted so the last tile is never hidden under the banner
 - [x] **RESP-11**: AppHeader renders as a compact title bar in iPhone portrait (with safe-area top inset), and Pi health severity colors on the CORUSCANT title (amber/warning/critical) remain unmistakable at the compressed height
 - [x] **RESP-12**: The expandable Pi health panel adapts to the iPhone portrait width so all 6 metric rows remain readable without horizontal scroll or truncation
 
@@ -67,7 +67,7 @@
 | RESP-07 | Phase 15 — iPhone Portrait | Complete |
 | RESP-08 | Phase 15 — iPhone Portrait | Pending |
 | RESP-09 | Phase 15 — iPhone Portrait | Complete |
-| RESP-10 | Phase 15 — iPhone Portrait | Pending |
+| RESP-10 | Phase 15 — iPhone Portrait | Complete |
 | RESP-11 | Phase 15 — iPhone Portrait | Complete |
 | RESP-12 | Phase 15 — iPhone Portrait | Complete |
 | RESP-13 | Phase 16 — iPhone Landscape | Pending |

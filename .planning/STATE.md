@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.2
 milestone_name: iPhone Responsive Polish
 status: executing
-stopped_at: Completed 15-02-PLAN.md
-last_updated: "2026-04-16T17:46:19.092Z"
+stopped_at: Completed 15-03-PLAN.md
+last_updated: "2026-04-16T17:49:55.120Z"
 last_activity: 2026-04-16
 progress:
   total_phases: 7
   completed_phases: 1
   total_plans: 11
-  completed_plans: 8
-  percent: 73
+  completed_plans: 9
+  percent: 82
 ---
 
 # Project State
@@ -27,7 +27,7 @@ See: .planning/PROJECT.md (updated 2026-04-15)
 
 Milestone: v1.2 iPhone Responsive Polish
 Phase: 15 (iPhone Portrait) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 Status: Ready to execute
 Last activity: 2026-04-16
 
@@ -54,6 +54,7 @@ Recent decisions affecting current work:
 - [Phase 14-kiosk-isolation-infrastructure]: Plan 14-06: husky 9 pre-commit + GitHub Actions CI enforce CSS isolation lint (RESP-02 complete); lint-staged scoped to exact viewport-iphone.css path
 - [Phase 15]: Plan 15-01: Pure CSS iPhone portrait foundation -- 172 lines, 49 selectors covering safe-area, 100dvh, single-column grid, typography, touch targets, RESP-18 drop-shadow; LED kept at 8px; no JS changes
 - [Phase 15]: Added enabled param to useLocalClock to gate 1s setInterval by viewport -- preserves React hooks rules while saving battery in portrait
+- [Phase 15-iphone-portrait]: RESP-18 text-shadow skip implemented via JS isIphone branching (not CSS !important); collapsedHeight 56px portrait / 48px kiosk drives Framer Motion animation
 
 ### Pending Todos
 
@@ -65,7 +66,7 @@ None. Research complete; approach validated.
 
 ## Session Continuity
 
-Last session: 2026-04-16T17:46:19.086Z
-Stopped at: Completed 15-02-PLAN.md
+Last session: 2026-04-16T17:49:55.114Z
+Stopped at: Completed 15-03-PLAN.md
 Resume file: None
 Next: `/gsd-plan-phase 14` to plan Kiosk-Isolation Infrastructure
