@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { LogEntry } from '../hooks/useDashboardSSE.js'
+import { useViewport } from '../viewport/index.js'
 
 interface LogsPageProps {
   lastLogEntry?: LogEntry | null
@@ -208,6 +209,8 @@ function PurgeModal({ onClose, onConfirm, purging }: PurgeModalProps) {
 }
 
 export function LogsPage({ lastLogEntry }: LogsPageProps) {
+  const viewport = useViewport()
+  const isIphone = viewport.startsWith('iphone')
   const [entries, setEntries] = useState<LogEntry[]>([])
   const [total, setTotal] = useState(0)
   const [levelFilter, setLevelFilter] = useState<LevelFilter>('warn')
@@ -343,7 +346,8 @@ export function LogsPage({ lastLogEntry }: LogsPageProps) {
         <select
           value={levelFilter}
           onChange={(e) => setLevelFilter(e.target.value as LevelFilter)}
-          style={selectStyle}
+          className="logs-filter-select"
+          style={{ ...selectStyle, minHeight: isIphone ? '44px' : '36px' }}
           aria-label="Filter by level"
         >
           <option value="all">ALL</option>
@@ -355,7 +359,8 @@ export function LogsPage({ lastLogEntry }: LogsPageProps) {
         <select
           value={serviceFilter}
           onChange={(e) => setServiceFilter(e.target.value)}
-          style={selectStyle}
+          className="logs-filter-select"
+          style={{ ...selectStyle, minHeight: isIphone ? '44px' : '36px' }}
           aria-label="Filter by service"
         >
           <option value="all">ALL</option>
@@ -372,8 +377,10 @@ export function LogsPage({ lastLogEntry }: LogsPageProps) {
         <button
           type="button"
           onClick={handleExport}
+          className="logs-filter-btn"
           style={{
             ...btnBase,
+            minHeight: isIphone ? '44px' : '36px',
             background: 'transparent',
             border: '1px solid var(--cockpit-amber)',
             color: 'var(--cockpit-amber)',
@@ -386,8 +393,10 @@ export function LogsPage({ lastLogEntry }: LogsPageProps) {
         <button
           type="button"
           onClick={() => setShowPurgeModal(true)}
+          className="logs-filter-btn"
           style={{
             ...btnBase,
+            minHeight: isIphone ? '44px' : '36px',
             background: 'transparent',
             border: '1px solid var(--cockpit-red)',
             color: 'var(--cockpit-red)',
@@ -400,11 +409,12 @@ export function LogsPage({ lastLogEntry }: LogsPageProps) {
       {/* Log table */}
       <div
         ref={scrollRef}
+        className="logs-table"
         style={{
           ...panelStyle,
           minHeight: '200px',
           overflowY: 'auto',
-          maxHeight: 'calc(100vh - 320px)',
+          maxHeight: isIphone ? 'calc(100dvh - 320px)' : 'calc(100vh - 320px)',
         }}
       >
         {loading && entries.length === 0 ? (
@@ -481,8 +491,10 @@ export function LogsPage({ lastLogEntry }: LogsPageProps) {
             type="button"
             onClick={handleLoadMore}
             disabled={loading}
+            className="logs-filter-btn"
             style={{
               ...btnBase,
+              minHeight: isIphone ? '44px' : '36px',
               background: 'transparent',
               border: '1px solid var(--border-rest)',
               color: 'var(--text-offwhite)',

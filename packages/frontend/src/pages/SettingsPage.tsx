@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { StatusDot } from '../components/ui/StatusDot.js'
+import { useViewport } from '../viewport/index.js'
 import type { DashboardSnapshot, ServiceStatus } from '@coruscant/shared'
 
 // LOGS tab component — Log retention configuration (D-27)
@@ -505,6 +506,8 @@ function getCredentialLabel(serviceId: ServiceId): string {
 }
 
 export function SettingsPage({ snapshot }: SettingsPageProps) {
+  const viewport = useViewport()
+  const isPortrait = viewport === 'iphone-portrait'
   const [searchParams, setSearchParams] = useSearchParams()
 
   const rawService = searchParams.get('service') ?? 'radarr'
@@ -705,16 +708,22 @@ export function SettingsPage({ snapshot }: SettingsPageProps) {
         Settings
       </h1>
 
-      {/* Two-column layout: side rail (left) + content panel (right) */}
-      <div style={{ display: 'flex', flexDirection: 'row', gap: '16px', alignItems: 'flex-start' }}>
+      {/* Two-column layout: side rail (left) + content panel (right); stacks vertically in portrait */}
+      <div className="settings-layout" style={{
+        display: 'flex',
+        flexDirection: isPortrait ? 'column' : 'row',
+        gap: '16px',
+        alignItems: 'flex-start',
+      }}>
 
-        {/* Left column — Side rail (D-17) */}
-        <div style={{
-          width: '120px',
+        {/* Left column — Side rail (D-17); horizontal scroll bar in portrait */}
+        <div className="settings-sidebar" style={{
+          width: isPortrait ? '100%' : '120px',
           flexShrink: 0,
           display: 'flex',
-          flexDirection: 'column',
-          gap: '2px',
+          flexDirection: isPortrait ? 'row' : 'column',
+          overflowX: isPortrait ? 'auto' : undefined,
+          gap: isPortrait ? '4px' : '2px',
           paddingTop: '4px',
         }}>
           {SECTIONS.map(section => (
