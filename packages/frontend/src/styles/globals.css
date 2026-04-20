@@ -1162,8 +1162,21 @@ body::after {
   padding: 6px 8px;
   cursor: pointer;
   border-radius: 3px;
+  border: 1px solid transparent;
   transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
   overflow: hidden;
+}
+
+.media-stack-row--outage {
+  animation: tilePulseRed 2s ease-in-out infinite;
+  border: 1px solid rgba(255, 68, 68, 0.5);
+  box-shadow: 0 0 8px 2px rgba(255, 68, 68, 0.25);
+}
+
+@keyframes tilePulseRed {
+  0%   { background: transparent; }
+  50%  { background: rgba(255, 68, 68, 0.08); }
+  100% { background: transparent; }
 }
 
 .media-stack-row__flash {
@@ -1272,26 +1285,6 @@ body::after {
   100% { transform: translateX(-100%); }
 }
 
-.app-header__ticker--outage {
-  animation: tickerPulse 2s ease-in-out infinite;
-  border: 1px solid rgba(255, 68, 68, 0.4);
-}
-
-@keyframes tickerPulse {
-  0%   { background: transparent; }
-  50%  { background: rgba(255, 68, 68, 0.08); }
-  100% { background: transparent; }
-}
-
-.app-header__ticker-led {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--cockpit-amber);
-  box-shadow: 0 0 6px var(--cockpit-amber);
-  flex-shrink: 0;
-  animation: ledPulseWarn 1s ease-in-out infinite;
-}
 
 .app-header__ticker-sep {
   color: rgba(232, 160, 32, 0.5);

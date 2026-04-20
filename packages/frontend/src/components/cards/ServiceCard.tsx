@@ -873,6 +873,15 @@ export function MediaStackRow({ service, index, lastArrEvent, activeOutages }: S
   // Grey: unconfigured / stale
   // D-12: glow values aligned with StatusDot (8px 3px spread) + ledBreathe on idle online
   const getLedStyle = (): React.CSSProperties => {
+    // Active outage → amber LED with warning pulse (overrides normal status)
+    if (hasActiveOutage) {
+      return {
+        background: 'var(--cockpit-amber)',
+        boxShadow: '0 0 8px 3px rgba(232,160,32,0.6)',
+        color: 'var(--cockpit-amber)',
+        animation: 'ledPulseWarn 1s ease-in-out infinite',
+      }
+    }
     if (isUnconfigured || service.status === 'stale') {
       return { background: '#666666', boxShadow: 'none', color: '#666666' }
     }
@@ -943,11 +952,11 @@ export function MediaStackRow({ service, index, lastArrEvent, activeOutages }: S
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') handleClick()
       }}
-      className="media-stack-row"
-      style={{
-        border: (outageFlashColor || flashColor) ? `1px solid ${outageFlashColor || flashColor}` : '1px solid transparent',
-        boxShadow: (outageFlashColor || flashColor) ? `0 0 8px 2px ${(outageFlashColor || flashColor)}66` : 'none',
-      }}
+      className={`media-stack-row${hasActiveOutage ? ' media-stack-row--outage' : ''}`}
+      style={!hasActiveOutage ? {
+        border: flashColor ? `1px solid ${flashColor}` : '1px solid transparent',
+        boxShadow: flashColor ? `0 0 8px 2px ${flashColor}66` : 'none',
+      } : undefined}
       onMouseEnter={(e) => {
         if (!flashColor && !outageFlashColor) {
           ;(e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(232,160,32,0.30)'
