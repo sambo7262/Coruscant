@@ -830,37 +830,37 @@ export function MediaStackRow({ service, index, lastArrEvent, activeOutages }: S
     }
   }, [service.status])
 
-  // Persistent outage: if this service has an active health outage, hold red
-  // until the HealthRestored event clears it — no 10s fade.
+  // Active outage → persistent red (no timer, no fade). Derived directly from
+  // the activeOutages Map so there's no effect-ordering race between the outage
+  // state and the lastArrEvent state.
   const hasActiveOutage = activeOutages?.has(service.id) ?? false
+
+  // Compute effective flash color: active outage always wins over transient events.
+  // This runs on every render — no useEffect timing issues.
+  const outageFlashColor = hasActiveOutage ? EVENT_COLORS.health_issue : null
 
   useEffect(() => {
     if (hasActiveOutage) {
-      if (flashTimerRef.current) clearTimeout(flashTimerRef.current)
+      // Outage is active — force red and cancel any pending fade timer
+      if (flashTimerRef.current) { clearTimeout(flashTimerRef.current); flashTimerRef.current = null }
       setFlashColor(EVENT_COLORS.health_issue)
       return
     }
-    // Outage cleared — remove persistent red if no transient flash is active
-    if (flashColor === EVENT_COLORS.health_issue && !lastArrEvent) {
-      setFlashColor(null)
-    }
+    // Outage just cleared — if we were showing persistent red, remove it
+    setFlashColor(prev => prev === EVENT_COLORS.health_issue ? null : prev)
   }, [hasActiveOutage])
 
   useEffect(() => {
     if (!lastArrEvent || lastArrEvent.service !== service.id) return
     if (lastArrEvent.eventCategory === 'unknown') return
-    if (lastArrEvent.eventCategory === 'health_restored') {
-      setFlashColor(null)
-      if (flashTimerRef.current) clearTimeout(flashTimerRef.current)
-      return
-    }
+    if (lastArrEvent.eventCategory === 'health_restored') return
+    // Don't start a transient flash if outage is active — it owns the red treatment
+    if (hasActiveOutage) return
     if (!ARR_FLASH_IDS.has(service.id)) return
     const color = EVENT_COLORS[lastArrEvent.eventCategory]
     if (!color) return
     if (flashTimerRef.current) clearTimeout(flashTimerRef.current)
     setFlashColor(color)
-    // If there's an active outage, don't fade — hold until restored
-    if (lastArrEvent.eventCategory === 'health_issue' && hasActiveOutage) return
     flashTimerRef.current = setTimeout(() => setFlashColor(null), 10_000)
   }, [lastArrEvent, service.id, hasActiveOutage])
 
@@ -945,27 +945,27 @@ export function MediaStackRow({ service, index, lastArrEvent, activeOutages }: S
       }}
       className="media-stack-row"
       style={{
-        border: flashColor ? `1px solid ${flashColor}` : '1px solid transparent',
-        boxShadow: flashColor ? `0 0 8px 2px ${flashColor}66` : 'none',
+        border: (outageFlashColor || flashColor) ? `1px solid ${outageFlashColor || flashColor}` : '1px solid transparent',
+        boxShadow: (outageFlashColor || flashColor) ? `0 0 8px 2px ${(outageFlashColor || flashColor)}66` : 'none',
       }}
       onMouseEnter={(e) => {
-        if (!flashColor) {
+        if (!flashColor && !outageFlashColor) {
           ;(e.currentTarget as HTMLDivElement).style.borderColor = 'rgba(232,160,32,0.30)'
           ;(e.currentTarget as HTMLDivElement).style.background = 'rgba(232,160,32,0.05)'
         }
       }}
       onMouseLeave={(e) => {
-        if (!flashColor) {
+        if (!flashColor && !outageFlashColor) {
           ;(e.currentTarget as HTMLDivElement).style.borderColor = 'transparent'
           ;(e.currentTarget as HTMLDivElement).style.background = 'transparent'
         }
       }}
     >
-      {/* Flash glow overlay — fades out using arrFlash keyframe (opacity only, DASH-08) */}
-      {flashColor && (
+      {/* Flash glow overlay — persistent for outages, fading for transient events */}
+      {(outageFlashColor || flashColor) && (
         <div
           className="media-stack-row__flash"
-          style={{ background: `${flashColor}1a` }}
+          style={{ background: `${outageFlashColor || flashColor}1a` }}
         />
       )}
       {/* 10px LED dot — over-pulse on status transition (D-19) */}
