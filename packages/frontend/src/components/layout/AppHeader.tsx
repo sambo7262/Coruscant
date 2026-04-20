@@ -167,15 +167,24 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, activeOut
         {/* Center+Right: ticker overlay when active, or normal content */}
         {!showBack && ticker ? (
           /* Ticker overlay — covers center + right columns (gridColumn 2/3) per D-12 */
-          <div aria-live="polite" className="app-header__ticker">
-            {ticker.text.split('\u25B8').map((segment, i, arr) => (
-              <span key={i}>
-                {segment}
-                {i < arr.length - 1 && (
-                  <span className="app-header__ticker-sep">{'\u25B8'}</span>
-                )}
-              </span>
-            ))}
+          <div
+            aria-live="polite"
+            className={`app-header__ticker${outageCount > 0 ? ' app-header__ticker--outage' : ''}`}
+            style={outageCount > 0 ? { borderColor: `${EVENT_COLORS.health_issue}66` } : undefined}
+          >
+            {outageCount > 0 && (
+              <span className="app-header__ticker-led" />
+            )}
+            <span className="app-header__ticker-inner">
+              {ticker.text.split('\u25B8').map((segment, i, arr) => (
+                <span key={i}>
+                  {segment}
+                  {i < arr.length - 1 && (
+                    <span className="app-header__ticker-sep">{'\u25B8'}</span>
+                  )}
+                </span>
+              ))}
+            </span>
           </div>
         ) : (
           <>

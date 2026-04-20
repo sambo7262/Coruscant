@@ -1244,17 +1244,53 @@ body::after {
   grid-column: 2 / 4;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
   font-family: var(--font-mono);
   font-size: 12px;
   font-weight: 400;
   color: var(--cockpit-amber);
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
   padding: 0 12px;
   opacity: 1;
   transition: opacity 0.4s ease-out;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+
+.app-header__ticker-inner {
+  display: inline-block;
+  animation: tickerMarquee 12s linear infinite;
+  animation-delay: 2s;
+  padding-right: 40px;
+}
+
+@keyframes tickerMarquee {
+  0%   { transform: translateX(0); }
+  10%  { transform: translateX(0); }
+  90%  { transform: translateX(-100%); }
+  100% { transform: translateX(-100%); }
+}
+
+.app-header__ticker--outage {
+  animation: tickerPulse 2s ease-in-out infinite;
+  border: 1px solid rgba(255, 68, 68, 0.4);
+}
+
+@keyframes tickerPulse {
+  0%   { background: transparent; }
+  50%  { background: rgba(255, 68, 68, 0.08); }
+  100% { background: transparent; }
+}
+
+.app-header__ticker-led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cockpit-amber);
+  box-shadow: 0 0 6px var(--cockpit-amber);
+  flex-shrink: 0;
+  animation: ledPulseWarn 1s ease-in-out infinite;
 }
 
 .app-header__ticker-sep {
