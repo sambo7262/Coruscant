@@ -97,6 +97,12 @@ export interface PiHealthStatus {
   lastPollAt: string
 }
 
+export interface ActiveOutage {
+  service: string
+  message?: string
+  since: string  // ISO 8601 timestamp
+}
+
 export interface DashboardSnapshot {
   services: ServiceStatus[]
   nas: NasStatus
@@ -104,6 +110,7 @@ export interface DashboardSnapshot {
   plexServerStats?: PlexServerStats  // optional — populated when Plex is configured
   weather?: WeatherData | null  // null = not configured; undefined = not yet loaded
   piHealth?: PiHealthStatus  // optional — populated when Pi health is configured (top-level per D-01)
+  activeOutages: ActiveOutage[]  // persistent health outages — survives SSE reconnect
   timestamp: string // ISO 8601
 }
 

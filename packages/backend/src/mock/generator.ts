@@ -175,6 +175,7 @@ export function generateMockSnapshot(): DashboardSnapshot {
     services,
     nas,
     streams,
+    activeOutages: [],
     timestamp: nowIso,
   }
 }

@@ -25,8 +25,21 @@ export function useDashboardSSE() {
       es = new EventSource('/api/sse')
 
       es.addEventListener('dashboard-update', (e: MessageEvent) => {
-        setSnapshot(JSON.parse(e.data) as DashboardSnapshot)
+        const snap = JSON.parse(e.data) as DashboardSnapshot
+        setSnapshot(snap)
         setConnected(true)
+
+        // Sync outage state from snapshot — survives SSE reconnect, tab backgrounding,
+        // and any case where the real-time arr-event was missed.
+        if (snap.activeOutages) {
+          setActiveOutages(() => {
+            const next = new Map<string, { message?: string; since: string }>()
+            for (const o of snap.activeOutages) {
+              next.set(o.service, { message: o.message, since: o.since })
+            }
+            return next
+          })
+        }
       })
 
       es.addEventListener('arr-event', (e: MessageEvent) => {

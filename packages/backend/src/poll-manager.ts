@@ -120,6 +120,9 @@ export class PollManager {
   private piHealthData: PiHealthStatus | undefined = undefined
   private plexConfig: { baseUrl: string; token: string } | null = null
 
+  // Persistent health outages — survives SSE reconnect via snapshot delivery
+  private activeOutages: Map<string, { service: string; message?: string; since: string }> = new Map()
+
   // Separate timer for Docker image update checks (12h interval, D-18)
   private imageUpdateTimer: ReturnType<typeof setInterval> | null = null
 
@@ -193,6 +196,13 @@ export class PollManager {
 
     // D-03: Log via structured JSON (pollManager singleton has no fastify.log access)
     console.log(JSON.stringify({ level: 'info', service, eventCategory, rawEventType, title, msg: 'arr_webhook_received' }))
+
+    // Persist outage state so it survives SSE reconnect via snapshot delivery
+    if (eventCategory === 'health_issue') {
+      this.activeOutages.set(service, { service, message: title, since: new Date().toISOString() })
+    } else if (eventCategory === 'health_restored') {
+      this.activeOutages.delete(service)
+    }
 
     const event: ArrWebhookEvent = { service, eventCategory, title, rawEventType }
     for (const listener of this.arrEventListeners) {
@@ -509,6 +519,7 @@ export class PollManager {
       plexServerStats: this.plexServerStats,
       weather,
       piHealth: this.piHealthData,
+      activeOutages: [...this.activeOutages.values()],
       timestamp: new Date().toISOString(),
     }
   }
