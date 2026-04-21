@@ -509,7 +509,7 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
           {qpsDisplay}
         </span>
         <div className="net-instrument__sub-label">QPS</div>
-        {!isLandscape && hasPercentData && (
+        {hasPercentData && (
           <>
             <span className="text-glow net-instrument__stat net-instrument__stat--amber">
               {percentBlockedDisplay}%
@@ -554,18 +554,24 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
             {/* Speed arcs (UP / DOWN) with CLIENTS count between — landscape shows compact stats instead */}
             {isLandscape ? (
               <div className="net-instrument__compact-stats">
-                <span className="text-glow net-instrument__stat" style={{ color: '#00c8ff' }}>
-                  {(animWanRx / 10).toFixed(1)}
-                </span>
-                <span className="net-instrument__sub-label">DOWN</span>
-                <span className="text-glow net-instrument__stat" style={{ color: '#FF3B3B' }}>
-                  {(animWanTx / 10).toFixed(1)}
-                </span>
-                <span className="net-instrument__sub-label">UP</span>
-                <span className="text-glow net-instrument__stat net-instrument__stat--amber">
-                  {animClientCount}
-                </span>
-                <span className="net-instrument__sub-label">CLIENTS</span>
+                <div className="net-instrument__compact-row">
+                  <span className="text-glow net-instrument__stat" style={{ color: '#00c8ff' }}>
+                    {(animWanRx / 10).toFixed(1)}
+                  </span>
+                  <span className="net-instrument__sub-label">DOWN</span>
+                </div>
+                <div className="net-instrument__compact-row">
+                  <span className="text-glow net-instrument__stat" style={{ color: '#FF3B3B' }}>
+                    {(animWanTx / 10).toFixed(1)}
+                  </span>
+                  <span className="net-instrument__sub-label">UP</span>
+                </div>
+                <div className="net-instrument__compact-row">
+                  <span className="text-glow net-instrument__stat net-instrument__stat--amber">
+                    {animClientCount}
+                  </span>
+                  <span className="net-instrument__sub-label">CLIENTS</span>
+                </div>
               </div>
             ) : (
               <div className="net-instrument__arcs">

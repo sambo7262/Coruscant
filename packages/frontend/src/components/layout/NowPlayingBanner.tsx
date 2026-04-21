@@ -25,7 +25,7 @@ export function NowPlayingBanner({ streams, plexServerStats, plexConfigured }: N
   const isPortrait = viewport === 'iphone-portrait'
   const isLandscape = viewport === 'iphone-landscape'
   const isIphone = viewport.startsWith('iphone')
-  const collapsedHeight = isPortrait ? 56 : isLandscape ? 24 : 48
+  const collapsedHeight = isPortrait ? 56 : isLandscape ? 12 : 48
 
   // Cycle through stream titles every ~4 seconds when multiple streams active (D-24)
   useEffect(() => {

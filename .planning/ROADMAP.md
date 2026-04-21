@@ -11,7 +11,7 @@
 - [x] **Phase 12: Pi Health Backend & Settings** - Backend adapter polls Pi health endpoint with configurable host, error handling, and debug diagnostics (completed 2026-04-07)
 - [x] **Phase 13: Title Bar Alerts & Detail View** - CORUSCANT title reflects Pi health severity; tapping opens full diagnostics view (completed 2026-04-15)
 - [x] **Phase 14: Kiosk-Isolation Infrastructure** - Viewport tagger, CI isolation lint, meta tags, kiosk baseline, and inline-style extraction sweep — zero visible iPhone change, rails proven kiosk-safe (completed 2026-04-16)
-- [ ] **Phase 15: iPhone Portrait** - Portrait CSS overrides scoped under `html[data-viewport="iphone-portrait"]` — mini-bar banner, compact header, Pi health panel adaptation, safe-area insets
+- [x] **Phase 15: iPhone Portrait** - Portrait CSS overrides scoped under `html[data-viewport="iphone-portrait"]` — mini-bar banner, compact header, Pi health panel adaptation, safe-area insets (completed 2026-04-16)
 - [ ] **Phase 16: iPhone Landscape** - Landscape CSS overrides scoped under `html[data-viewport="iphone-landscape"]` — 2-column grid, landscape banner variant, orientation transition hardening
 
 ## Phase Details
@@ -86,13 +86,13 @@ Task sequence (non-negotiable per research SUMMARY.md):
   4. AppHeader renders as a compact title bar in which Pi health severity (normal amber / warning / critical red-pulse) remains unmistakable, and the expandable Pi health panel shows all 6 metric rows readable without horizontal scroll or truncation
   5. Every interactive element (tiles, LEDs, title bar, banner expand, settings rows) has a touch target >= 44x44 pt
   6. Phase 15 close gate: kiosk pixel-diff = zero at 800x480, CI lint + vitest green, real iPhone 15 portrait smoke test passes
-**Plans:** 3/5 plans executed
+**Plans:** 5/5 plans complete
 Plans:
 - [x] 15-01-PLAN.md — Portrait CSS foundation: token overrides, grid, safe-area, typography, touch targets, scroll, 100dvh, RESP-18 drop-shadow
 - [x] 15-02-PLAN.md — AppHeader portrait: useViewport to hide clock + logs icon, disable useLocalClock timer
 - [x] 15-03-PLAN.md — NowPlayingBanner portrait: useViewport for Framer Motion mini-bar heights, RESP-18 transcode glow fix
-- [ ] 15-04-PLAN.md — App.tsx + pages adaptations: body overflow, main padding, LogsPage 100dvh, SettingsPage stacking
-- [ ] 15-05-PLAN.md — Close gate: automated checks + real iPhone 15 portrait smoke test + kiosk regression check
+- [x] 15-04-PLAN.md — App.tsx + pages adaptations: body overflow, main padding, LogsPage 100dvh, SettingsPage stacking
+- [x] 15-05-PLAN.md — Close gate: automated checks + real iPhone 15 portrait smoke test + kiosk regression check
 **UI hint**: yes
 
 ### Phase 16: iPhone Landscape
@@ -105,7 +105,10 @@ Plans:
   3. AppHeader landscape variant further compresses title bar height while still conveying Pi health severity and weather legibly
   4. Rotating the real iPhone portrait-landscape repeatedly re-tags `data-viewport`, re-measures Framer Motion layouts, and settles without jank, double-fire, or animation glitches on iOS 17+
   5. Phase 16 close gate: kiosk pixel-diff = zero at 800x480, CI lint + vitest green, real iPhone 15 portrait + landscape + rotation smoke test passes, 18-item "Looks done but isn't" checklist passes
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 16-01-PLAN.md — Landscape CSS token overrides, Dynamic Island clearance, banner compression, typography, D-08 boundary vitest
+- [ ] 16-02-PLAN.md — Close gate: automated checks + real iPhone 15 landscape/portrait/rotation smoke test + kiosk regression
 **UI hint**: yes
 
 ## Backlog
@@ -135,5 +138,5 @@ Plans:
 | 12. Pi Health Backend & Settings | v1.1 | 2/2 | Complete   | 2026-04-07 |
 | 13. Title Bar Alerts & Detail View | v1.1 | 2/2 | Complete   | 2026-04-15 |
 | 14. Kiosk-Isolation Infrastructure | v1.2 | 6/6 | Complete   | 2026-04-16 |
-| 15. iPhone Portrait | v1.2 | 3/5 | In Progress|  |
-| 16. iPhone Landscape | v1.2 | 0/? | Not started | - |
+| 15. iPhone Portrait | v1.2 | 5/5 | Complete | 2026-04-16 |
+| 16. iPhone Landscape | v1.2 | 0/2 | Not started | - |

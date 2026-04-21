@@ -241,9 +241,9 @@ html[data-viewport="iphone-landscape"] .card-grid {
 /* --- NowPlayingBanner 1-row compact (height is CSS-controlled, not Framer Motion) --- */
 html[data-viewport="iphone-landscape"] .now-playing-banner,
 html[data-viewport="iphone-landscape"] .now-playing-banner--idle {
-  height: 24px;
-  min-height: 24px;
-  padding: 0 max(12px, env(safe-area-inset-right)) 0 max(12px, env(safe-area-inset-left));
+  height: 12px;
+  min-height: 12px;
+  padding: 0 max(8px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left));
 }
 
 /* --- Typography scale (~80-90% of portrait values, D-06) --- */
@@ -265,7 +265,12 @@ html[data-viewport="iphone-landscape"] .now-playing-banner__message { font-size:
 html[data-viewport="iphone-landscape"] .media-tile__cols {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
+  gap: 0;
+}
+
+html[data-viewport="iphone-landscape"] .media-stack-row {
+  min-height: 20px;
+  padding: 1px 4px;
 }
 
 html[data-viewport="iphone-landscape"] .media-tile__col {
@@ -283,9 +288,15 @@ html[data-viewport="iphone-landscape"] .media-tile {
 /* --- UniFi compact stats for landscape (no arcs) --- */
 html[data-viewport="iphone-landscape"] .net-instrument__compact-stats {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+html[data-viewport="iphone-landscape"] .net-instrument__compact-row {
+  display: flex;
   align-items: baseline;
   gap: 4px;
-  flex-wrap: wrap;
   justify-content: center;
 }
 

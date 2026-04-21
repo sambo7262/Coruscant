@@ -24,8 +24,9 @@ decisions:
 metrics:
   duration_minutes: 3
   completed_date: "2026-04-21"
-  tasks_completed: 1
+  tasks_completed: 2
   tasks_total: 2
+  smoke_test_result: "FAILED — 4 layout issues"
   files_modified: 0
   files_created: 0
 ---
@@ -40,9 +41,16 @@ metrics:
 |------|------|--------|-------|
 | 1 | D-10 automated CI gate (isolation lint + vitest + vite build) | 9c98ddb | (no file changes — verification only) |
 
-## Task 2: Pending Checkpoint
+## Task 2: Smoke Test — ISSUES FOUND
 
-Task 2 is a blocking `checkpoint:human-verify` gate requiring real iPhone 15 smoke test. It cannot be auto-approved. See checkpoint details below.
+Real iPhone 15 landscape smoke test performed. Automated gates all passed but 4 layout issues found on real device:
+
+1. **Media tile layout**: 2-col × 3-row is too tall — needs 3-col × 2-row horizontal layout + reduced internal padding
+2. **Now Playing banner**: Too tall for landscape — needs ~50% height reduction from current size
+3. **Network/UniFi tile**: Arc bar SVGs consume too much vertical space — show numbers only in one line under status, drop arc bars
+4. **Pi-hole tile**: Too many metrics for landscape — show only blocked % and QPS side by side
+
+**Result:** FAILED — gap-closure plans needed for landscape-specific component adaptations
 
 ## What Was Built
 
@@ -72,7 +80,7 @@ No new code was written in this plan. This is a verification-only plan. T-16-03 
 
 None.
 
-## Self-Check: PASSED
+## Self-Check: FAILED
 
 - All three CI gates exited 0
 - Commit `9c98ddb` — present in git log
