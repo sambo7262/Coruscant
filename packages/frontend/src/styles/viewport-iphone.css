@@ -265,7 +265,7 @@ html[data-viewport="iphone-landscape"] .now-playing-banner__message { font-size:
 html[data-viewport="iphone-landscape"] .media-tile__cols {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0;
+  gap: 4px 0;
 }
 
 html[data-viewport="iphone-landscape"] .media-stack-row {
@@ -293,6 +293,12 @@ html[data-viewport="iphone-landscape"] .net-instrument__compact-stats {
   gap: 1px;
 }
 
+html[data-viewport="iphone-landscape"] .net-instrument__compact-speed-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
 html[data-viewport="iphone-landscape"] .net-instrument__compact-row {
   display: flex;
   align-items: baseline;
@@ -303,4 +309,23 @@ html[data-viewport="iphone-landscape"] .net-instrument__compact-row {
 /* --- Pi-hole compact layout for landscape --- */
 html[data-viewport="iphone-landscape"] .net-instrument__col {
   gap: 2px;
+}
+
+html[data-viewport="iphone-landscape"] .net-instrument__pihole-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+html[data-viewport="iphone-landscape"] .net-instrument__pihole-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* --- NowPlayingBanner vertical breathing room --- */
+html[data-viewport="iphone-landscape"] .now-playing-banner,
+html[data-viewport="iphone-landscape"] .now-playing-banner--idle {
+  padding-top: 2px;
+  padding-bottom: 2px;
 }

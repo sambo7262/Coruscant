@@ -505,16 +505,37 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
           {blocking}
         </span>
         <div className="net-instrument__sub-label">BLOCKING</div>
-        <span className="text-glow net-instrument__stat net-instrument__stat--amber">
-          {qpsDisplay}
-        </span>
-        <div className="net-instrument__sub-label">QPS</div>
-        {hasPercentData && (
+        {isLandscape ? (
+          <div className="net-instrument__pihole-row">
+            <div className="net-instrument__pihole-metric">
+              <span className="text-glow net-instrument__stat net-instrument__stat--amber">
+                {qpsDisplay}
+              </span>
+              <div className="net-instrument__sub-label">QPS</div>
+            </div>
+            {hasPercentData && (
+              <div className="net-instrument__pihole-metric">
+                <span className="text-glow net-instrument__stat net-instrument__stat--amber">
+                  {percentBlockedDisplay}%
+                </span>
+                <div className="net-instrument__sub-label">BLOCKED</div>
+              </div>
+            )}
+          </div>
+        ) : (
           <>
             <span className="text-glow net-instrument__stat net-instrument__stat--amber">
-              {percentBlockedDisplay}%
+              {qpsDisplay}
             </span>
-            <div className="net-instrument__sub-label">BLOCKED</div>
+            <div className="net-instrument__sub-label">QPS</div>
+            {hasPercentData && (
+              <>
+                <span className="text-glow net-instrument__stat net-instrument__stat--amber">
+                  {percentBlockedDisplay}%
+                </span>
+                <div className="net-instrument__sub-label">BLOCKED</div>
+              </>
+            )}
           </>
         )}
         {!isLandscape && (
@@ -554,17 +575,19 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
             {/* Speed arcs (UP / DOWN) with CLIENTS count between — landscape shows compact stats instead */}
             {isLandscape ? (
               <div className="net-instrument__compact-stats">
-                <div className="net-instrument__compact-row">
-                  <span className="text-glow net-instrument__stat" style={{ color: '#00c8ff' }}>
-                    {(animWanRx / 10).toFixed(1)}
-                  </span>
-                  <span className="net-instrument__sub-label">DOWN</span>
-                </div>
-                <div className="net-instrument__compact-row">
-                  <span className="text-glow net-instrument__stat" style={{ color: '#FF3B3B' }}>
-                    {(animWanTx / 10).toFixed(1)}
-                  </span>
-                  <span className="net-instrument__sub-label">UP</span>
+                <div className="net-instrument__compact-speed-row">
+                  <div className="net-instrument__compact-row">
+                    <span className="text-glow net-instrument__stat" style={{ color: '#00c8ff' }}>
+                      {(animWanRx / 10).toFixed(1)}
+                    </span>
+                    <span className="net-instrument__sub-label">DOWN</span>
+                  </div>
+                  <div className="net-instrument__compact-row">
+                    <span className="text-glow net-instrument__stat" style={{ color: '#FF3B3B' }}>
+                      {(animWanTx / 10).toFixed(1)}
+                    </span>
+                    <span className="net-instrument__sub-label">UP</span>
+                  </div>
                 </div>
                 <div className="net-instrument__compact-row">
                   <span className="text-glow net-instrument__stat net-instrument__stat--amber">
