@@ -169,3 +169,23 @@ describe('detectViewport — precedence order (D-04)', () => {
     expect(detectViewport()).toBe('kiosk');
   });
 });
+
+describe('detectViewport -- landscape boundary regression (D-08)', () => {
+  it('returns iphone-landscape for iPhone 15 landscape (932x430 DPR>=2) matchMedia', () => {
+    mockMatches = {
+      '(orientation: landscape) and (max-width: 950px) and (max-height: 500px) and (-webkit-min-device-pixel-ratio: 2)': true,
+    };
+    installMatchMediaMock();
+    expect(detectViewport()).toBe('iphone-landscape');
+  });
+
+  it('returns kiosk for CoruscantKiosk UA even when landscape matchMedia would match (D-08 hard separation)', () => {
+    mockUserAgent = 'Mozilla/5.0 (X11; Linux armv7l) AppleWebKit/537.36 Chrome/146 Safari/537.36 CoruscantKiosk/1.0';
+    installUserAgentMock();
+    mockMatches = {
+      '(orientation: landscape) and (max-width: 950px) and (max-height: 500px) and (-webkit-min-device-pixel-ratio: 2)': true,
+    };
+    installMatchMediaMock();
+    expect(detectViewport()).toBe('kiosk');
+  });
+});
