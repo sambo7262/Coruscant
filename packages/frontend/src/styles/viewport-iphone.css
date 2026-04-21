@@ -256,10 +256,10 @@ html[data-viewport="iphone-landscape"] .ribbon-label { font-size: 11px; }
 html[data-viewport="iphone-landscape"] .media-stack-row__name { font-size: 13px; }
 html[data-viewport="iphone-landscape"] .net-instrument__stat { font-size: 15px; }
 html[data-viewport="iphone-landscape"] .nas-tile__docker-stat { font-size: 13px; }
-html[data-viewport="iphone-landscape"] .now-playing-banner__stat { font-size: 13px; }
-html[data-viewport="iphone-landscape"] .now-playing-banner__label { font-size: 14px; }
-html[data-viewport="iphone-landscape"] .now-playing-banner__title { font-size: 14px; }
-html[data-viewport="iphone-landscape"] .now-playing-banner__message { font-size: 14px; }
+html[data-viewport="iphone-landscape"] .now-playing-banner__stat { font-size: 8px; }
+html[data-viewport="iphone-landscape"] .now-playing-banner__label { font-size: 8px; }
+html[data-viewport="iphone-landscape"] .now-playing-banner__title { font-size: 8px; }
+html[data-viewport="iphone-landscape"] .now-playing-banner__message { font-size: 8px; }
 
 /* --- Media tile: 3-across × 2-row layout for landscape vertical savings --- */
 html[data-viewport="iphone-landscape"] .media-tile__cols {
