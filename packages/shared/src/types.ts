@@ -94,6 +94,7 @@ export interface PiHealthStatus {
   uptimeHours?: number
   displayOn?: boolean
   severity: 'normal' | 'warning' | 'critical' | 'stale'
+  staleReason?: string
   lastPollAt: string
 }
 

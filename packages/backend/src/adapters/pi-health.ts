@@ -1,7 +1,8 @@
 import axios from 'axios'
 import type { PiHealthStatus } from '@coruscant/shared'
-
 const TIMEOUT_MS = 10_000
+
+let previousSeverity: string | undefined
 
 /**
  * Derive severity from raw Pi health data.
@@ -61,6 +62,11 @@ export async function pollPiHealth(baseUrl: string): Promise<PiHealthStatus> {
 
     const severity = deriveSeverity(data)
 
+    if (previousSeverity === 'stale') {
+      console.log(JSON.stringify({ level: 'info', msg: 'pi_health_stale_recovered', severity, previousSeverity, lastPollAt }))
+    }
+    previousSeverity = severity
+
     return {
       cpuTempC: typeof data.cpu_temp_c === 'number' ? data.cpu_temp_c : undefined,
       cpuPercent: typeof data.cpu_percent === 'number' ? data.cpu_percent : undefined,
@@ -77,10 +83,18 @@ export async function pollPiHealth(baseUrl: string): Promise<PiHealthStatus> {
       severity,
       lastPollAt,
     }
-  } catch {
-    // Per D-07/D-09: Pi offline returns 'stale', never throws
+  } catch (err: unknown) {
+    const reason = err instanceof Error ? err.message : 'unknown error'
+    const code = axios.isAxiosError(err) ? err.code : undefined
+
+    if (previousSeverity !== 'stale') {
+      console.log(JSON.stringify({ level: 'warn', msg: 'pi_health_stale_entered', reason, code, baseUrl, lastPollAt }))
+    }
+    previousSeverity = 'stale'
+
     return {
       severity: 'stale',
+      staleReason: reason,
       lastPollAt,
     }
   }

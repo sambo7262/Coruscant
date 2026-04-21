@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import type { PiHealthStatus } from '@coruscant/shared'
 
-const STALE_THRESHOLD_MS = 60_000 // 2x 30s default poll interval
+const STALE_THRESHOLD_MS = 90_000 // 3x 30s default poll interval — tolerates one missed poll
 
 type BarColor = 'green' | 'yellow' | 'red'
 
@@ -100,7 +100,7 @@ export function PiHealthPanel({ piHealth }: { piHealth?: PiHealthStatus }) {
       <div className="pi-health__inner">
         {isStale && (
           <div className="pi-health__stale-notice">
-            {lastSeenText}
+            {lastSeenText}{piHealth?.staleReason ? ` — ${piHealth.staleReason}` : ''}
           </div>
         )}
         <MetricBar label="CPU TEMP" percent={tempPercent} display={`${tempF.toFixed(1)}°F`} color={tempColor} stale={isStale} />
