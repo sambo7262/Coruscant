@@ -5,7 +5,7 @@ import type { ServiceStatus, UnifiMetrics, ArrWebhookEvent, NasStatus, NasVolume
 import { StatusDot } from '../ui/StatusDot.js'
 import { StaleIndicator } from '../ui/StaleIndicator.js'
 import { useAnimatedNumber } from '../../hooks/useAnimatedNumber.js'
-import { canHover } from '../../viewport/index.js'
+import { canHover, useViewport } from '../../viewport/index.js'
 
 // Event flash colors for arr webhook events — used by MediaStackRow flash
 const EVENT_COLORS: Record<string, string> = {
@@ -456,6 +456,9 @@ function ThroughputBar({ label, value, peak, color }: { label: string; value: nu
 
 // NETWORK card: Pi-hole section + Ubiquiti section (D-15, D-16)
 function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, unknown>; unifiService?: ServiceStatus }) {
+  const viewport = useViewport()
+  const isLandscape = viewport === 'iphone-landscape'
+
   const rawQps = typeof metrics.queriesPerSecond === 'number' ? metrics.queriesPerSecond : 0
   const rawPercentBlocked = typeof metrics.percentBlocked === 'number' ? metrics.percentBlocked : 0
   const rawMem = typeof metrics.memPercent === 'number' ? metrics.memPercent : 0
@@ -506,7 +509,7 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
           {qpsDisplay}
         </span>
         <div className="net-instrument__sub-label">QPS</div>
-        {hasPercentData && (
+        {!isLandscape && hasPercentData && (
           <>
             <span className="text-glow net-instrument__stat net-instrument__stat--amber">
               {percentBlockedDisplay}%
@@ -514,10 +517,14 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
             <div className="net-instrument__sub-label">BLOCKED</div>
           </>
         )}
-        <span className="text-glow net-instrument__stat net-instrument__stat--amber">
-          {memDisplay}
-        </span>
-        <div className="net-instrument__sub-label">MEM</div>
+        {!isLandscape && (
+          <>
+            <span className="text-glow net-instrument__stat net-instrument__stat--amber">
+              {memDisplay}
+            </span>
+            <div className="net-instrument__sub-label">MEM</div>
+          </>
+        )}
       </div>
       {/* RIGHT — Ubiquiti */}
       <div className="net-instrument__col">
@@ -544,75 +551,92 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
                 {healthLabel}
               </span>
             </div>
-            {/* Speed arcs (UP / DOWN) with CLIENTS count between */}
-            <div className="net-instrument__arcs">
-              {([
-                { label: 'DOWN', value: um!.wanRxMbps, color: '#00c8ff', valueText: `${(animWanRx / 10).toFixed(1)}` },
-                { label: 'UP', value: um!.wanTxMbps, color: '#FF3B3B', valueText: `${(animWanTx / 10).toFixed(1)}` },
-              ] as const).map(({ label, value, color, valueText }, idx) => {
-                const mbps = typeof value === 'number' ? value : 0
-                const isOnline = um?.healthStatus === 'online' || um?.healthStatus === 'warning'
-                const litArcs = mbps >= 25 ? 3 : mbps >= 5 ? 2 : (mbps > 0 || isOnline) ? 1 : 0
-                const dimColor = 'rgba(255,255,255,0.08)'
-                const arcs = [
-                  { r: 18, strokeWidth: 4 },
-                  { r: 27, strokeWidth: 4 },
-                  { r: 36, strokeWidth: 4 },
-                ]
-                const arcEl = (
-                  <div key={label} className="net-instrument__arc">
-                    <span
-                      className="text-glow net-instrument__arc-value"
-                      style={{ color }}
-                    >
-                      {valueText}
-                    </span>
-                    <span className="net-instrument__arc-unit">Mbps</span>
-                    <svg width="78" height="48" viewBox="0 0 78 48">
-                      {arcs.map((arc, i) => {
-                        const cx = 39, cy = 46
-                        const startAngle = Math.PI + 0.35
-                        const endAngle = 2 * Math.PI - 0.35
-                        const x1 = cx + arc.r * Math.cos(startAngle)
-                        const y1 = cy + arc.r * Math.sin(startAngle)
-                        const x2 = cx + arc.r * Math.cos(endAngle)
-                        const y2 = cy + arc.r * Math.sin(endAngle)
-                        const d = `M ${x1} ${y1} A ${arc.r} ${arc.r} 0 0 1 ${x2} ${y2}`
-                        const isLit = i < litArcs
-                        return (
-                          <path
-                            key={i}
-                            d={d}
-                            fill="none"
-                            stroke={isLit ? color : dimColor}
-                            strokeWidth={arc.strokeWidth}
-                            strokeLinecap="round"
-                            className="net-instrument__arc-path"
-                            style={{
-                              filter: isLit ? `drop-shadow(0 0 4px ${color})` : 'none',
-                            }}
-                          />
-                        )
-                      })}
-                    </svg>
-                    <span className="net-instrument__arc-label">{label}</span>
-                  </div>
-                )
-                // Insert CLIENTS count between UP and DOWN
-                if (idx === 0) {
-                  return [
-                    arcEl,
-                    <div key="clients" className="net-instrument__clients">
-                      <span className="net-instrument__clients-value">
-                        {animClientCount}
-                      </span>
-                      <span className="net-instrument__arc-label">CLIENTS</span>
-                    </div>,
+            {/* Speed arcs (UP / DOWN) with CLIENTS count between — landscape shows compact stats instead */}
+            {isLandscape ? (
+              <div className="net-instrument__compact-stats">
+                <span className="text-glow net-instrument__stat" style={{ color: '#00c8ff' }}>
+                  {(animWanRx / 10).toFixed(1)}
+                </span>
+                <span className="net-instrument__sub-label">DOWN</span>
+                <span className="text-glow net-instrument__stat" style={{ color: '#FF3B3B' }}>
+                  {(animWanTx / 10).toFixed(1)}
+                </span>
+                <span className="net-instrument__sub-label">UP</span>
+                <span className="text-glow net-instrument__stat net-instrument__stat--amber">
+                  {animClientCount}
+                </span>
+                <span className="net-instrument__sub-label">CLIENTS</span>
+              </div>
+            ) : (
+              <div className="net-instrument__arcs">
+                {([
+                  { label: 'DOWN', value: um!.wanRxMbps, color: '#00c8ff', valueText: `${(animWanRx / 10).toFixed(1)}` },
+                  { label: 'UP', value: um!.wanTxMbps, color: '#FF3B3B', valueText: `${(animWanTx / 10).toFixed(1)}` },
+                ] as const).map(({ label, value, color, valueText }, idx) => {
+                  const mbps = typeof value === 'number' ? value : 0
+                  const isOnline = um?.healthStatus === 'online' || um?.healthStatus === 'warning'
+                  const litArcs = mbps >= 25 ? 3 : mbps >= 5 ? 2 : (mbps > 0 || isOnline) ? 1 : 0
+                  const dimColor = 'rgba(255,255,255,0.08)'
+                  const arcs = [
+                    { r: 18, strokeWidth: 4 },
+                    { r: 27, strokeWidth: 4 },
+                    { r: 36, strokeWidth: 4 },
                   ]
-                }
-                return arcEl
-              })}
-            </div>
+                  const arcEl = (
+                    <div key={label} className="net-instrument__arc">
+                      <span
+                        className="text-glow net-instrument__arc-value"
+                        style={{ color }}
+                      >
+                        {valueText}
+                      </span>
+                      <span className="net-instrument__arc-unit">Mbps</span>
+                      <svg width="78" height="48" viewBox="0 0 78 48">
+                        {arcs.map((arc, i) => {
+                          const cx = 39, cy = 46
+                          const startAngle = Math.PI + 0.35
+                          const endAngle = 2 * Math.PI - 0.35
+                          const x1 = cx + arc.r * Math.cos(startAngle)
+                          const y1 = cy + arc.r * Math.sin(startAngle)
+                          const x2 = cx + arc.r * Math.cos(endAngle)
+                          const y2 = cy + arc.r * Math.sin(endAngle)
+                          const d = `M ${x1} ${y1} A ${arc.r} ${arc.r} 0 0 1 ${x2} ${y2}`
+                          const isLit = i < litArcs
+                          return (
+                            <path
+                              key={i}
+                              d={d}
+                              fill="none"
+                              stroke={isLit ? color : dimColor}
+                              strokeWidth={arc.strokeWidth}
+                              strokeLinecap="round"
+                              className="net-instrument__arc-path"
+                              style={{
+                                filter: isLit ? `drop-shadow(0 0 4px ${color})` : 'none',
+                              }}
+                            />
+                          )
+                        })}
+                      </svg>
+                      <span className="net-instrument__arc-label">{label}</span>
+                    </div>
+                  )
+                  // Insert CLIENTS count between UP and DOWN
+                  if (idx === 0) {
+                    return [
+                      arcEl,
+                      <div key="clients" className="net-instrument__clients">
+                        <span className="net-instrument__clients-value">
+                          {animClientCount}
+                        </span>
+                        <span className="net-instrument__arc-label">CLIENTS</span>
+                      </div>,
+                    ]
+                  }
+                  return arcEl
+                })}
+              </div>
+            )}
           </>
         )}
       </div>

@@ -241,8 +241,8 @@ html[data-viewport="iphone-landscape"] .card-grid {
 /* --- NowPlayingBanner 1-row compact (height is CSS-controlled, not Framer Motion) --- */
 html[data-viewport="iphone-landscape"] .now-playing-banner,
 html[data-viewport="iphone-landscape"] .now-playing-banner--idle {
-  height: 40px;
-  min-height: 40px;
+  height: 24px;
+  min-height: 24px;
   padding: 0 max(12px, env(safe-area-inset-right)) 0 max(12px, env(safe-area-inset-left));
 }
 
@@ -256,7 +256,40 @@ html[data-viewport="iphone-landscape"] .ribbon-label { font-size: 11px; }
 html[data-viewport="iphone-landscape"] .media-stack-row__name { font-size: 13px; }
 html[data-viewport="iphone-landscape"] .net-instrument__stat { font-size: 15px; }
 html[data-viewport="iphone-landscape"] .nas-tile__docker-stat { font-size: 13px; }
-html[data-viewport="iphone-landscape"] .now-playing-banner__stat { font-size: 11px; }
-html[data-viewport="iphone-landscape"] .now-playing-banner__label { font-size: 13px; }
-html[data-viewport="iphone-landscape"] .now-playing-banner__title { font-size: 13px; }
-html[data-viewport="iphone-landscape"] .now-playing-banner__message { font-size: 13px; }
+html[data-viewport="iphone-landscape"] .now-playing-banner__stat { font-size: 9px; }
+html[data-viewport="iphone-landscape"] .now-playing-banner__label { font-size: 10px; }
+html[data-viewport="iphone-landscape"] .now-playing-banner__title { font-size: 10px; }
+html[data-viewport="iphone-landscape"] .now-playing-banner__message { font-size: 10px; }
+
+/* --- Media tile: 3-across × 2-row layout for landscape vertical savings --- */
+html[data-viewport="iphone-landscape"] .media-tile__cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+}
+
+html[data-viewport="iphone-landscape"] .media-tile__col {
+  display: contents;
+}
+
+html[data-viewport="iphone-landscape"] .media-tile__header {
+  height: 16px;
+}
+
+html[data-viewport="iphone-landscape"] .media-tile {
+  padding-bottom: 2px;
+}
+
+/* --- UniFi compact stats for landscape (no arcs) --- */
+html[data-viewport="iphone-landscape"] .net-instrument__compact-stats {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* --- Pi-hole compact layout for landscape --- */
+html[data-viewport="iphone-landscape"] .net-instrument__col {
+  gap: 2px;
+}
