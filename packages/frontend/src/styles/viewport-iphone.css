@@ -205,4 +205,58 @@ html[data-viewport="iphone-portrait"] .nas-tile__docker-stat { font-size: 16px; 
 html[data-viewport="iphone-portrait"] .ribbon-label { font-size: 12px; }
 
 /* ===================== LANDSCAPE ONLY (Phase 16) ===================== */
-/* Reserved -- empty in Phase 15. */
+/* Rules specific to landscape orientation.
+   Use html[data-viewport="iphone-landscape"] as the prefix. */
+
+/* --- Token overrides (D-05, D-06, D-12) --- */
+html[data-viewport="iphone-landscape"] {
+  --tile-padding: 8px;
+  --tile-gap: 4px;
+  --tile-font-label: 11px;
+  --tile-font-value: 17px;
+  --led-size: 7px;
+}
+
+/* --- Release fixed tile heights for landscape --- */
+html[data-viewport="iphone-landscape"] .media-tile {
+  max-height: none;
+}
+
+html[data-viewport="iphone-landscape"] .service-card--pihole {
+  height: auto;
+}
+
+/* --- Dynamic Island left/right clearance on header (RESP-14, D-14) --- */
+html[data-viewport="iphone-landscape"] .app-header {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* --- Dynamic Island left/right clearance on card grid --- */
+html[data-viewport="iphone-landscape"] .card-grid {
+  padding-left: max(var(--tile-padding), env(safe-area-inset-left));
+  padding-right: max(var(--tile-padding), env(safe-area-inset-right));
+}
+
+/* --- NowPlayingBanner 1-row compact (height is CSS-controlled, not Framer Motion) --- */
+html[data-viewport="iphone-landscape"] .now-playing-banner,
+html[data-viewport="iphone-landscape"] .now-playing-banner--idle {
+  height: 40px;
+  min-height: 40px;
+  padding: 0 max(12px, env(safe-area-inset-right)) 0 max(12px, env(safe-area-inset-left));
+}
+
+/* --- Typography scale (~80-90% of portrait values, D-06) --- */
+html[data-viewport="iphone-landscape"] .app-header__title { font-size: 15px; }
+html[data-viewport="iphone-landscape"] .app-header__weather-temp { font-size: 13px; }
+html[data-viewport="iphone-landscape"] .text-display { font-size: 15px; }
+html[data-viewport="iphone-landscape"] .text-heading { font-size: 13px; }
+html[data-viewport="iphone-landscape"] .text-body { font-size: 13px; }
+html[data-viewport="iphone-landscape"] .ribbon-label { font-size: 11px; }
+html[data-viewport="iphone-landscape"] .media-stack-row__name { font-size: 13px; }
+html[data-viewport="iphone-landscape"] .net-instrument__stat { font-size: 15px; }
+html[data-viewport="iphone-landscape"] .nas-tile__docker-stat { font-size: 13px; }
+html[data-viewport="iphone-landscape"] .now-playing-banner__stat { font-size: 11px; }
+html[data-viewport="iphone-landscape"] .now-playing-banner__label { font-size: 13px; }
+html[data-viewport="iphone-landscape"] .now-playing-banner__title { font-size: 13px; }
+html[data-viewport="iphone-landscape"] .now-playing-banner__message { font-size: 13px; }
