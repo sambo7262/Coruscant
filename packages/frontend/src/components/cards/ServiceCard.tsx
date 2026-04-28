@@ -382,17 +382,78 @@ function PlexInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   )
 }
 
+// Helper: parse "H:MM:SS" or "MM:SS" timeLeft string to total seconds (DL-02)
+function parseTimeleftToSeconds(timeleft: string): number {
+  if (!timeleft) return 0
+  const parts = timeleft.split(':').map(Number)
+  if (parts.length === 3) return (parts[0] ?? 0) * 3600 + (parts[1] ?? 0) * 60 + (parts[2] ?? 0)
+  if (parts.length === 2) return (parts[0] ?? 0) * 60 + (parts[1] ?? 0)
+  return 0
+}
+
+// Helper: format total seconds back to "H:MM:SS" string (DL-02)
+function formatSecondsToTimeleft(secs: number): string {
+  const s = Math.max(0, secs)
+  const h = Math.floor(s / 3600)
+  const m = Math.floor((s % 3600) / 60)
+  const sec = s % 60
+  return `${h}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`
+}
+
 // SABnzbd natural display: filename, speed, ETA (D-04)
 // Text is always amber — only the StatusDot LED handles purple states (D-05)
 function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   const speed = typeof metrics.speedMBs === 'number' ? metrics.speedMBs.toFixed(1) : '--'
   const filename = typeof metrics.currentFilename === 'string' && metrics.currentFilename
     ? metrics.currentFilename : ''
-  const eta = typeof metrics.timeLeft === 'string' && metrics.timeLeft
-    ? metrics.timeLeft : ''
   const queueCount = typeof metrics.queueCount === 'number' ? metrics.queueCount : 0
   const speedMBs = typeof metrics.speedMBs === 'number' ? metrics.speedMBs : 0
   const hasActivity = queueCount > 0 || speedMBs > 0
+
+  // DL-01: Slot tracking — show amber pulse until real progress change is confirmed
+  const slotId = typeof metrics.slotId === 'string' ? metrics.slotId : null
+  const progressPercent = typeof metrics.progressPercent === 'number' ? metrics.progressPercent : 0
+
+  const [slotStates, setSlotStates] = useState<Map<string, 'pending' | 'active'>>(new Map())
+  const prevProgressRef = useRef<Map<string, number>>(new Map())
+
+  useEffect(() => {
+    if (!slotId) return
+    setSlotStates(prev => {
+      const next = new Map(prev)
+      const prevProgress = prevProgressRef.current.get(slotId)
+      if (!next.has(slotId)) {
+        next.set(slotId, 'pending')
+      } else if (next.get(slotId) === 'pending' && prevProgress !== undefined && prevProgress !== progressPercent) {
+        next.set(slotId, 'active')
+      }
+      prevProgressRef.current.set(slotId, progressPercent)
+      return next
+    })
+  }, [slotId, progressPercent])
+
+  const isPending = slotId ? slotStates.get(slotId) !== 'active' : false
+
+  // DL-02: ETA countdown — count down every second, resync to server value on each SSE update
+  const serverTimeLeft = typeof metrics.timeLeft === 'string' ? metrics.timeLeft : ''
+  const [displaySeconds, setDisplaySeconds] = useState<number>(0)
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => {
+    const secs = parseTimeleftToSeconds(serverTimeLeft)
+    setDisplaySeconds(secs)
+    if (countdownRef.current) clearInterval(countdownRef.current)
+    if (secs > 0) {
+      countdownRef.current = setInterval(() => {
+        setDisplaySeconds(prev => Math.max(0, prev - 1))
+      }, 1000)
+    }
+    return () => {
+      if (countdownRef.current) clearInterval(countdownRef.current)
+    }
+  }, [serverTimeLeft])
+
+  const displayEta = displaySeconds > 0 ? formatSecondsToTimeleft(displaySeconds) : serverTimeLeft
 
   if (!hasActivity && !filename) {
     return (
@@ -415,19 +476,21 @@ function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
         <span className="sab-instrument__speed">
           {speed} <span className="sab-instrument__speed-unit">MB/s</span>
         </span>
-        {eta && (
+        {displayEta && (
           <span className="sab-instrument__eta">
-            ETA {eta}
+            ETA {displayEta}
           </span>
         )}
       </div>
-      {/* Progress bar — only when actively downloading */}
+      {/* Progress bar — pulse when pending (DL-01), real fill when active */}
       {hasActivity && (
-        <div className="sab-instrument__track">
-          <div
-            className="sab-instrument__fill"
-            style={{ width: `${typeof metrics.progressPercent === 'number' ? metrics.progressPercent : 0}%` }}
-          />
+        <div className={`sab-instrument__track${isPending ? ' sab-instrument__track--pending' : ''}`}>
+          {!isPending && (
+            <div
+              className="sab-instrument__fill"
+              style={{ width: `${progressPercent}%` }}
+            />
+          )}
         </div>
       )}
     </div>
