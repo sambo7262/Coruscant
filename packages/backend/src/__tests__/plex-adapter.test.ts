@@ -98,12 +98,39 @@ describe('fetchPlexSessions', () => {
   })
 
   it('sets transcode=true when TranscodeSession is present', async () => {
-    const item = makeMovieItem({ TranscodeSession: { videoDecision: 'transcode' } })
+    const item = makeMovieItem({ TranscodeSession: { videoDecision: 'transcode', audioDecision: 'directplay' } })
     mockAxios.get = vi.fn().mockResolvedValue(makeSessionsResponse([item]))
 
     const result = await fetchPlexSessions('http://plex:32400', 'TOKEN')
 
     expect(result.streams[0].transcode).toBe(true)
+  })
+
+  it('sets transcode=true when audioDecision is transcode and videoDecision is not', async () => {
+    const item = makeMovieItem({ TranscodeSession: { videoDecision: 'directplay', audioDecision: 'transcode' } })
+    mockAxios.get = vi.fn().mockResolvedValue(makeSessionsResponse([item]))
+
+    const result = await fetchPlexSessions('http://plex:32400', 'TOKEN')
+
+    expect(result.streams[0].transcode).toBe(true)
+  })
+
+  it('sets transcode=false when TranscodeSession present but all decisions are directplay', async () => {
+    const item = makeMovieItem({ TranscodeSession: { videoDecision: 'directplay', audioDecision: 'directplay' } })
+    mockAxios.get = vi.fn().mockResolvedValue(makeSessionsResponse([item]))
+
+    const result = await fetchPlexSessions('http://plex:32400', 'TOKEN')
+
+    expect(result.streams[0].transcode).toBe(false)
+  })
+
+  it('sets transcode=false when TranscodeSession present but decision keys are absent', async () => {
+    const item = makeMovieItem({ TranscodeSession: {} })
+    mockAxios.get = vi.fn().mockResolvedValue(makeSessionsResponse([item]))
+
+    const result = await fetchPlexSessions('http://plex:32400', 'TOKEN')
+
+    expect(result.streams[0].transcode).toBe(false)
   })
 
   it('sets transcode=false when TranscodeSession is absent (Direct Play)', async () => {

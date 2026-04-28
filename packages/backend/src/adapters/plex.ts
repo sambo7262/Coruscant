@@ -18,7 +18,7 @@ interface PlexMetadataItem {
   state?: string          // 'playing' | 'paused' | 'buffering'
   User: { title: string }
   Player: { title: string; state?: string }
-  TranscodeSession?: { videoDecision?: string }
+  TranscodeSession?: { videoDecision?: string; audioDecision?: string }
   Media?: Array<{
     videoResolution?: string
     audioCodec?: string   // e.g. 'flac', 'aac', 'mp3'
@@ -104,7 +104,8 @@ export async function fetchPlexSessions(
         episode: isAudio ? undefined : (item.index ?? undefined),
         progressPercent: 0,
         quality,
-        transcode: item.TranscodeSession !== undefined,
+        transcode: item.TranscodeSession?.videoDecision === 'transcode'
+        || item.TranscodeSession?.audioDecision === 'transcode',
         mediaType,
         albumName: isAudio ? (item.parentTitle ?? undefined) : undefined,
         trackTitle: isAudio ? item.title : undefined,
