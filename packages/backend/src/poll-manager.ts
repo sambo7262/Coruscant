@@ -376,6 +376,12 @@ export class PollManager {
           result = await pollBazarr(baseUrl, apiKey)
         } else if (serviceId === 'sabnzbd') {
           result = await pollSabnzbd(baseUrl, apiKey)
+          // D-06: activate burst mode when queue is active (not just on grab webhook)
+          const metrics = result.metrics as Record<string, unknown> | undefined
+          const queueCount = typeof metrics?.queueCount === 'number' ? metrics.queueCount : 0
+          if (queueCount > 0 && !this.burstPollActive) {
+            this.activateSabnzbdBurstPoll()
+          }
         } else if (serviceId === 'pihole') {
           result = await pollPihole(baseUrl, apiKey)
         } else if (serviceId === 'nas') {

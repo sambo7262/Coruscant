@@ -123,6 +123,7 @@ export interface SabnzbdMetrics {
   sabStatus: string
   currentFilename?: string   // display name of active download NZB
   timeLeft?: string          // formatted time remaining e.g. '0:04:32'
+  slotId?: string            // nzo_id from SABnzbd API — stable slot identifier for pending/active tracking
 }
 
 export interface ArrHealthWarning {

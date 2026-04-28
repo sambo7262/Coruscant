@@ -152,6 +152,17 @@ describe('pollSabnzbd', () => {
     expect(metrics?.timeLeft).toBe('')
   })
 
+  it('returns slotId from nzo_id of first active slot', async () => {
+    mockAxios.get = vi.fn().mockResolvedValue(
+      makeQueueResponse({
+        slots: [{ status: 'Downloading', percentage: '50', filename: 'My.Movie.2024.nzb', timeleft: '0:04:32', nzo_id: 'SABnzbd_nzo_abc123' }],
+      })
+    )
+    const result = await pollSabnzbd('http://localhost:8080', 'test-key')
+    const metrics = result.metrics as Record<string, unknown>
+    expect(metrics?.slotId).toBe('SABnzbd_nzo_abc123')
+  })
+
   it('skips Failed slots when extracting currentFilename and timeLeft', async () => {
     mockAxios.get = vi.fn().mockResolvedValue(
       makeQueueResponse({

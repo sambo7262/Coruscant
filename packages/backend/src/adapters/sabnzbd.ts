@@ -8,6 +8,7 @@ interface SabnzbdSlot {
   percentage?: string
   filename?: string    // NZB display name
   timeleft?: string    // formatted like '0:04:32'
+  nzo_id?: string      // stable slot identifier from SABnzbd API
 }
 
 interface SabnzbdQueue {
@@ -53,6 +54,7 @@ export async function pollSabnzbd(baseUrl: string, apiKey: string): Promise<Serv
     const sabStatus = queue.status
     const currentFilename = firstActiveSlot?.filename ?? ''
     const timeLeft = firstActiveSlot?.timeleft ?? ''
+    const slotId = firstActiveSlot?.nzo_id ?? undefined
 
     const metrics: SabnzbdMetrics = {
       speedMBs,
@@ -62,6 +64,7 @@ export async function pollSabnzbd(baseUrl: string, apiKey: string): Promise<Serv
       sabStatus,
       currentFilename,
       timeLeft,
+      slotId,
     }
 
     const serviceStatus = hasFailedItems ? 'warning' : 'online'
