@@ -77,14 +77,15 @@ function DownloadActivity({ snapshot }: { snapshot: DashboardSnapshot }) {
     return sabCurrentFilename ? cleanFilename(sabCurrentFilename) : ''
   })()
 
-  // Derive time remaining: arr first, then SABnzbd fallback
+  // Derive time remaining: SABnzbd first (real-time with burst polling), arr fallback
   const timeLeft = (() => {
+    const sabTime = typeof sabMetrics?.timeLeft === 'string' ? sabMetrics.timeLeft : ''
+    if (sabTime) return sabTime
     for (const s of activeArr) {
       const m = s.metrics as Record<string, unknown>
       if (typeof m.timeLeft === 'string' && m.timeLeft) return m.timeLeft
     }
-    const sabTime = typeof sabMetrics?.timeLeft === 'string' ? sabMetrics.timeLeft : ''
-    return sabTime
+    return ''
   })()
 
   return (
