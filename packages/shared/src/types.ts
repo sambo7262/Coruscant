@@ -37,6 +37,13 @@ export interface NasDockerStats {
   ramPercent: number
 }
 
+export interface ImageUpdateDetail {
+  tag: string           // e.g. "sambo7262/coruscant:latest"
+  localSha: string      // sha256:... digest of local image
+  remoteSha: string     // sha256:... digest from registry
+  updateAvailable: boolean
+}
+
 export interface NasStatus {
   cpu: number             // percent (user + system + other)
   ram: number             // percent
@@ -49,6 +56,8 @@ export interface NasStatus {
   fans?: NasFan[]         // optional — only if DSM returns fan data
   docker?: NasDockerStats // optional — only if DSM returns docker stats
   imageUpdateAvailable?: boolean // optional — from 2x/day check
+  imageUpdateDetails?: ImageUpdateDetail[]   // per-image list
+  imageUpdateCheckedAt?: string              // ISO 8601 timestamp of last check
 }
 
 export interface PlexStream {
