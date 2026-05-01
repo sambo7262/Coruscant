@@ -69,9 +69,12 @@ export async function fetchPlexSessions(
 ): Promise<{ streams: PlexStream[]; totalBandwidthKbps: number }> {
   try {
     const response = await axios.get<PlexSessionsResponse>(
-      `${baseUrl}/status/sessions?X-Plex-Token=${token}`,
+      `${baseUrl}/status/sessions`,
       {
-        headers: { Accept: 'application/json' },
+        headers: {
+          Accept: 'application/json',
+          'X-Plex-Token': token,
+        },
         httpsAgent,
         timeout: TIMEOUT_MS,
       },
@@ -130,8 +133,8 @@ export async function fetchPlexSessions(
 /**
  * Fetches Plex server resource stats from the PMS /statistics/resources endpoint.
  *
- * GET /statistics/resources?timespan=6&X-Plex-Token=<token>
- * Headers: Accept: application/json
+ * GET /statistics/resources?timespan=6
+ * Headers: Accept: application/json, X-Plex-Token: <token>
  *
  * Combines the CPU/RAM data from the most recent StatisticsResources entry with
  * the pre-computed session bandwidth (kbps) from fetchPlexSessions.
@@ -148,9 +151,12 @@ export async function fetchPlexServerStats(
 ): Promise<PlexServerStats | undefined> {
   try {
     const response = await axios.get<PlexStatisticsResponse>(
-      `${baseUrl}/statistics/resources?timespan=6&X-Plex-Token=${token}`,
+      `${baseUrl}/statistics/resources?timespan=6`,
       {
-        headers: { Accept: 'application/json' },
+        headers: {
+          Accept: 'application/json',
+          'X-Plex-Token': token,
+        },
         httpsAgent,
         timeout: TIMEOUT_MS,
       },
