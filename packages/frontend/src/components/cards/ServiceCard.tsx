@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { ServiceStatus, UnifiMetrics, ArrWebhookEvent, NasStatus, NasVolume } from '@coruscant/shared'
 import { StatusDot } from '../ui/StatusDot.js'
 import { StaleIndicator } from '../ui/StaleIndicator.js'
 import { useAnimatedNumber } from '../../hooks/useAnimatedNumber.js'
 import { canHover, useViewport } from '../../viewport/index.js'
+import { DockerUpdatePanel } from '../layout/DockerUpdatePanel.js'
 
 // Event flash colors for arr webhook events — used by MediaStackRow flash
 const EVENT_COLORS: Record<string, string> = {
@@ -138,6 +139,7 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
   const animRam = useAnimatedNumber(nasStatus.ram)
   const animDockerCpu = useAnimatedNumber(nasStatus.docker?.cpuPercent ?? 0)
   const animDockerRam = useAnimatedNumber(nasStatus.docker?.ramPercent ?? 0)
+  const [dockerPanelOpen, setDockerPanelOpen] = useState(false)
 
   return (
     <div className="nas-tile">
@@ -232,19 +234,35 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
             <span className="text-glow nas-tile__docker-stat">
               RAM {animDockerRam}%
             </span>
-            <div className="nas-tile__docker-update">
-              {nasStatus.imageUpdateAvailable === true ? (
-                <>
-                  <div className="nas-tile__docker-dot nas-tile__docker-dot--on" />
-                  <span className="nas-tile__docker-update-label nas-tile__docker-update-label--on">Update Available</span>
-                </>
-              ) : (
-                <>
-                  <div className="nas-tile__docker-dot nas-tile__docker-dot--off" />
-                  <span className="nas-tile__docker-update-label nas-tile__docker-update-label--off">No Update Available</span>
-                </>
+            <button
+              className="nas-tile__docker-update-btn"
+              onClick={() => setDockerPanelOpen(prev => !prev)}
+              aria-expanded={dockerPanelOpen}
+              aria-label={dockerPanelOpen ? 'Collapse Docker update details' : 'Expand Docker update details'}
+            >
+              <div className="nas-tile__docker-update">
+                {nasStatus.imageUpdateAvailable === true ? (
+                  <>
+                    <div className="nas-tile__docker-dot nas-tile__docker-dot--on" />
+                    <span className="nas-tile__docker-update-label nas-tile__docker-update-label--on">Update Available</span>
+                  </>
+                ) : (
+                  <>
+                    <div className="nas-tile__docker-dot nas-tile__docker-dot--off" />
+                    <span className="nas-tile__docker-update-label nas-tile__docker-update-label--off">No Update Available</span>
+                  </>
+                )}
+              </div>
+            </button>
+            <AnimatePresence>
+              {dockerPanelOpen && (
+                <DockerUpdatePanel
+                  images={nasStatus.imageUpdateDetails ?? []}
+                  checkedAt={nasStatus.imageUpdateCheckedAt}
+                  hasUpdates={nasStatus.imageUpdateAvailable ?? false}
+                />
               )}
-            </div>
+            </AnimatePresence>
           </>
         ) : null}
       </div>
