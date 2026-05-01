@@ -420,14 +420,19 @@ function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   useEffect(() => {
     if (!slotId) return
     setSlotStates(prev => {
-      const next = new Map(prev)
+      // Only retain the current slot — evict all previous entries to prevent unbounded Map growth
+      const next = new Map<string, 'pending' | 'active'>()
       const prevProgress = prevProgressRef.current.get(slotId)
-      if (!next.has(slotId)) {
+      const prevState = prev.get(slotId)
+      if (!prevState) {
         next.set(slotId, 'pending')
-      } else if (next.get(slotId) === 'pending' && prevProgress !== undefined && prevProgress !== progressPercent) {
+      } else if (prevState === 'pending' && prevProgress !== undefined && prevProgress !== progressPercent) {
         next.set(slotId, 'active')
+      } else {
+        next.set(slotId, prevState)
       }
-      prevProgressRef.current.set(slotId, progressPercent)
+      // Evict stale progress refs too
+      prevProgressRef.current = new Map([[slotId, progressPercent]])
       return next
     })
   }, [slotId, progressPercent])
