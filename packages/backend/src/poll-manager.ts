@@ -487,7 +487,7 @@ export class PollManager {
    * Deactivate burst polling for SABnzbd and restore normal interval (D-15).
    * No-op if not currently in burst mode.
    */
-  deactivateSabnzbdBurstPoll(): void {
+  private deactivateSabnzbdBurstPoll(): void {
     if (!this.burstPollActive) return
     this.burstPollActive = false
 
@@ -504,6 +504,8 @@ export class PollManager {
           this.state.set('sabnzbd', result)
         } catch { /* adapter handles errors internally */ }
       }
+      // Fire once immediately so the UI updates without waiting for the next interval tick
+      doPoll().catch(() => {})
       const timer = setInterval(doPoll, SABNZBD_INTERVAL_MS)
       this.timers.set('sabnzbd', timer)
     }
