@@ -14,7 +14,7 @@
 - [x] **Phase 14: Kiosk-Isolation Infrastructure** - Viewport tagger, CI isolation lint, meta tags, kiosk baseline, and inline-style extraction sweep — zero visible iPhone change, rails proven kiosk-safe (completed 2026-04-16)
 - [x] **Phase 15: iPhone Portrait** - Portrait CSS overrides scoped under `html[data-viewport="iphone-portrait"]` — mini-bar banner, compact header, Pi health panel adaptation, safe-area insets (completed 2026-04-16)
 - [x] **Phase 16: iPhone Landscape** - Landscape CSS overrides scoped under `html[data-viewport="iphone-landscape"]` — 2-column grid, landscape banner variant, orientation transition hardening (completed 2026-04-21)
-- [ ] **Phase 17: Download & Plex Bug Fixes** - SABnzbd progress/time-remaining accuracy restored from API; Plex transcode glow fires only on true transcodes
+- [x] **Phase 17: Download & Plex Bug Fixes** - SABnzbd progress/time-remaining accuracy restored from API; Plex transcode glow fires only on true transcodes (completed 2026-04-28)
 - [ ] **Phase 18: Docker Update Detail View** - Tapping "update available" in NAS header reveals which Docker image(s) have pending updates with registry tag vs running tag
 - [ ] **Phase 19: Graphical Activity Timeline** - Dedicated page with time-bounded visual history: infrastructure health sparklines + event markers for media activity and service state changes
 - [ ] **Phase 20: Weather Forecast** - Tapping the weather area reveals a 5-day forecast with daily highs, lows, conditions, and icons
@@ -126,10 +126,10 @@ Plans:
   1. A freshly grabbed download starts with a progress bar at 0% and climbs to 100% matching the real percentage reported by the SABnzbd API — never shows a phantom ~30% on first render
   2. The time remaining field on the download tile reflects the real-time `timeleft` value from SABnzbd, updating every poll cycle — not a stale or derived estimate
   3. A stream that SABnzbd or Plex reports as direct play shows no transcode glow; only streams the Tautulli/Plex payload marks as actively transcoding receive the warm amber pulse
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 Plans:
-- [ ] 17-01-PLAN.md — Plex transcode fix + SABnzbd backend (slotId, burst poll)
-- [ ] 17-02-PLAN.md — Frontend download bar pulse-then-switch + ETA countdown
+- [x] 17-01-PLAN.md — Plex transcode fix + SABnzbd backend (slotId, burst poll)
+- [x] 17-02-PLAN.md — Frontend download bar pulse-then-switch + ETA countdown
 
 ### Phase 18: Docker Update Detail View
 **Goal**: Users can see exactly which Docker image(s) have updates available without leaving the dashboard
@@ -139,7 +139,10 @@ Plans:
   1. Tapping "update available" in the NAS header reveals a detail view listing each container with a pending update, showing image name, running tag, and available registry tag
   2. The detail view is dismissible and does not break kiosk or iPhone viewports
   3. Update check data comes from the existing Docker/registry polling — no new external API calls required
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 18-01-PLAN.md — Backend type extension + checkNasImageUpdates per-image result + PollManager wiring
+- [ ] 18-02-PLAN.md — DockerUpdatePanel component + ServiceCard tap-to-expand + CSS styles
 **UI hint**: yes
 
 ### Phase 19: Graphical Activity Timeline
@@ -217,7 +220,7 @@ Plans:
 | 14. Kiosk-Isolation Infrastructure | v1.2 | 6/6 | Complete   | 2026-04-16 |
 | 15. iPhone Portrait | v1.2 | 5/5 | Complete | 2026-04-16 |
 | 16. iPhone Landscape | v1.2 | 3/3 | Complete    | 2026-04-21 |
-| 17. Download & Plex Bug Fixes | v1.3 | 0/2 | Not started | - |
+| 17. Download & Plex Bug Fixes | v1.3 | 2/2 | Complete    | 2026-04-28 |
 | 18. Docker Update Detail View | v1.3 | 0/TBD | Not started | - |
 | 19. Graphical Activity Timeline | v1.3 | 0/TBD | Not started | - |
 | 20. Weather Forecast | v1.3 | 0/TBD | Not started | - |
