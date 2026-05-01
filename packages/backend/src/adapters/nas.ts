@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { NasDockerStats, NasStatus } from '@coruscant/shared'
+import type { ImageUpdateDetail, NasDockerStats, NasStatus } from '@coruscant/shared'
 
 const TIMEOUT_MS = 10_000
 // DSM sessions last ~30 minutes; use 25 min to be conservative
@@ -293,12 +293,19 @@ export async function fetchNasDockerStats(
   }
 }
 
+export interface ImageUpdateResult {
+  available: boolean
+  images: ImageUpdateDetail[]
+  checkedAt: string
+}
+
 /**
  * Check if any Docker images have updates available via the Docker socket.
  * Lists local images, queries the registry digest via /distribution/{name}/json,
- * and compares against the local digest. Returns false on any error (defensive).
+ * and compares against the local digest. Returns per-image detail array.
+ * Returns empty result on any error (defensive).
  */
-export async function checkNasImageUpdates(): Promise<boolean> {
+export async function checkNasImageUpdates(): Promise<ImageUpdateResult> {
   const DOCKER_SOCKET = '/var/run/docker.sock'
 
   try {
@@ -309,6 +316,7 @@ export async function checkNasImageUpdates(): Promise<boolean> {
     })
 
     const images: Array<{ RepoTags?: string[]; RepoDigests?: string[] }> = imagesRes.data ?? []
+    const updates: ImageUpdateDetail[] = []
 
     for (const img of images) {
       const tags = img.RepoTags ?? []
@@ -321,6 +329,9 @@ export async function checkNasImageUpdates(): Promise<boolean> {
         const localDigest = localDigests.find((d) => d.startsWith(tag.split(':')[0] + '@'))
         if (!localDigest) continue
 
+        const localSha = localDigest.split('@')[1]
+        if (!localSha) continue
+
         try {
           const distRes = await axios.get(
             `http://localhost/v1.41/distribution/${encodeURIComponent(tag)}/json`,
@@ -330,10 +341,7 @@ export async function checkNasImageUpdates(): Promise<boolean> {
           const remoteDigest = distRes.data?.Descriptor?.digest as string | undefined
           if (!remoteDigest) continue
 
-          const localSha = localDigest.split('@')[1]
-          if (localSha && remoteDigest !== localSha) {
-            return true
-          }
+          updates.push({ tag, localSha, remoteSha: remoteDigest, updateAvailable: remoteDigest !== localSha })
         } catch {
           // Registry unreachable or auth failed for this image — skip it
           continue
@@ -341,8 +349,8 @@ export async function checkNasImageUpdates(): Promise<boolean> {
       }
     }
 
-    return false
+    return { available: updates.some(u => u.updateAvailable), images: updates, checkedAt: new Date().toISOString() }
   } catch {
-    return false
+    return { available: false, images: [], checkedAt: new Date().toISOString() }
   }
 }

@@ -441,8 +441,13 @@ export class PollManager {
       }
 
       const checkImages = async () => {
-        const available = await checkNasImageUpdates()
-        this.nasData = { ...this.nasData, imageUpdateAvailable: available }
+        const result = await checkNasImageUpdates()
+        this.nasData = {
+          ...this.nasData,
+          imageUpdateAvailable: result.available,
+          imageUpdateDetails: result.images,
+          imageUpdateCheckedAt: result.checkedAt,
+        }
       }
 
       // Initial check immediately

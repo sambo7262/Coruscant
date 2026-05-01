@@ -254,7 +254,13 @@ describe('NAS adapter', () => {
       const { checkNasImageUpdates } = await import('../adapters/nas.js')
       const result = await checkNasImageUpdates()
 
-      expect(result).toBe(true)
+      expect(result.available).toBe(true)
+      expect(result.images).toHaveLength(1)
+      expect(result.images[0].tag).toBe('sambo7262/coruscant:v1.0.1')
+      expect(result.images[0].updateAvailable).toBe(true)
+      expect(result.images[0].localSha).toBe('sha256:aaa')
+      expect(result.images[0].remoteSha).toBe('sha256:bbb')
+      expect(result.checkedAt).toBeDefined()
     })
 
     it('returns false when digests match', async () => {
@@ -274,7 +280,21 @@ describe('NAS adapter', () => {
       const { checkNasImageUpdates } = await import('../adapters/nas.js')
       const result = await checkNasImageUpdates()
 
-      expect(result).toBe(false)
+      expect(result.available).toBe(false)
+      expect(result.images).toHaveLength(1)
+      expect(result.images[0].updateAvailable).toBe(false)
+      expect(result.checkedAt).toBeDefined()
+    })
+
+    it('returns empty result when Docker socket is unreachable', async () => {
+      mockAxios.get = vi.fn().mockRejectedValue(new Error('ENOENT'))
+
+      const { checkNasImageUpdates } = await import('../adapters/nas.js')
+      const result = await checkNasImageUpdates()
+
+      expect(result.available).toBe(false)
+      expect(result.images).toHaveLength(0)
+      expect(result.checkedAt).toBeDefined()
     })
   })
 
