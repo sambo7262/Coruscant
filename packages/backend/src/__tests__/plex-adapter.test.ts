@@ -193,9 +193,9 @@ describe('fetchPlexSessions', () => {
     await fetchPlexSessions('http://plex:32400', 'MY_TOKEN')
 
     expect(mockAxios.get).toHaveBeenCalledWith(
-      expect.stringContaining('X-Plex-Token=MY_TOKEN'),
+      expect.stringContaining('/status/sessions'),
       expect.objectContaining({
-        headers: expect.objectContaining({ Accept: 'application/json' }),
+        headers: expect.objectContaining({ Accept: 'application/json', 'X-Plex-Token': 'MY_TOKEN' }),
       })
     )
   })
@@ -366,9 +366,9 @@ describe('fetchPlexServerStats', () => {
     await fetchPlexServerStats('http://plex:32400', 'MY_TOKEN', 0)
 
     expect(mockAxios.get).toHaveBeenCalledWith(
-      expect.stringContaining('/statistics/resources?timespan=6&X-Plex-Token=MY_TOKEN'),
+      expect.stringContaining('/statistics/resources?timespan=6'),
       expect.objectContaining({
-        headers: expect.objectContaining({ Accept: 'application/json' }),
+        headers: expect.objectContaining({ Accept: 'application/json', 'X-Plex-Token': 'MY_TOKEN' }),
       })
     )
   })
