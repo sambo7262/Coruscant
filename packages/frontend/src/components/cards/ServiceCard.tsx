@@ -254,19 +254,19 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
                 )}
               </div>
             </button>
-            <AnimatePresence>
-              {dockerPanelOpen && (
-                <DockerUpdatePanel
-                  images={nasStatus.imageUpdateDetails ?? []}
-                  checkedAt={nasStatus.imageUpdateCheckedAt}
-                  hasUpdates={nasStatus.imageUpdateAvailable ?? false}
-                />
-              )}
-            </AnimatePresence>
           </>
         ) : null}
       </div>
 
+      <AnimatePresence>
+        {dockerPanelOpen && (
+          <DockerUpdatePanel
+            images={nasStatus.imageUpdateDetails ?? []}
+            checkedAt={nasStatus.imageUpdateCheckedAt}
+            hasUpdates={nasStatus.imageUpdateAvailable ?? false}
+          />
+        )}
+      </AnimatePresence>
     </div>
   )
 }

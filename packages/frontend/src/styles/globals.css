@@ -824,13 +824,18 @@ body::after {
 
 /* ---------- Docker Update Panel (Phase 18) ---------- */
 .docker-update-panel {
+  position: fixed;
+  top: 44px;
+  left: 0;
+  right: 0;
+  z-index: 9;
+  background: rgba(13, 13, 13, 0.97);
+  border-bottom: 1px solid rgba(232, 160, 32, 0.25);
   overflow: hidden;
-  /* NO position: fixed — inline within NAS tile */
 }
 
 .docker-update-panel__inner {
-  padding: 8px 12px;
-  border-top: 1px solid rgba(232, 160, 32, 0.15);
+  padding: 10px 16px;
 }
 
 .docker-update-panel__header {
