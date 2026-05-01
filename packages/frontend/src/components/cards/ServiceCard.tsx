@@ -150,9 +150,11 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
           {nasStatus.disks && (() => {
             const rows: typeof nasStatus.disks[] = []
             for (let i = 0; i < nasStatus.disks.length; i += 4) rows.push(nasStatus.disks.slice(i, i + 4))
-            return rows.map((row, rowIdx) => (
+            return rows.map((row, rowIdx) => {
+              const rowKey = row.map(d => d.id).join('-')
+              return (
               <div
-                key={rowIdx}
+                key={rowKey}
                 className="nas-tile__disk-row"
                 style={{
                   justifyContent: row.length < 4 ? 'center' : 'flex-start',
@@ -180,7 +182,8 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
                   )
                 })}
               </div>
-            ))
+              )
+            })
           })()}
         </div>
       </div>
