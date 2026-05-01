@@ -822,6 +822,75 @@ body::after {
   color: #444;
 }
 
+/* ---------- Docker Update Panel (Phase 18) ---------- */
+.docker-update-panel {
+  overflow: hidden;
+  /* NO position: fixed — inline within NAS tile */
+}
+
+.docker-update-panel__inner {
+  padding: 8px 12px;
+  border-top: 1px solid rgba(232, 160, 32, 0.15);
+}
+
+.docker-update-panel__header {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: rgba(232, 160, 32, 0.5);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.docker-update-panel__all-good {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--cockpit-green);
+  letter-spacing: 0.05em;
+}
+
+.docker-update-panel__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 0;
+  gap: 8px;
+}
+
+.docker-update-panel__tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: rgba(232, 160, 32, 0.85);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.docker-update-panel__status {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--cockpit-amber);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Button reset for docker update tap target */
+.nas-tile__docker-update-btn {
+  all: unset;
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nas-tile__docker-update-btn:hover {
+    opacity: 0.8;
+  }
+}
+
 /* ---------- Arr instrument ---------- */
 .arr-instrument {
   display: flex;
