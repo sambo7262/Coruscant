@@ -442,14 +442,21 @@ function SabnzbdInstrument({ metrics }: { metrics: Record<string, unknown> }) {
   useEffect(() => {
     const secs = parseTimeleftToSeconds(serverTimeLeft)
     setDisplaySeconds(secs)
-    if (countdownRef.current) clearInterval(countdownRef.current)
+    // Always clear the previous interval first and null the ref
+    if (countdownRef.current) {
+      clearInterval(countdownRef.current)
+      countdownRef.current = null
+    }
     if (secs > 0) {
       countdownRef.current = setInterval(() => {
         setDisplaySeconds(prev => Math.max(0, prev - 1))
       }, 1000)
     }
     return () => {
-      if (countdownRef.current) clearInterval(countdownRef.current)
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current)
+        countdownRef.current = null
+      }
     }
   }, [serverTimeLeft])
 
