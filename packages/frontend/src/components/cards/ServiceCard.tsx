@@ -631,7 +631,7 @@ function NetworkInstrument({ metrics, unifiService }: { metrics: Record<string, 
           className="net-instrument__section-label net-instrument__section-label--center"
           style={{ color: unifiConfigured ? 'var(--cockpit-amber)' : '#555' }}
         >
-          UBIQUITI
+          UNIFI
         </div>
         {!unifiConfigured ? (
           <span className="net-instrument__not-configured">

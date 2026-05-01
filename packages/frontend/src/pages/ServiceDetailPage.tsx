@@ -466,7 +466,7 @@ export function ServiceDetailPage({ snapshot }: ServiceDetailPageProps) {
               <div style={{ marginTop: '24px', borderTop: '1px solid rgba(232,160,32,0.15)', paddingTop: '16px' }}>
                 <div style={{ fontSize: '12px', color: 'var(--cockpit-amber)', letterSpacing: '0.08em',
                   textTransform: 'uppercase', marginBottom: '10px', fontFamily: 'var(--font-mono)' }}>
-                  UBIQUITI DEVICES
+                  UNIFI DEVICES
                 </div>
                 <UnifiDetailView metrics={unifiService.metrics as Record<string, unknown>} />
               </div>

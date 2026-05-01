@@ -406,7 +406,7 @@ const SERVICES = [
   { id: 'pihole', label: 'PI-HOLE' },
   { id: 'plex', label: 'PLEX' },
   { id: 'nas', label: 'NAS' },
-  { id: 'unifi', label: 'UBIQUITI' },
+  { id: 'unifi', label: 'UNIFI' },
   { id: 'piHealth', label: 'PI HEALTH' },
 ] as const
 
