@@ -6,6 +6,7 @@ import type { TimeWindow } from '../components/timeline/TimeWindowSelector.js'
 import { SparklineCard } from '../components/timeline/SparklineCard.js'
 import type { MetricConfig } from '../components/timeline/SparklineCard.js'
 import { LogsPage } from './LogsPage.js'
+import { MediaEventList } from '../components/timeline/MediaEventList.js'
 
 interface TimelinePageProps {
   lastLogEntry?: LogEntry | null
@@ -269,6 +270,12 @@ export function TimelinePage({ lastLogEntry }: TimelinePageProps) {
               )}
             </div>
           )}
+
+          {/* 32px spacer between sparkline grid and media events section (xl spacing per UI-SPEC) */}
+          <div style={{ height: '32px' }} />
+
+          {/* Media event list */}
+          <MediaEventList window={activeWindow} />
 
           {/* Bottom padding to clear NowPlayingBanner */}
           <div style={{ height: '48px' }} />
