@@ -225,8 +225,8 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, activeOut
                 </Link>
                 {!isPortrait && (
                   <Link
-                    to="/logs"
-                    aria-label="Open Logs"
+                    to="/timeline"
+                    aria-label="Open Timeline"
                     className="app-header__icon-button"
                   >
                     <List size={26} />
