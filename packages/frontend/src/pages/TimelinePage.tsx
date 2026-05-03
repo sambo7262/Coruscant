@@ -20,11 +20,11 @@ interface MetricsResponse {
   points: Array<Record<string, number | string>>
 }
 
-// Per-service metric configs per UI-SPEC (prescriptive color mapping)
+// Per-service metric configs — amber for CPU, colorful for others
 const NAS_METRICS: MetricConfig[] = [
   { key: 'cpu', label: 'CPU', color: 'var(--cockpit-amber)', fillOpacity: 0.4, domain: [0, 100], chartType: 'area', unit: '%' },
-  { key: 'ram', label: 'RAM', color: 'rgba(232,160,32,0.6)', fillOpacity: 0.25, domain: [0, 100], chartType: 'area', unit: '%' },
-  { key: 'networkMbpsUp', label: 'NET UP', color: '#00c8ff', chartType: 'line', domain: ['auto', 'auto'], unit: ' Mbps' },
+  { key: 'ram', label: 'RAM', color: '#4ADE80', fillOpacity: 0.25, domain: [0, 100], chartType: 'area', unit: '%' },
+  { key: 'networkMbpsUp', label: 'NET UP', color: '#FF3B3B', chartType: 'line', domain: ['auto', 'auto'], unit: ' Mbps' },
   { key: 'networkMbpsDown', label: 'NET DWN', color: '#00c8ff', chartType: 'line', domain: ['auto', 'auto'], unit: ' Mbps' },
 ]
 
@@ -38,19 +38,19 @@ const NAS_DISK_CONFIG = (key: string, label: string): MetricConfig => ({
 })
 
 const DOCKER_METRICS: MetricConfig[] = [
-  { key: 'dockerCpu', label: 'CPU', color: 'rgba(232,160,32,0.7)', fillOpacity: 0.3, domain: [0, 100], chartType: 'area', unit: '%' },
-  { key: 'dockerRam', label: 'RAM', color: 'rgba(232,160,32,0.5)', fillOpacity: 0.2, domain: [0, 100], chartType: 'area', unit: '%' },
+  { key: 'dockerCpu', label: 'CPU', color: 'var(--cockpit-amber)', fillOpacity: 0.3, domain: [0, 100], chartType: 'area', unit: '%' },
+  { key: 'dockerRam', label: 'RAM', color: '#8B5CF6', fillOpacity: 0.2, domain: [0, 100], chartType: 'area', unit: '%' },
 ]
 
 const PIHOLE_METRICS: MetricConfig[] = [
-  { key: 'queriesPerSecond', label: 'Q/S', color: 'var(--cockpit-amber)', fillOpacity: 0.3, domain: ['auto', 'auto'], chartType: 'area', unit: ' q/s' },
-  { key: 'percentBlocked', label: 'BLKD%', color: 'var(--cockpit-green)', fillOpacity: 0.3, domain: [0, 100], chartType: 'area', unit: '%' },
+  { key: 'queriesPerSecond', label: 'Q/S', color: '#00c8ff', fillOpacity: 0.3, domain: ['auto', 'auto'], chartType: 'area', unit: ' q/s' },
+  { key: 'percentBlocked', label: 'BLKD%', color: '#FF3B3B', fillOpacity: 0.3, domain: [0, 100], chartType: 'area', unit: '%' },
 ]
 
 const UNIFI_METRICS: MetricConfig[] = [
-  { key: 'wanTxMbps', label: 'WAN TX', color: '#00c8ff', chartType: 'line', domain: ['auto', 'auto'], unit: ' Mbps' },
+  { key: 'wanTxMbps', label: 'WAN TX', color: '#FF3B3B', chartType: 'line', domain: ['auto', 'auto'], unit: ' Mbps' },
   { key: 'wanRxMbps', label: 'WAN RX', color: '#00c8ff', chartType: 'line', domain: ['auto', 'auto'], unit: ' Mbps' },
-  { key: 'clientCount', label: 'CLIENTS', color: 'var(--cockpit-green)', chartType: 'line', domain: ['auto', 'auto'] },
+  { key: 'clientCount', label: 'CLIENTS', color: '#4ADE80', chartType: 'line', domain: ['auto', 'auto'] },
 ]
 
 const DISK_TEMP_COLORS = ['#E8A020', '#00c8ff', '#4ADE80', '#FF3B3B', '#8B5CF6', '#FF8C00']
@@ -176,7 +176,7 @@ export function TimelinePage({ lastLogEntry }: TimelinePageProps) {
 
   const PI_HEALTH_METRICS: MetricConfig[] = [
     { key: 'cpuPercent', label: 'CPU', color: 'var(--cockpit-amber)', fillOpacity: 0.4, domain: [0, 100], chartType: 'area', unit: '%' },
-    { key: 'cpuTempF', label: 'TEMP', color: 'rgba(232,160,32,0.6)', chartType: 'line', domain: ['auto', 'auto'], unit: '°F' },
+    { key: 'cpuTempF', label: 'TEMP', color: '#FF3B3B', chartType: 'line', domain: ['auto', 'auto'], unit: '°F' },
   ]
 
   return (

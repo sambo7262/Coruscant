@@ -1710,8 +1710,8 @@ body::after {
   border-bottom-color: var(--cockpit-amber);
 }
 .sparkline-card__chart {
-  height: 140px;
-  padding: 4px 0;
+  height: 130px;
+  padding: 4px 4px 8px 4px;
 }
 
 /* ============================================================
