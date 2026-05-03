@@ -16,9 +16,10 @@ import { arrWebhookRoutes } from './routes/arr-webhooks.js'
 import { debugRoutes } from './routes/debug.js'
 import { piHealthRestartRoutes } from './routes/pi-health-restart.js'
 import { logRoutes } from './routes/logs.js'
+import { metricsRoutes } from './routes/metrics.js'
 import { weatherSettingsRoutes } from './routes/weather-settings.js'
 import { startWeatherPoller } from './weather-poller.js'
-import { healthProbe, serviceConfig, appLogs, kvStore } from './schema.js'
+import { healthProbe, serviceConfig, appLogs, kvStore, metricsHistory } from './schema.js'
 import { pollManager } from './poll-manager.js'
 import { decrypt } from './crypto.js'
 import { SqliteLogStream } from './log-transport.js'
@@ -54,6 +55,7 @@ await fastify.register(arrWebhookRoutes)
 await fastify.register(debugRoutes)
 await fastify.register(piHealthRestartRoutes)
 await fastify.register(logRoutes)
+await fastify.register(metricsRoutes)
 await fastify.register(weatherSettingsRoutes)
 
 // Serve compiled Vite bundle in production (D-23)
@@ -77,6 +79,11 @@ if (existsSync(frontendDist)) {
 // Initialise database — idempotent schema bootstrap + round-trip probe (D-05)
 try {
   initDb()
+  // Startup purge: remove metrics_history rows older than 7 days
+  try {
+    const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    getDb().delete(metricsHistory).where(lt(metricsHistory.timestamp, cutoff)).run()
+  } catch { /* non-fatal */ }
   const db = getDb()
   // SQLite round-trip: write a probe row and read it back
   db.insert(healthProbe).values({ checkedAt: new Date().toISOString() }).run()
@@ -133,6 +140,18 @@ schedule('0 3 * * *', () => {
     fastify.log.info({ service: 'system', msg: 'log_prune_complete', cutoff, deleted: result.changes })
   } catch (err) {
     fastify.log.error({ err, service: 'system' }, 'Nightly log prune failed')
+  }
+})
+
+// Nightly metrics prune at 3:05am — deletes metrics_history rows older than 7 days
+schedule('5 3 * * *', () => {
+  try {
+    const db = getDb()
+    const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+    const result = db.delete(metricsHistory).where(lt(metricsHistory.timestamp, cutoff)).run()
+    fastify.log.info({ service: 'system', msg: 'metrics_prune_complete', cutoff, deleted: result.changes })
+  } catch (err) {
+    fastify.log.error({ err, service: 'system' }, 'Nightly metrics prune failed')
   }
 })
 
