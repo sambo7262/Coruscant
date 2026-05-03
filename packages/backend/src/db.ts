@@ -63,6 +63,14 @@ export function initDb(): void {
       value TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS metrics_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+      timestamp TEXT NOT NULL,
+      service TEXT NOT NULL,
+      metrics TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_metrics_history_service_ts
+      ON metrics_history(service, timestamp);
   `)
 
   // Phase 4 migration: add username column if it doesn't exist yet.

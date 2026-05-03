@@ -37,3 +37,10 @@ export const kvStore = sqliteTable('kv_store', {
   value: text('value').notNull(),
   updatedAt: text('updated_at').notNull(),
 })
+
+export const metricsHistory = sqliteTable('metrics_history', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  timestamp: text('timestamp').notNull(),
+  service: text('service').notNull(),
+  metrics: text('metrics').notNull(),
+})

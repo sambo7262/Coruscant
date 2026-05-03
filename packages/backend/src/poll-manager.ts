@@ -1,7 +1,7 @@
 import type { DashboardSnapshot, ServiceStatus, NasStatus, PlexStream, PlexServerStats, ArrWebhookEvent, WeatherData, PiHealthStatus } from '@coruscant/shared'
 import { eq } from 'drizzle-orm'
 import { getDb } from './db.js'
-import { kvStore } from './schema.js'
+import { kvStore, metricsHistory } from './schema.js'
 import { pollArr } from './adapters/arr.js'
 import { pollBazarr } from './adapters/bazarr.js'
 import { pollSabnzbd } from './adapters/sabnzbd.js'
@@ -306,6 +306,12 @@ export class PollManager {
       const doPollPiHealth = async () => {
         const result = await pollPiHealth(baseUrl)
         this.piHealthData = result
+        this.writeMetricsSnapshot('piHealth', {
+          cpuPercent: result.cpuPercent,
+          cpuTempC: result.cpuTempC,
+          memUsedMb: result.memUsedMb,
+          memTotalMb: result.memTotalMb,
+        })
         this.broadcastSnapshot()
       }
       await doPollPiHealth()
@@ -398,6 +404,14 @@ export class PollManager {
             configured: true,
             lastPollAt: new Date().toISOString(),
           })
+          this.writeMetricsSnapshot('nas', {
+            cpu: nasResult.cpu,
+            ram: nasResult.ram,
+            networkMbpsUp: nasResult.networkMbpsUp,
+            networkMbpsDown: nasResult.networkMbpsDown,
+            volumes: nasResult.volumes?.map(v => ({ name: v.name, usedPercent: v.usedPercent })) ?? [],
+            ...(nasResult.docker !== undefined ? { dockerCpu: nasResult.docker.cpuPercent, dockerRam: nasResult.docker.ramPercent } : {}),
+          })
           // Broadcast immediately so the SSE clients see the update without
           // waiting for the 5-second SSE interval.
           this.broadcastSnapshot()
@@ -413,6 +427,23 @@ export class PollManager {
         }
 
         this.state.set(serviceId, result)
+
+        if (serviceId === 'pihole' && result.metrics) {
+          const m = result.metrics as Record<string, unknown>
+          this.writeMetricsSnapshot('pihole', {
+            queriesPerSecond: m.queriesPerSecond,
+            percentBlocked: m.percentBlocked,
+          })
+        }
+
+        if (serviceId === 'unifi' && result.metrics) {
+          const m = result.metrics as Record<string, unknown>
+          this.writeMetricsSnapshot('unifi', {
+            wanTxMbps: m.wanTxMbps,
+            wanRxMbps: m.wanRxMbps,
+            clientCount: m.clientCount,
+          })
+        }
       } catch {
         // Adapter errors are captured inside each adapter — this shouldn't fire
       }
@@ -535,6 +566,21 @@ export class PollManager {
       activeOutages: [...this.activeOutages.values()],
       timestamp: new Date().toISOString(),
     }
+  }
+
+  /**
+   * Write a metrics snapshot row to metrics_history on every poll completion.
+   * No throttle — writes at poll frequency per user override.
+   * Never throws — poll must never crash due to a write failure.
+   */
+  private writeMetricsSnapshot(service: string, metrics: Record<string, unknown>): void {
+    try {
+      getDb().insert(metricsHistory).values({
+        timestamp: new Date().toISOString(),
+        service,
+        metrics: JSON.stringify(metrics),
+      }).run()
+    } catch { /* never crash poll on write failure */ }
   }
 
   /**
