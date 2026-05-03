@@ -5,7 +5,7 @@
 - ✅ **v1.0 MVP** — Phases 1-11 (shipped 2026-04-07) — [archive](milestones/v1.0-ROADMAP.md)
 - ✅ **v1.1 Pi Health Monitoring** — Phases 12-13 (shipped 2026-04-15)
 - ✅ **v1.2 iPhone Responsive Polish** — Phases 14-16 (shipped 2026-04-21)
-- 🚧 **v1.3 Bug Fixes & Data Updates** — Phases 17-22 (in progress)
+- 🚧 **v1.3 Bug Fixes & Data Updates** — Phases 17-21 (in progress)
 
 ## Phases
 
@@ -15,11 +15,10 @@
 - [x] **Phase 15: iPhone Portrait** - Portrait CSS overrides scoped under `html[data-viewport="iphone-portrait"]` — mini-bar banner, compact header, Pi health panel adaptation, safe-area insets (completed 2026-04-16)
 - [x] **Phase 16: iPhone Landscape** - Landscape CSS overrides scoped under `html[data-viewport="iphone-landscape"]` — 2-column grid, landscape banner variant, orientation transition hardening (completed 2026-04-21)
 - [x] **Phase 17: Download & Plex Bug Fixes** - SABnzbd progress/time-remaining accuracy restored from API; Plex transcode glow fires only on true transcodes (completed 2026-04-28)
-- [ ] **Phase 18: Docker Update Detail View** - Tapping "update available" in NAS header reveals which Docker image(s) have pending updates with registry tag vs running tag
+- [x] **Phase 18: Docker Update Detail View** - Tapping "update available" in NAS header reveals which Docker image(s) have pending updates with registry tag vs running tag (completed 2026-05-03)
 - [ ] **Phase 19: Graphical Activity Timeline** - Dedicated page with time-bounded visual history: infrastructure health sparklines + event markers for media activity and service state changes
 - [ ] **Phase 20: Weather Forecast** - Tapping the weather area reveals a 5-day forecast with daily highs, lows, conditions, and icons
 - [ ] **Phase 21: NAS CPU Diagnostic** - Elevated CPU triggers an AI-powered plain-English explanation of what is causing the load, within a ~$0.01 per-request budget
-- [ ] **Phase 22: Logging Overhaul** - Structured source/purpose/outcome log entries, poll-success noise eliminated, color-coded frontend viewer with per-service and per-level filtering
 
 ## Phase Details
 
@@ -139,10 +138,10 @@ Plans:
   1. Tapping "update available" in the NAS header reveals a detail view listing each container with a pending update, showing image name, running tag, and available registry tag
   2. The detail view is dismissible and does not break kiosk or iPhone viewports
   3. Update check data comes from the existing Docker/registry polling — no new external API calls required
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 Plans:
-- [ ] 18-01-PLAN.md — Backend type extension + checkNasImageUpdates per-image result + PollManager wiring
-- [ ] 18-02-PLAN.md — DockerUpdatePanel component + ServiceCard tap-to-expand + CSS styles
+- [x] 18-01-PLAN.md — Backend type extension + checkNasImageUpdates per-image result + PollManager wiring
+- [x] 18-02-PLAN.md — DockerUpdatePanel component + ServiceCard tap-to-expand + CSS styles
 **UI hint**: yes
 
 ### Phase 19: Graphical Activity Timeline
@@ -154,10 +153,14 @@ Plans:
   2. Media stack events (grabs, plays, completions) and service state changes (up/down transitions) appear as discrete event markers on the timeline, distinguishable by type
   3. The time window selector allows switching between preset ranges (24h, 3d, 7d) and the view updates without page reload
   4. The page is navigable from the main dashboard and works across kiosk, iPhone portrait, and iPhone landscape viewports
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 19-01-PLAN.md — Backend metric persistence: schema, write hooks, REST API, purge cron
+- [ ] 19-02-PLAN.md — Frontend sparkline page: TimelinePage, SparklineCard, TimeWindowSelector, routing
+- [ ] 19-03-PLAN.md — Media event list: MediaEventList with filtering, integrated into TimelinePage
 **UI hint**: yes
 
-### Phase 20: Weather Forecast
+### Phase 20: Weather Forecast### Phase 20: Weather Forecast
 **Goal**: Users can tap the weather area to see a 5-day outlook without leaving the dashboard
 **Depends on**: Phase 17 (v1.3 baseline clean); existing Open-Meteo weather adapter in SSE pipeline
 **Requirements**: WX-01, WX-02
@@ -177,19 +180,6 @@ Plans:
   2. The diagnostic result names the likely process or workload driving high CPU in terms a home user understands (e.g., "Plex transcoding", "Docker container rebuild") rather than raw system output
   3. Each diagnostic request consumes no more than ~$0.01 in LLM API tokens, enforced by using the smallest capable model and a compact, context-minimal prompt — no runaway cost from rapid repeated taps
 **Plans**: TBD
-
-### Phase 22: Logging Overhaul
-**Goal**: Every log entry is structured, actionable, and noise-free; the frontend viewer lets the user isolate exactly what they care about
-**Depends on**: Phase 17 (v1.3 baseline clean); existing pino logger and frontend log viewer
-**Requirements**: LOG-01, LOG-02, LOG-03, LOG-04, LOG-05
-**Success Criteria** (what must be TRUE):
-  1. Every log entry in the backend includes a `source` field (service name or subsystem) and a `callType` tag (webhook, poll, sse, settings) that are set at the point of emission — visible in the raw log output and in the frontend viewer without parsing the message body
-  2. Repeated "poll OK" and similar success-cycle messages no longer appear at INFO level during normal operation; switching the log level to DEBUG surfaces them for troubleshooting without restarting the container
-  3. Warning and error entries in the frontend log viewer render in a visually distinct color (amber for warn, red for error) and include enough context (service, what was attempted, why it failed) to take action without cross-referencing another tool
-  4. The frontend log viewer filter bar allows isolating logs by service name, log level, and call type — applying any filter immediately narrows the visible entries without a page reload
-  5. Webhook events, poll cycles, SSE connection/reconnection events, and settings saves each carry a distinct source tag so the user can tell them apart at a glance in the filtered view
-**Plans**: TBD
-**UI hint**: yes
 
 ## Backlog
 
@@ -211,7 +201,7 @@ Plans:
 
 ## Progress
 
-**Execution Order:** Phase 17 -> Phase 18 -> Phase 19 -> Phase 20 -> Phase 21 -> Phase 22
+**Execution Order:** Phase 17 -> Phase 18 -> Phase 19 -> Phase 20 -> Phase 21
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -221,8 +211,7 @@ Plans:
 | 15. iPhone Portrait | v1.2 | 5/5 | Complete | 2026-04-16 |
 | 16. iPhone Landscape | v1.2 | 3/3 | Complete    | 2026-04-21 |
 | 17. Download & Plex Bug Fixes | v1.3 | 2/2 | Complete    | 2026-04-28 |
-| 18. Docker Update Detail View | v1.3 | 0/TBD | Not started | - |
-| 19. Graphical Activity Timeline | v1.3 | 0/TBD | Not started | - |
+| 18. Docker Update Detail View | v1.3 | 2/2 | Complete    | 2026-05-03 |
+| 19. Graphical Activity Timeline | v1.3 | 0/3 | Not started | - |
 | 20. Weather Forecast | v1.3 | 0/TBD | Not started | - |
 | 21. NAS CPU Diagnostic | v1.3 | 0/TBD | Not started | - |
-| 22. Logging Overhaul | v1.3 | 0/TBD | Not started | - |
