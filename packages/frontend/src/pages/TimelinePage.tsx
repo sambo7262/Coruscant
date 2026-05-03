@@ -22,10 +22,10 @@ interface MetricsResponse {
 
 // Per-service metric configs per UI-SPEC (prescriptive color mapping)
 const NAS_METRICS: MetricConfig[] = [
-  { key: 'cpu', label: 'CPU', color: 'var(--cockpit-amber)', fillOpacity: 0.4, domain: [0, 100], chartType: 'area' },
-  { key: 'ram', label: 'RAM', color: 'rgba(232,160,32,0.6)', fillOpacity: 0.25, domain: [0, 100], chartType: 'area' },
-  { key: 'networkMbpsUp', label: 'NET UP', color: '#00c8ff', chartType: 'line', domain: ['auto', 'auto'] },
-  { key: 'networkMbpsDown', label: 'NET DWN', color: '#00c8ff', chartType: 'line', domain: ['auto', 'auto'] },
+  { key: 'cpu', label: 'CPU', color: 'var(--cockpit-amber)', fillOpacity: 0.4, domain: [0, 100], chartType: 'area', unit: '%' },
+  { key: 'ram', label: 'RAM', color: 'rgba(232,160,32,0.6)', fillOpacity: 0.25, domain: [0, 100], chartType: 'area', unit: '%' },
+  { key: 'networkMbpsUp', label: 'NET UP', color: '#00c8ff', chartType: 'line', domain: ['auto', 'auto'], unit: ' Mbps' },
+  { key: 'networkMbpsDown', label: 'NET DWN', color: '#00c8ff', chartType: 'line', domain: ['auto', 'auto'], unit: ' Mbps' },
 ]
 
 const NAS_DISK_CONFIG = (key: string, label: string): MetricConfig => ({
@@ -34,23 +34,26 @@ const NAS_DISK_CONFIG = (key: string, label: string): MetricConfig => ({
   color: 'rgba(232,160,32,0.8)',
   chartType: 'line',
   domain: [0, 100],
+  unit: '%',
 })
 
 const DOCKER_METRICS: MetricConfig[] = [
-  { key: 'dockerCpu', label: 'CPU', color: 'rgba(232,160,32,0.7)', fillOpacity: 0.3, domain: [0, 100], chartType: 'area' },
-  { key: 'dockerRam', label: 'RAM', color: 'rgba(232,160,32,0.5)', fillOpacity: 0.2, domain: [0, 100], chartType: 'area' },
+  { key: 'dockerCpu', label: 'CPU', color: 'rgba(232,160,32,0.7)', fillOpacity: 0.3, domain: [0, 100], chartType: 'area', unit: '%' },
+  { key: 'dockerRam', label: 'RAM', color: 'rgba(232,160,32,0.5)', fillOpacity: 0.2, domain: [0, 100], chartType: 'area', unit: '%' },
 ]
 
 const PIHOLE_METRICS: MetricConfig[] = [
-  { key: 'queriesPerSecond', label: 'Q/S', color: 'var(--cockpit-amber)', fillOpacity: 0.3, domain: ['auto', 'auto'], chartType: 'area' },
-  { key: 'percentBlocked', label: 'BLKD%', color: 'var(--cockpit-green)', fillOpacity: 0.3, domain: [0, 100], chartType: 'area' },
+  { key: 'queriesPerSecond', label: 'Q/S', color: 'var(--cockpit-amber)', fillOpacity: 0.3, domain: ['auto', 'auto'], chartType: 'area', unit: ' q/s' },
+  { key: 'percentBlocked', label: 'BLKD%', color: 'var(--cockpit-green)', fillOpacity: 0.3, domain: [0, 100], chartType: 'area', unit: '%' },
 ]
 
 const UNIFI_METRICS: MetricConfig[] = [
-  { key: 'wanTxMbps', label: 'WAN TX', color: '#00c8ff', chartType: 'line', domain: ['auto', 'auto'] },
-  { key: 'wanRxMbps', label: 'WAN RX', color: '#00c8ff', chartType: 'line', domain: ['auto', 'auto'] },
+  { key: 'wanTxMbps', label: 'WAN TX', color: '#00c8ff', chartType: 'line', domain: ['auto', 'auto'], unit: ' Mbps' },
+  { key: 'wanRxMbps', label: 'WAN RX', color: '#00c8ff', chartType: 'line', domain: ['auto', 'auto'], unit: ' Mbps' },
   { key: 'clientCount', label: 'CLIENTS', color: 'var(--cockpit-green)', chartType: 'line', domain: ['auto', 'auto'] },
 ]
+
+const DISK_TEMP_COLORS = ['#E8A020', '#00c8ff', '#4ADE80', '#FF3B3B', '#8B5CF6', '#FF8C00']
 
 const btnBase: React.CSSProperties = {
   fontFamily: "'JetBrains Mono', monospace",
@@ -137,10 +140,43 @@ export function TimelinePage({ lastLogEntry }: TimelinePageProps) {
   // Only show Docker card if dockerCpu/dockerRam keys appear in NAS points
   const hasDockerMetrics = nasPoints.length > 0 && nasPoints.some(p => p['dockerCpu'] !== undefined)
 
-  // Pi Health (Raspberry Pi) card uses piHealth service data
+  // Build disk temp metrics — all drives on one chart with different colors, converted to °F
+  const diskTempMetrics: MetricConfig[] = []
+  const nasPointsWithDiskF = nasPoints.map(p => {
+    const converted: Record<string, number | string> = { ...p }
+    Object.keys(p).filter(k => k.startsWith('diskTemp_')).forEach(k => {
+      const c = typeof p[k] === 'number' ? p[k] as number : typeof p[k] === 'string' ? parseFloat(p[k] as string) : NaN
+      converted[`${k}_F`] = isNaN(c) ? 0 : c * 9 / 5 + 32
+    })
+    return converted
+  })
+  if (nasPoints.length > 0) {
+    const samplePoint = nasPoints[nasPoints.length - 1]
+    Object.keys(samplePoint)
+      .filter(k => k.startsWith('diskTemp_'))
+      .sort()
+      .forEach((k, idx) => {
+        const driveName = k.replace('diskTemp_', '').toUpperCase()
+        diskTempMetrics.push({
+          key: `${k}_F`,
+          label: driveName,
+          color: DISK_TEMP_COLORS[idx % DISK_TEMP_COLORS.length],
+          chartType: 'line',
+          domain: ['auto', 'auto'],
+          unit: '°F',
+        })
+      })
+  }
+
+  // Convert Pi health temps from C to F
+  const piHealthPointsF = piHealthPoints.map(p => {
+    const c = typeof p['cpuTempC'] === 'number' ? p['cpuTempC'] : typeof p['cpuTempC'] === 'string' ? parseFloat(p['cpuTempC']) : NaN
+    return { ...p, cpuTempF: isNaN(c) ? undefined : c * 9 / 5 + 32 }
+  })
+
   const PI_HEALTH_METRICS: MetricConfig[] = [
-    { key: 'cpuPercent', label: 'CPU', color: 'var(--cockpit-amber)', fillOpacity: 0.4, domain: [0, 100], chartType: 'area' },
-    { key: 'cpuTempC', label: 'TEMP', color: 'rgba(232,160,32,0.6)', chartType: 'line', domain: ['auto', 'auto'] },
+    { key: 'cpuPercent', label: 'CPU', color: 'var(--cockpit-amber)', fillOpacity: 0.4, domain: [0, 100], chartType: 'area', unit: '%' },
+    { key: 'cpuTempF', label: 'TEMP', color: 'rgba(232,160,32,0.6)', chartType: 'line', domain: ['auto', 'auto'], unit: '°F' },
   ]
 
   return (
@@ -238,18 +274,21 @@ export function TimelinePage({ lastLogEntry }: TimelinePageProps) {
                 points={nasPoints}
                 metrics={nasMetrics}
                 loading={loading}
+                window={activeWindow}
               />
               <SparklineCard
                 service="PI-HOLE"
                 points={piholePoints}
                 metrics={PIHOLE_METRICS}
                 loading={loading}
+                window={activeWindow}
               />
               <SparklineCard
                 service="UNIFI"
                 points={unifiPoints}
                 metrics={UNIFI_METRICS}
                 loading={loading}
+                window={activeWindow}
               />
               {hasDockerMetrics && (
                 <SparklineCard
@@ -257,14 +296,25 @@ export function TimelinePage({ lastLogEntry }: TimelinePageProps) {
                   points={nasPoints}
                   metrics={DOCKER_METRICS}
                   loading={loading}
+                  window={activeWindow}
+                />
+              )}
+              {diskTempMetrics.length > 0 && (
+                <SparklineCard
+                  service="DISK TEMPS"
+                  points={nasPointsWithDiskF}
+                  metrics={diskTempMetrics}
+                  loading={loading}
+                  window={activeWindow}
                 />
               )}
               {piHealthPoints.length > 0 && (
                 <SparklineCard
                   service="PI HEALTH"
-                  points={piHealthPoints}
+                  points={piHealthPointsF}
                   metrics={PI_HEALTH_METRICS}
                   loading={loading}
+                  window={activeWindow}
                 />
               )}
             </div>

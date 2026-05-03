@@ -111,23 +111,32 @@ export function parseEventFromLog(entry: LogEntry): MediaEvent | null {
     // Malformed payload — fall through to message-based detection
   }
 
-  // Fallback: check message text for health state changes (no eventCategory in payload)
-  const msg = entry.message.toLowerCase()
-  if (msg.includes('now offline') || msg.includes('went offline') || msg.includes('is down')) {
-    return {
-      type: 'health_issue',
-      summary: `SERVICE DOWN - ${entry.service}`,
-      service: entry.service,
-      timestamp: entry.timestamp,
+  // Fallback: parse pipe-separated webhook log format "service | eventType | title | time"
+  const pipeMatch = entry.message.match(/^(\w+)\s*\|\s*(grab|download_complete|download|health_issue|health_restored|health|healthrestored|update_available|applicationupdate)\s*\|\s*(.+?)\s*\|/i)
+  if (pipeMatch) {
+    const [, svc, rawType, title] = pipeMatch
+    const normalizedType = rawType.toLowerCase()
+    if (normalizedType === 'grab') {
+      return { type: 'grab', summary: `${svc.toUpperCase()} GRAB — ${title}`, service: svc, timestamp: entry.timestamp }
+    }
+    if (normalizedType === 'download' || normalizedType === 'download_complete') {
+      return { type: 'download_complete', summary: `${svc.toUpperCase()} DOWNLOAD — ${title}`, service: svc, timestamp: entry.timestamp }
+    }
+    if (normalizedType === 'health' || normalizedType === 'health_issue') {
+      return { type: 'health_issue', summary: `SERVICE DOWN — ${svc}`, service: svc, timestamp: entry.timestamp }
+    }
+    if (normalizedType === 'healthrestored' || normalizedType === 'health_restored') {
+      return { type: 'health_restored', summary: `SERVICE RESTORED — ${svc}`, service: svc, timestamp: entry.timestamp }
     }
   }
+
+  // Fallback: check message text for health state changes
+  const msg = entry.message.toLowerCase()
+  if (msg.includes('now offline') || msg.includes('went offline') || msg.includes('is down')) {
+    return { type: 'health_issue', summary: `SERVICE DOWN — ${entry.service}`, service: entry.service, timestamp: entry.timestamp }
+  }
   if (msg.includes('back online') || msg.includes('is back') || msg.includes('recovered') || msg.includes('restored')) {
-    return {
-      type: 'health_restored',
-      summary: `SERVICE RESTORED - ${entry.service}`,
-      service: entry.service,
-      timestamp: entry.timestamp,
-    }
+    return { type: 'health_restored', summary: `SERVICE RESTORED — ${entry.service}`, service: entry.service, timestamp: entry.timestamp }
   }
 
   return null

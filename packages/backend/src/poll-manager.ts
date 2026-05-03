@@ -404,6 +404,12 @@ export class PollManager {
             configured: true,
             lastPollAt: new Date().toISOString(),
           })
+          const diskTemps: Record<string, number> = {}
+          if (nasResult.disks) {
+            for (const d of nasResult.disks) {
+              diskTemps[`diskTemp_${d.name}`] = d.tempC
+            }
+          }
           this.writeMetricsSnapshot('nas', {
             cpu: nasResult.cpu,
             ram: nasResult.ram,
@@ -411,6 +417,7 @@ export class PollManager {
             networkMbpsDown: nasResult.networkMbpsDown,
             volumes: nasResult.volumes?.map(v => ({ name: v.name, usedPercent: v.usedPercent })) ?? [],
             ...(nasResult.docker !== undefined ? { dockerCpu: nasResult.docker.cpuPercent, dockerRam: nasResult.docker.ramPercent } : {}),
+            ...diskTemps,
           })
           // Broadcast immediately so the SSE clients see the update without
           // waiting for the 5-second SSE interval.

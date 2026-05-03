@@ -9,6 +9,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from 'recharts'
+import type { TimeWindow } from './TimeWindowSelector.js'
 
 export interface MetricConfig {
   key: string
@@ -25,6 +26,7 @@ interface SparklineCardProps {
   points: Array<Record<string, number | string>>
   metrics: MetricConfig[]
   loading?: boolean
+  window?: TimeWindow
 }
 
 function formatValue(val: number | string | undefined, unit?: string): string {
@@ -35,9 +37,16 @@ function formatValue(val: number | string | undefined, unit?: string): string {
   return unit ? `${formatted}${unit}` : formatted
 }
 
-function formatTimeTick(iso: string): string {
+function formatTimeTick(iso: string, window?: TimeWindow): string {
   try {
-    return new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+    const d = new Date(iso)
+    if (window === '7d' || window === '3d') {
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    }
+    const now = Date.now()
+    const hoursAgo = Math.round((now - d.getTime()) / (60 * 60 * 1000))
+    if (hoursAgo === 0) return 'now'
+    return `-${hoursAgo}h`
   } catch {
     return ''
   }
@@ -45,12 +54,14 @@ function formatTimeTick(iso: string): string {
 
 function formatYTick(val: number, unit?: string): string {
   if (unit === '%') return `${val}%`
-  if (unit === '°C') return `${val}°`
-  if (unit === ' Mbps') return `${val}`
+  if (unit === '°F') return `${val}°F`
+  if (unit === ' Mbps') return `${val} Mbps`
+  if (unit === ' q/s') return `${val}`
+  if (unit) return `${val}${unit}`
   return String(val)
 }
 
-export function SparklineCard({ service, points, metrics, loading }: SparklineCardProps) {
+export function SparklineCard({ service, points, metrics, loading, window }: SparklineCardProps) {
   const [activeIdx, setActiveIdx] = useState(0)
   if (metrics.length === 0) return null
 
@@ -96,7 +107,7 @@ export function SparklineCard({ service, points, metrics, loading }: SparklineCa
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,160,32,0.08)" />
               <XAxis
                 dataKey="timestamp"
-                tickFormatter={formatTimeTick}
+                tickFormatter={(v: string) => formatTimeTick(v, window)}
                 tick={{ fontSize: 10, fill: 'rgba(200,200,200,0.5)' }}
                 axisLine={{ stroke: 'rgba(232,160,32,0.15)' }}
                 tickLine={false}
@@ -109,7 +120,7 @@ export function SparklineCard({ service, points, metrics, loading }: SparklineCa
                 tick={{ fontSize: 10, fill: 'rgba(200,200,200,0.5)' }}
                 axisLine={{ stroke: 'rgba(232,160,32,0.15)' }}
                 tickLine={false}
-                width={40}
+                width={48}
               />
               <Area
                 type="monotone"
@@ -130,7 +141,7 @@ export function SparklineCard({ service, points, metrics, loading }: SparklineCa
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,160,32,0.08)" />
               <XAxis
                 dataKey="timestamp"
-                tickFormatter={formatTimeTick}
+                tickFormatter={(v: string) => formatTimeTick(v, window)}
                 tick={{ fontSize: 10, fill: 'rgba(200,200,200,0.5)' }}
                 axisLine={{ stroke: 'rgba(232,160,32,0.15)' }}
                 tickLine={false}
@@ -143,7 +154,7 @@ export function SparklineCard({ service, points, metrics, loading }: SparklineCa
                 tick={{ fontSize: 10, fill: 'rgba(200,200,200,0.5)' }}
                 axisLine={{ stroke: 'rgba(232,160,32,0.15)' }}
                 tickLine={false}
-                width={40}
+                width={48}
               />
               <Line
                 type="monotone"
