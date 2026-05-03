@@ -64,7 +64,11 @@ function windowToMs(w: TimeWindow): number {
 
 export function parseEventFromLog(entry: LogEntry): MediaEvent | null {
   try {
-    const payload = JSON.parse(entry.payload ?? '{}') as Record<string, unknown>
+    let payload = JSON.parse(entry.payload ?? '{}') as Record<string, unknown>
+    // Pino wraps console.log output — arr event JSON may be stringified inside `msg`
+    if (!payload['eventCategory'] && typeof payload['msg'] === 'string') {
+      try { payload = JSON.parse(payload['msg']) as Record<string, unknown> } catch { /* not nested JSON */ }
+    }
     const eventCategory = payload['eventCategory'] as string | undefined
     const title = (payload['title'] ?? payload['movieTitle'] ?? payload['seriesTitle']) as string | undefined
 

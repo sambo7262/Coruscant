@@ -145,15 +145,14 @@ export function TimelinePage({ lastLogEntry }: TimelinePageProps) {
 
   return (
     <div style={{ padding: '0 16px', maxWidth: '1000px', margin: '0 auto' }}>
-      {/* Title row + sub-tab switcher */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px', gap: '16px' }}>
+      {/* Title + sub-tab switcher (stacked to avoid horizontal overflow on iPhone) */}
+      <div style={{ marginBottom: '16px' }}>
         <h1
           className="text-display"
-          style={{ color: 'var(--cockpit-amber)', letterSpacing: '0.08em', flexShrink: 0 }}
+          style={{ color: 'var(--cockpit-amber)', letterSpacing: '0.08em', marginBottom: '8px' }}
         >
           ACTIVITY TIMELINE
         </h1>
-        <div style={{ flex: 1 }} />
         {/* Sub-tab switcher */}
         <div style={{ display: 'flex', gap: '0' }}>
           {(['timeline', 'raw'] as ActiveTab[]).map((tab) => {

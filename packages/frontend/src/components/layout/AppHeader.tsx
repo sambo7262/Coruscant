@@ -216,14 +216,7 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, activeOut
                     )}
                   </div>
                 )}
-                <Link
-                  to="/settings"
-                  aria-label="Open Settings"
-                  className="app-header__icon-button"
-                >
-                  <Settings size={26} />
-                </Link>
-                {!isPortrait && (
+                {isPortrait ? (
                   <Link
                     to="/timeline"
                     aria-label="Open Timeline"
@@ -231,6 +224,23 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, activeOut
                   >
                     <List size={26} />
                   </Link>
+                ) : (
+                  <>
+                    <Link
+                      to="/settings"
+                      aria-label="Open Settings"
+                      className="app-header__icon-button"
+                    >
+                      <Settings size={26} />
+                    </Link>
+                    <Link
+                      to="/timeline"
+                      aria-label="Open Timeline"
+                      className="app-header__icon-button"
+                    >
+                      <List size={26} />
+                    </Link>
+                  </>
                 )}
               </div>
             ) : (
