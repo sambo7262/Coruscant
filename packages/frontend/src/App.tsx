@@ -7,7 +7,7 @@ import { NowPlayingBanner } from './components/layout/NowPlayingBanner.js'
 import { DashboardPage } from './pages/DashboardPage.js'
 import { ServiceDetailPage } from './pages/ServiceDetailPage.js'
 import { SettingsPage } from './pages/SettingsPage.js'
-import { LogsPage } from './pages/LogsPage.js'
+import { TimelinePage } from './pages/TimelinePage.js'
 import { useDashboardSSE } from './hooks/useDashboardSSE.js'
 import { useViewport } from './viewport/index.js'
 
@@ -48,7 +48,7 @@ export default function App() {
           <Route path="/" element={<DashboardPage snapshot={snapshot} lastArrEvent={lastArrEvent} activeOutages={activeOutages} />} />
           <Route path="/services/:serviceId" element={<ServiceDetailPage snapshot={snapshot} />} />
           <Route path="/settings" element={<SettingsPage snapshot={snapshot} />} />
-          <Route path="/logs" element={<LogsPage lastLogEntry={lastLogEntry} />} />
+          <Route path="/timeline" element={<TimelinePage lastLogEntry={lastLogEntry} />} />
         </Routes>
       </main>
       <NowPlayingBanner
