@@ -101,6 +101,8 @@ export function SparklineCard({ service, points, metrics, loading, window, multi
       <div className="sparkline-card__chart">
         {loading ? (
           <div className="sparkline-loading" />
+        ) : multiLine && points.length === 0 ? (
+          <div className="sparkline-empty">NO HISTORY</div>
         ) : !hasData && !multiLine ? (
           <div className="sparkline-empty">NO HISTORY</div>
         ) : multiLine ? (

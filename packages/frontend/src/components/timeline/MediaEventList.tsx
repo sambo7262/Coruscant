@@ -77,16 +77,16 @@ export function parseEventFromLog(entry: LogEntry): MediaEvent | null {
     const displayTitle = title ?? svc
 
     if (eventCategory === 'grab') {
-      return { type: 'grab', summary: displayTitle, service: svc, timestamp: entry.timestamp }
+      return { type: 'grab', summary: `Grab — ${displayTitle}`, service: svc, timestamp: entry.timestamp }
     }
     if (eventCategory === 'download_complete') {
-      return { type: 'download_complete', summary: displayTitle, service: svc, timestamp: entry.timestamp }
+      return { type: 'download_complete', summary: `Download — ${displayTitle}`, service: svc, timestamp: entry.timestamp }
     }
     if (eventCategory === 'health_issue') {
-      return { type: 'health_issue', summary: `${svc} — down`, service: svc, timestamp: entry.timestamp }
+      return { type: 'health_issue', summary: `Down — ${svc}`, service: svc, timestamp: entry.timestamp }
     }
     if (eventCategory === 'health_restored') {
-      return { type: 'health_restored', summary: `${svc} — restored`, service: svc, timestamp: entry.timestamp }
+      return { type: 'health_restored', summary: `Restored — ${svc}`, service: svc, timestamp: entry.timestamp }
     }
   } catch {
     // Malformed payload — fall through to message-based detection
@@ -101,16 +101,16 @@ export function parseEventFromLog(entry: LogEntry): MediaEvent | null {
     const normalizedType = rawType.toLowerCase()
     const displayTitle = title === 'unknown' ? svc : title
     if (normalizedType === 'grab') {
-      return { type: 'grab', summary: displayTitle, service: svc, timestamp: entry.timestamp }
+      return { type: 'grab', summary: `Grab — ${displayTitle}`, service: svc, timestamp: entry.timestamp }
     }
     if (normalizedType === 'download' || normalizedType === 'download_complete') {
-      return { type: 'download_complete', summary: displayTitle, service: svc, timestamp: entry.timestamp }
+      return { type: 'download_complete', summary: `Download — ${displayTitle}`, service: svc, timestamp: entry.timestamp }
     }
     if (normalizedType === 'health' || normalizedType === 'health_issue') {
-      return { type: 'health_issue', summary: `${svc} — down`, service: svc, timestamp: entry.timestamp }
+      return { type: 'health_issue', summary: `Down — ${svc}`, service: svc, timestamp: entry.timestamp }
     }
     if (normalizedType === 'healthrestored' || normalizedType === 'health_restored') {
-      return { type: 'health_restored', summary: `${svc} — restored`, service: svc, timestamp: entry.timestamp }
+      return { type: 'health_restored', summary: `Restored — ${svc}`, service: svc, timestamp: entry.timestamp }
     }
   }
 
@@ -208,7 +208,19 @@ export function MediaEventList({ window }: MediaEventListProps) {
           // newest first
           .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 
-        setAllEvents(parsed)
+        // Deduplicate: collapse events with same summary + type within the same minute
+        const deduped: MediaEvent[] = []
+        const seen = new Set<string>()
+        for (const evt of parsed) {
+          const minuteKey = evt.timestamp.slice(0, 16)
+          const key = `${evt.type}|${evt.summary}|${minuteKey}`
+          if (!seen.has(key)) {
+            seen.add(key)
+            deduped.push(evt)
+          }
+        }
+
+        setAllEvents(deduped)
       } catch {
         if (!cancelled) {
           setError('EVENT DATA UNAVAILABLE — Raw logs may still be accessible in the RAW LOGS tab.')

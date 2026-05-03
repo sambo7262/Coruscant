@@ -98,12 +98,29 @@ export function extractArrTitle(body: Record<string, unknown>): string | undefin
   const series = body.series as Record<string, unknown> | undefined
   const artist = body.artist as Record<string, unknown> | undefined
   const author = body.author as Record<string, unknown> | undefined
+
+  // Movie: "Inception"
+  if (typeof movie?.title === 'string') return movie.title
+
+  // TV: "The Boys — S05E03" (with episode detail if available)
+  if (typeof series?.title === 'string') {
+    const episodes = body.episodes as Array<Record<string, unknown>> | undefined
+    if (episodes?.[0]) {
+      const s = episodes[0].seasonNumber
+      const e = episodes[0].episodeNumber
+      const epTitle = episodes[0].title as string | undefined
+      const seTag = typeof s === 'number' && typeof e === 'number'
+        ? `S${String(s).padStart(2, '0')}E${String(e).padStart(2, '0')}`
+        : undefined
+      const parts = [series.title, seTag, epTitle].filter(Boolean)
+      return parts.join(' — ')
+    }
+    return series.title
+  }
+
   return (
-    (typeof movie?.title === 'string' ? movie.title : undefined) ??
-    (typeof series?.title === 'string' ? series.title : undefined) ??
     (typeof artist?.name === 'string' ? artist.name : undefined) ??
     (typeof author?.authorName === 'string' ? author.authorName : undefined) ??
-    // D-08: Prowlarr health events include message field, e.g. "Indexer NZBGeek is unavailable"
     (typeof body.message === 'string' ? body.message : undefined) ??
     undefined
   )
