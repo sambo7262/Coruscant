@@ -306,6 +306,7 @@ export function TimelinePage({ lastLogEntry }: TimelinePageProps) {
                   metrics={diskTempMetrics}
                   loading={loading}
                   window={activeWindow}
+                  multiLine
                 />
               )}
               {piHealthPoints.length > 0 && (

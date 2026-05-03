@@ -8,6 +8,7 @@ import {
   YAxis,
   ResponsiveContainer,
   CartesianGrid,
+  Legend,
 } from 'recharts'
 import type { TimeWindow } from './TimeWindowSelector.js'
 
@@ -27,6 +28,7 @@ interface SparklineCardProps {
   metrics: MetricConfig[]
   loading?: boolean
   window?: TimeWindow
+  multiLine?: boolean
 }
 
 function formatValue(val: number | string | undefined, unit?: string): string {
@@ -53,15 +55,11 @@ function formatTimeTick(iso: string, window?: TimeWindow): string {
 }
 
 function formatYTick(val: number, unit?: string): string {
-  if (unit === '%') return `${val}%`
-  if (unit === '°F') return `${val}°F`
-  if (unit === ' Mbps') return `${val} Mbps`
-  if (unit === ' q/s') return `${val}`
-  if (unit) return `${val}${unit}`
-  return String(val)
+  if (!unit) return String(val)
+  return `${val}${unit.trim()}`
 }
 
-export function SparklineCard({ service, points, metrics, loading, window }: SparklineCardProps) {
+export function SparklineCard({ service, points, metrics, loading, window, multiLine }: SparklineCardProps) {
   const [activeIdx, setActiveIdx] = useState(0)
   if (metrics.length === 0) return null
 
@@ -70,17 +68,21 @@ export function SparklineCard({ service, points, metrics, loading, window }: Spa
   const latestPoint = points.length > 0 ? points[points.length - 1] : null
   const latestValue = latestPoint ? latestPoint[activeMetric.key] : undefined
 
+  const yUnit = multiLine ? metrics[0]?.unit : activeMetric.unit
+
   return (
     <div className="sparkline-card">
       <div className="sparkline-card__ribbon">
         <span className="sparkline-card__ribbon-label">{service.toUpperCase()}</span>
-        <span className="sparkline-card__current-value">
-          {loading ? '...' : formatValue(latestValue as number | string | undefined, activeMetric.unit)}
-        </span>
+        {!multiLine && (
+          <span className="sparkline-card__current-value">
+            {loading ? '...' : formatValue(latestValue as number | string | undefined, activeMetric.unit)}
+          </span>
+        )}
       </div>
 
-      {/* Metric toggle pills */}
-      {metrics.length > 1 && (
+      {/* Metric toggle pills — only for non-multiLine cards with multiple metrics */}
+      {!multiLine && metrics.length > 1 && (
         <div className="sparkline-card__toggles">
           {metrics.map((m, idx) => (
             <button
@@ -95,12 +97,56 @@ export function SparklineCard({ service, points, metrics, loading, window }: Spa
         </div>
       )}
 
-      {/* Full-size chart with axes */}
+      {/* Chart */}
       <div className="sparkline-card__chart">
         {loading ? (
           <div className="sparkline-loading" />
-        ) : !hasData ? (
+        ) : !hasData && !multiLine ? (
           <div className="sparkline-empty">NO HISTORY</div>
+        ) : multiLine ? (
+          /* Multi-line: all metrics as separate colored lines on one chart */
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={points} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(232,160,32,0.08)" />
+              <XAxis
+                dataKey="timestamp"
+                tickFormatter={(v: string) => formatTimeTick(v, window)}
+                tick={{ fontSize: 10, fill: 'rgba(200,200,200,0.5)' }}
+                axisLine={{ stroke: 'rgba(232,160,32,0.15)' }}
+                tickLine={false}
+                interval="preserveStartEnd"
+                minTickGap={60}
+              />
+              <YAxis
+                domain={metrics[0]?.domain ?? ['auto', 'auto']}
+                tickFormatter={(v: number) => formatYTick(v, yUnit)}
+                tick={{ fontSize: 10, fill: 'rgba(200,200,200,0.5)' }}
+                axisLine={{ stroke: 'rgba(232,160,32,0.15)' }}
+                tickLine={false}
+                width={44}
+              />
+              <Legend
+                verticalAlign="top"
+                height={20}
+                iconType="line"
+                iconSize={10}
+                wrapperStyle={{ fontSize: '9px', fontFamily: 'var(--font-mono)', letterSpacing: '0.04em' }}
+              />
+              {metrics.map(m => (
+                <Line
+                  key={m.key}
+                  type="monotone"
+                  dataKey={m.key}
+                  name={m.label}
+                  stroke={m.color}
+                  strokeWidth={1.5}
+                  dot={false}
+                  isAnimationActive={true}
+                  animationDuration={300}
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
         ) : activeMetric.chartType === 'area' ? (
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={points} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
@@ -120,7 +166,7 @@ export function SparklineCard({ service, points, metrics, loading, window }: Spa
                 tick={{ fontSize: 10, fill: 'rgba(200,200,200,0.5)' }}
                 axisLine={{ stroke: 'rgba(232,160,32,0.15)' }}
                 tickLine={false}
-                width={48}
+                width={44}
               />
               <Area
                 type="monotone"
@@ -154,7 +200,7 @@ export function SparklineCard({ service, points, metrics, loading, window }: Spa
                 tick={{ fontSize: 10, fill: 'rgba(200,200,200,0.5)' }}
                 axisLine={{ stroke: 'rgba(232,160,32,0.15)' }}
                 tickLine={false}
-                width={48}
+                width={44}
               />
               <Line
                 type="monotone"

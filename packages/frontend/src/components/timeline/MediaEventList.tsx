@@ -72,40 +72,21 @@ export function parseEventFromLog(entry: LogEntry): MediaEvent | null {
     const eventCategory = payload['eventCategory'] as string | undefined
     const title = (payload['title'] ?? payload['movieTitle'] ?? payload['seriesTitle']) as string | undefined
 
+    const svc = (payload['service'] as string | undefined) ?? entry.service
+    if (svc.toLowerCase() === 'prowlarr') return null
+    const displayTitle = title ?? svc
+
     if (eventCategory === 'grab') {
-      return {
-        type: 'grab',
-        summary: `${entry.service.toUpperCase()} GRAB - ${title ?? 'Unknown'}`,
-        service: entry.service,
-        timestamp: entry.timestamp,
-      }
+      return { type: 'grab', summary: displayTitle, service: svc, timestamp: entry.timestamp }
     }
-
     if (eventCategory === 'download_complete') {
-      return {
-        type: 'download_complete',
-        summary: `${entry.service.toUpperCase()} DOWNLOAD - ${title ?? 'Unknown'}`,
-        service: entry.service,
-        timestamp: entry.timestamp,
-      }
+      return { type: 'download_complete', summary: displayTitle, service: svc, timestamp: entry.timestamp }
     }
-
     if (eventCategory === 'health_issue') {
-      return {
-        type: 'health_issue',
-        summary: `SERVICE DOWN - ${entry.service}`,
-        service: entry.service,
-        timestamp: entry.timestamp,
-      }
+      return { type: 'health_issue', summary: `${svc} — down`, service: svc, timestamp: entry.timestamp }
     }
-
     if (eventCategory === 'health_restored') {
-      return {
-        type: 'health_restored',
-        summary: `SERVICE RESTORED - ${entry.service}`,
-        service: entry.service,
-        timestamp: entry.timestamp,
-      }
+      return { type: 'health_restored', summary: `${svc} — restored`, service: svc, timestamp: entry.timestamp }
     }
   } catch {
     // Malformed payload — fall through to message-based detection
@@ -115,18 +96,21 @@ export function parseEventFromLog(entry: LogEntry): MediaEvent | null {
   const pipeMatch = entry.message.match(/^(\w+)\s*\|\s*(grab|download_complete|download|health_issue|health_restored|health|healthrestored|update_available|applicationupdate)\s*\|\s*(.+?)\s*\|/i)
   if (pipeMatch) {
     const [, svc, rawType, title] = pipeMatch
+    // Filter out prowlarr — redundant with sonarr/radarr events
+    if (svc.toLowerCase() === 'prowlarr') return null
     const normalizedType = rawType.toLowerCase()
+    const displayTitle = title === 'unknown' ? svc : title
     if (normalizedType === 'grab') {
-      return { type: 'grab', summary: `${svc.toUpperCase()} GRAB — ${title}`, service: svc, timestamp: entry.timestamp }
+      return { type: 'grab', summary: displayTitle, service: svc, timestamp: entry.timestamp }
     }
     if (normalizedType === 'download' || normalizedType === 'download_complete') {
-      return { type: 'download_complete', summary: `${svc.toUpperCase()} DOWNLOAD — ${title}`, service: svc, timestamp: entry.timestamp }
+      return { type: 'download_complete', summary: displayTitle, service: svc, timestamp: entry.timestamp }
     }
     if (normalizedType === 'health' || normalizedType === 'health_issue') {
-      return { type: 'health_issue', summary: `SERVICE DOWN — ${svc}`, service: svc, timestamp: entry.timestamp }
+      return { type: 'health_issue', summary: `${svc} — down`, service: svc, timestamp: entry.timestamp }
     }
     if (normalizedType === 'healthrestored' || normalizedType === 'health_restored') {
-      return { type: 'health_restored', summary: `SERVICE RESTORED — ${svc}`, service: svc, timestamp: entry.timestamp }
+      return { type: 'health_restored', summary: `${svc} — restored`, service: svc, timestamp: entry.timestamp }
     }
   }
 
@@ -171,13 +155,13 @@ function ServiceTag({ service }: { service: string }) {
 
 function formatTime(iso: string): string {
   try {
-    return new Date(iso).toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    })
+    const d = new Date(iso)
+    const mm = String(d.getMonth() + 1).padStart(2, '0')
+    const dd = String(d.getDate()).padStart(2, '0')
+    const yy = String(d.getFullYear()).slice(-2)
+    const hh = String(d.getHours()).padStart(2, '0')
+    const min = String(d.getMinutes()).padStart(2, '0')
+    return `${mm}/${dd}/${yy} @ ${hh}:${min}`
   } catch {
     return '--'
   }
@@ -374,8 +358,8 @@ export function MediaEventList({ window }: MediaEventListProps) {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '10px',
-                  padding: '6px 12px',
+                  gap: '8px',
+                  padding: '5px 12px',
                   background: idx % 2 === 0 ? 'transparent' : 'rgba(232,160,32,0.03)',
                   overflow: 'hidden',
                 }}
@@ -383,8 +367,8 @@ export function MediaEventList({ window }: MediaEventListProps) {
                 {/* Type indicator dot */}
                 <span
                   style={{
-                    width: '8px',
-                    height: '8px',
+                    width: '6px',
+                    height: '6px',
                     borderRadius: '50%',
                     background: EVENT_DOT_COLORS[event.type],
                     flexShrink: 0,
@@ -392,14 +376,11 @@ export function MediaEventList({ window }: MediaEventListProps) {
                   aria-hidden="true"
                 />
 
-                {/* Event type tag */}
-                <ServiceTag service={EVENT_LABELS[event.type]} />
-
-                {/* Summary text */}
+                {/* Summary text — just the title */}
                 <span style={{
                   fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: '15px',
-                  color: 'var(--text-offwhite)',
+                  fontSize: isIphone ? '11px' : '13px',
+                  color: 'var(--cockpit-amber)',
                   flex: 1,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
@@ -411,9 +392,9 @@ export function MediaEventList({ window }: MediaEventListProps) {
                 {/* Timestamp */}
                 <span style={{
                   fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: '12px',
-                  color: 'rgba(var(--text-offwhite-rgb, 220,220,220), 0.7)',
-                  opacity: 0.7,
+                  fontSize: isIphone ? '9px' : '10px',
+                  color: 'var(--text-offwhite)',
+                  opacity: 0.5,
                   flexShrink: 0,
                   letterSpacing: '0.02em',
                   whiteSpace: 'nowrap',
