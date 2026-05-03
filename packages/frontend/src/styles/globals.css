@@ -1637,6 +1637,86 @@ body::after {
 }
 
 /* ============================================================
+   Timeline sparkline states — Phase 19-02
+   ============================================================ */
+.sparkline-loading {
+  background: rgba(232, 160, 32, 0.30);
+  animation: arrDownloadPulse 1.2s ease-in-out infinite;
+  border-radius: 2px;
+  height: 32px;
+  width: 100%;
+}
+.sparkline-empty {
+  border: 1px dashed var(--cockpit-amber);
+  border-radius: 2px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: rgba(232, 160, 32, 0.5);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.sparkline-card {
+  background: var(--space-mid);
+  border: 1px solid var(--border-rest);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.sparkline-card__ribbon {
+  background: rgba(232, 160, 32, 0.12);
+  border-bottom: 1px solid rgba(232, 160, 32, 0.3);
+  padding: 2px 12px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+}
+.sparkline-card__ribbon-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cockpit-amber);
+}
+.sparkline-card__body {
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sparkline-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sparkline-row__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-offwhite);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  width: 56px;
+  flex-shrink: 0;
+}
+.sparkline-row__chart {
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+}
+.sparkline-row__value {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--cockpit-amber);
+  letter-spacing: 0.02em;
+  width: 48px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ============================================================
    HOVER RULES — D-18 / RESP-17
    Any :hover rule added to this file OR to future CSS must be
    wrapped in @media (hover: hover) and (pointer: fine) to
