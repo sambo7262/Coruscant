@@ -1,37 +1,46 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: iPhone Responsive Polish
+milestone: v1.3
+milestone_name: Bug Fixes & Data Updates
 status: executing
-stopped_at: Completed 15-03-PLAN.md
-last_updated: "2026-04-16T17:49:55.120Z"
-last_activity: 2026-04-16
+stopped_at: Phase 20 context gathered
+last_updated: "2026-05-04T03:27:40.316Z"
+last_activity: 2026-05-04
 progress:
-  total_phases: 7
-  completed_phases: 1
-  total_plans: 11
+  total_phases: 13
+  completed_phases: 4
+  total_plans: 9
   completed_plans: 9
-  percent: 82
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-04-15)
+See: .planning/PROJECT.md (updated 2026-04-23)
 
 **Core value:** A single glance from a phone tells you whether your home infrastructure is healthy or needs attention.
-**Current focus:** Phase 15 — iPhone Portrait
+**Current focus:** Phase 20 — Performance Optimization
 
 ## Current Position
 
-Milestone: v1.2 iPhone Responsive Polish
-Phase: 15 (iPhone Portrait) — EXECUTING
-Plan: 4 of 5
-Status: Ready to execute
-Last activity: 2026-04-16
+Milestone: v1.3 Bug Fixes & Data Updates
+Phase: 21
+Plan: Not started
+Status: Executing Phase 20
+Last activity: 2026-05-04
 
-Progress: [░░░░░░░░░░] 0% (0/3 phases complete)
+Progress: [░░░░░░░░░░] 0%
+
+## Phase Overview
+
+| Phase | Name | Requirements | Status |
+|-------|------|--------------|--------|
+| 17 | Download & Plex Bug Fixes | DL-01, DL-02, PLEX-01 | Not started |
+| 18 | Weather Forecast | WX-01, WX-02 | Not started |
+| 19 | NAS CPU Diagnostic | NAS-01, NAS-02 | Not started |
+| 20 | Logging Overhaul | LOG-01, LOG-02, LOG-03, LOG-04, LOG-05 | Not started |
 
 ## Accumulated Context
 
@@ -40,33 +49,23 @@ Progress: [░░░░░░░░░░] 0% (0/3 phases complete)
 Decisions are logged in PROJECT.md Key Decisions table.
 Recent decisions affecting current work:
 
-- [v1.2]: Kiosk isolation via JS viewport tagging on `<html data-viewport="…">`, set by inline blocking `<head>` script before first paint — bulletproof vs media-query edge cases
-- [v1.2]: Zero new npm dependencies — React 19 + Vite 8 + vanilla CSS with custom properties + Framer Motion already cover v1.2 needs
-- [v1.2]: iPhone CSS scoped exclusively under `html[data-viewport^="iphone"]` attribute selectors — no `@media` queries and no `!important` inside `viewport-iphone.css` (CI-enforced)
-- [v1.2]: Path-A inline-style extraction sweep (CardGrid, ServiceCard, AppHeader, NowPlayingBanner, PiHealthPanel) is a MANDATORY prerequisite to any CSS override work — overriding inline `style={{…}}` without `!important` is impossible
-- [v1.2]: Phase 14 delivers no visible iPhone change — it builds rails and proves kiosk is provably safe
-- [v1.2]: Phase 15 (portrait) and Phase 16 (landscape) are independent CSS branches on shared rails — both depend on Phase 14, neither depends on the other
-- [v1.2]: Every phase close is gated on a zero-pixel-diff 800×480 kiosk visual regression against a committed baseline
-- [Phase 14]: 14-01: Viewport detection uses UA substring 'CoruscantKiosk' + URL/matchMedia precedence; RESP-03 mechanism-satisfied (no pixel-diff artifact per D-06)
-- [Phase 14]: Plan 14-02: Zero-dep isolation lint script (scripts/verify-viewport-isolation.mjs) enforces D-13 via regex; self-test harness proves all three failure modes; skip-on-missing bootstrap path verified
-- [Phase 14-kiosk-isolation-infrastructure]: Plan 14-04: Path-A extraction shipped — 184+ inline sites extracted across 5 components, ~38 classNames + 5 tile tokens in globals.css, zero new !important; kiosk parity verified via mechanism-based isolation (D-06) rather than DevTools emulation (network topology blocked dev-server backend access), post-deploy kiosk display accepted as visual gate
-- [Phase 14-kiosk-isolation-infrastructure]: Plan 14-05: Runtime hover gate via canHover() instead of CSS @media (hover: hover) wrap — codebase has zero raw :hover rules so JS-side setHovered gating is the authoritative fix for RESP-17
-- [Phase 14-kiosk-isolation-infrastructure]: Plan 14-06: husky 9 pre-commit + GitHub Actions CI enforce CSS isolation lint (RESP-02 complete); lint-staged scoped to exact viewport-iphone.css path
-- [Phase 15]: Plan 15-01: Pure CSS iPhone portrait foundation -- 172 lines, 49 selectors covering safe-area, 100dvh, single-column grid, typography, touch targets, RESP-18 drop-shadow; LED kept at 8px; no JS changes
-- [Phase 15]: Added enabled param to useLocalClock to gate 1s setInterval by viewport -- preserves React hooks rules while saving battery in portrait
-- [Phase 15-iphone-portrait]: RESP-18 text-shadow skip implemented via JS isIphone branching (not CSS !important); collapsedHeight 56px portrait / 48px kiosk drives Framer Motion animation
+- [v1.2]: Kiosk isolation via JS viewport tagging — bulletproof, CI-enforced
+- [v1.2]: iPhone CSS scoped under attribute selectors, no !important, no @media
+- [v1.2]: Phase 16 landscape gap closure introduced useViewport() branching in ServiceCard for conditional rendering (UniFi arcs, Pi-hole metrics)
+- [v1.3]: Pi health stale threshold bumped 60s→90s with staleReason diagnostic logging
 
 ### Pending Todos
 
-- Run `/gsd-plan-phase 14` to decompose Phase 14 into executable plans following the non-negotiable T1→T7 task sequence
+None.
 
 ### Blockers/Concerns
 
-None. Research complete; approach validated.
+- Phase 19 (NAS CPU Diagnostic) requires an LLM API key and integration — confirm provider (OpenAI vs Anthropic) and key storage before planning
+- Phase 19 cost cap (~$0.01/request) must be validated against real token counts before implementation
 
 ## Session Continuity
 
-Last session: 2026-04-16T17:49:55.114Z
-Stopped at: Completed 15-03-PLAN.md
-Resume file: None
-Next: `/gsd-plan-phase 14` to plan Kiosk-Isolation Infrastructure
+Last session: 2026-05-04T02:53:05.851Z
+Stopped at: Phase 20 context gathered
+Resume file: .planning/phases/20-performance-optimization/20-CONTEXT.md
+Next: Plan Phase 17 (Download & Plex Bug Fixes)

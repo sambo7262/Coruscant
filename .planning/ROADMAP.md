@@ -5,7 +5,7 @@
 - ✅ **v1.0 MVP** — Phases 1-11 (shipped 2026-04-07) — [archive](milestones/v1.0-ROADMAP.md)
 - ✅ **v1.1 Pi Health Monitoring** — Phases 12-13 (shipped 2026-04-15)
 - ✅ **v1.2 iPhone Responsive Polish** — Phases 14-16 (shipped 2026-04-21)
-- 🚧 **v1.3 Bug Fixes & Data Updates** — Phases 17-21 (in progress)
+- 🚧 **v1.3 Bug Fixes & Data Updates** — Phases 17-22 (in progress)
 
 ## Phases
 
@@ -16,9 +16,10 @@
 - [x] **Phase 16: iPhone Landscape** - Landscape CSS overrides scoped under `html[data-viewport="iphone-landscape"]` — 2-column grid, landscape banner variant, orientation transition hardening (completed 2026-04-21)
 - [x] **Phase 17: Download & Plex Bug Fixes** - SABnzbd progress/time-remaining accuracy restored from API; Plex transcode glow fires only on true transcodes (completed 2026-04-28)
 - [x] **Phase 18: Docker Update Detail View** - Tapping "update available" in NAS header reveals which Docker image(s) have pending updates with registry tag vs running tag (completed 2026-05-03)
-- [ ] **Phase 19: Graphical Activity Timeline** - Dedicated page with time-bounded visual history: infrastructure health sparklines + event markers for media activity and service state changes
-- [ ] **Phase 20: Weather Forecast** - Tapping the weather area reveals a 5-day forecast with daily highs, lows, conditions, and icons
-- [ ] **Phase 21: NAS CPU Diagnostic** - Elevated CPU triggers an AI-powered plain-English explanation of what is causing the load, within a ~$0.01 per-request budget
+- [x] **Phase 19: Graphical Activity Timeline** - Dedicated page with time-bounded visual history: infrastructure health sparklines + event markers for media activity and service state changes (completed 2026-05-03)
+- [x] **Phase 20: Performance Optimization** - SQLite write batching, metrics API response caching, and React chart memoization to reduce I/O pressure and unnecessary re-renders (completed 2026-05-04)
+- [ ] **Phase 21: Weather Forecast** - Tapping the weather area reveals a 5-day forecast with daily highs, lows, conditions, and icons
+- [ ] **Phase 22: NAS CPU Diagnostic** - Elevated CPU triggers an AI-powered plain-English explanation of what is causing the load, within a ~$0.01 per-request budget
 
 ## Phase Details
 
@@ -153,14 +154,27 @@ Plans:
   2. Media stack events (grabs, plays, completions) and service state changes (up/down transitions) appear as discrete event markers on the timeline, distinguishable by type
   3. The time window selector allows switching between preset ranges (24h, 3d, 7d) and the view updates without page reload
   4. The page is navigable from the main dashboard and works across kiosk, iPhone portrait, and iPhone landscape viewports
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 Plans:
-- [ ] 19-01-PLAN.md — Backend metric persistence: schema, write hooks, REST API, purge cron
-- [ ] 19-02-PLAN.md — Frontend sparkline page: TimelinePage, SparklineCard, TimeWindowSelector, routing
-- [ ] 19-03-PLAN.md — Media event list: MediaEventList with filtering, integrated into TimelinePage
+- [x] 19-01-PLAN.md — Backend metric persistence: schema, write hooks, REST API, purge cron
+- [x] 19-02-PLAN.md — Frontend sparkline page: TimelinePage, SparklineCard, TimeWindowSelector, routing
+- [x] 19-03-PLAN.md — Media event list: MediaEventList with filtering, integrated into TimelinePage
 **UI hint**: yes
 
-### Phase 20: Weather Forecast### Phase 20: Weather Forecast
+### Phase 20: Performance Optimization
+**Goal**: Reduce I/O pressure from high-frequency metric writes, eliminate redundant API query work, and prevent unnecessary React re-renders on the timeline page
+**Depends on**: Phase 19 (metrics_history table and timeline page in place)
+**Requirements**: PERF-01, PERF-02, PERF-03
+**Success Criteria** (what must be TRUE):
+  1. SQLite metric writes are batched — individual poll callbacks buffer to memory and flush in a single transaction every 5-10 seconds, reducing write syscalls by ~80% compared to per-poll inserts
+  2. The `/api/metrics/history` endpoint caches downsampled results for 30-60 seconds — repeated requests within the cache window return instantly without re-querying SQLite
+  3. SparklineCard components are memoized with `React.memo` so that switching tabs, filters, or time windows only re-renders the affected cards, not all charts on the page
+**Plans**: 2 plans
+Plans:
+- [x] 20-01-PLAN.md — SQLite write batching + API response cache
+- [x] 20-02-PLAN.md — React.memo SparklineCard + useMemo derived arrays
+
+### Phase 21: Weather Forecast
 **Goal**: Users can tap the weather area to see a 5-day outlook without leaving the dashboard
 **Depends on**: Phase 17 (v1.3 baseline clean); existing Open-Meteo weather adapter in SSE pipeline
 **Requirements**: WX-01, WX-02
@@ -168,10 +182,13 @@ Plans:
   1. Tapping the weather zone in AppHeader opens a 5-day forecast view showing each day's high temperature, low temperature, condition label, and a matching weather icon
   2. The forecast view is dismissible (tap outside or tap weather again) and does not break the kiosk layout or iPhone portrait/landscape viewports
   3. Forecast data comes from Open-Meteo with no API key and is cached on the same polling cadence as current conditions — no extra user configuration required
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [x] 20-01-PLAN.md — SQLite write batching + API response cache
+- [x] 20-02-PLAN.md — React.memo SparklineCard + useMemo derived arrays
 **UI hint**: yes
 
-### Phase 21: NAS CPU Diagnostic
+### Phase 22: NAS CPU Diagnostic
 **Goal**: When NAS CPU is elevated, one tap returns a plain-English explanation of what is driving the load — AI-powered, cost-capped
 **Depends on**: Phase 17 (v1.3 baseline clean); existing NAS adapter with CPU metric in SSE snapshot
 **Requirements**: NAS-01, NAS-02
@@ -179,7 +196,10 @@ Plans:
   1. When NAS CPU usage is elevated, the CPU metric on the NAS tile or detail view shows a tap/click affordance; activating it triggers an AI diagnostic and displays the plain-English result within the dashboard
   2. The diagnostic result names the likely process or workload driving high CPU in terms a home user understands (e.g., "Plex transcoding", "Docker container rebuild") rather than raw system output
   3. Each diagnostic request consumes no more than ~$0.01 in LLM API tokens, enforced by using the smallest capable model and a compact, context-minimal prompt — no runaway cost from rapid repeated taps
-**Plans**: TBD
+**Plans**: 2 plans
+Plans:
+- [x] 20-01-PLAN.md — SQLite write batching + API response cache
+- [x] 20-02-PLAN.md — React.memo SparklineCard + useMemo derived arrays
 
 ## Backlog
 
@@ -201,7 +221,7 @@ Plans:
 
 ## Progress
 
-**Execution Order:** Phase 17 -> Phase 18 -> Phase 19 -> Phase 20 -> Phase 21
+**Execution Order:** Phase 17 -> Phase 18 -> Phase 19 -> Phase 20 -> Phase 21 -> Phase 22
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
@@ -212,6 +232,7 @@ Plans:
 | 16. iPhone Landscape | v1.2 | 3/3 | Complete    | 2026-04-21 |
 | 17. Download & Plex Bug Fixes | v1.3 | 2/2 | Complete    | 2026-04-28 |
 | 18. Docker Update Detail View | v1.3 | 2/2 | Complete    | 2026-05-03 |
-| 19. Graphical Activity Timeline | v1.3 | 0/3 | Not started | - |
-| 20. Weather Forecast | v1.3 | 0/TBD | Not started | - |
-| 21. NAS CPU Diagnostic | v1.3 | 0/TBD | Not started | - |
+| 19. Graphical Activity Timeline | v1.3 | 3/3 | Complete    | 2026-05-04 |
+| 20. Performance Optimization | v1.3 | 2/2 | Complete    | 2026-05-04 |
+| 21. Weather Forecast | v1.3 | 0/TBD | Not started | - |
+| 22. NAS CPU Diagnostic | v1.3 | 0/TBD | Not started | - |

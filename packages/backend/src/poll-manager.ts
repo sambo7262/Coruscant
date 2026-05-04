@@ -1,6 +1,6 @@
 import type { DashboardSnapshot, ServiceStatus, NasStatus, PlexStream, PlexServerStats, ArrWebhookEvent, WeatherData, PiHealthStatus } from '@coruscant/shared'
 import { eq } from 'drizzle-orm'
-import { getDb } from './db.js'
+import { getDb, getSqlite } from './db.js'
 import { kvStore, metricsHistory } from './schema.js'
 import { pollArr } from './adapters/arr.js'
 import { pollBazarr } from './adapters/bazarr.js'
@@ -153,12 +153,17 @@ export class PollManager {
   private sabnzbdConfig: { baseUrl: string; apiKey: string } | null = null
   private burstPollActive: boolean = false
 
+  // PERF-01: metric write batching — buffer accumulates rows, flush timer commits atomically
+  private metricBuffer: Map<string, Array<{ timestamp: string; metrics: string }>> = new Map()
+  private flushTimer: ReturnType<typeof setInterval> | null = null
 
   constructor() {
     // Initialize all services as unconfigured
     for (const id of ALL_SERVICE_IDS) {
       this.state.set(id, makeUnconfigured(id))
     }
+    // PERF-01: start metric buffer flush timer — an empty-buffer tick costs ~0 CPU
+    this.flushTimer = setInterval(() => { this.flushMetricBuffer() }, 5_000)
   }
 
   /**
@@ -598,23 +603,53 @@ export class PollManager {
    * Never throws — poll must never crash due to a write failure.
    */
   private writeMetricsSnapshot(service: string, metrics: Record<string, unknown>): void {
+    const pending = this.metricBuffer.get(service) ?? []
+    pending.push({ timestamp: new Date().toISOString(), metrics: JSON.stringify(metrics) })
+    this.metricBuffer.set(service, pending)
+  }
+
+  /**
+   * PERF-01: Flush all buffered metric rows to SQLite in a single WAL transaction.
+   * Buffer is cleared BEFORE the insert — a flush failure loses at most one 5-second window.
+   */
+  private flushMetricBuffer(): void {
+    if (this.metricBuffer.size === 0) return
+    const sqlite = getSqlite()
+    if (!sqlite) return
+    const toFlush: Array<{ timestamp: string; service: string; metrics: string }> = []
+    for (const [service, rows] of this.metricBuffer) {
+      for (const row of rows) toFlush.push({ timestamp: row.timestamp, service, metrics: row.metrics })
+    }
+    this.metricBuffer.clear()
+    if (toFlush.length === 0) return
     try {
-      getDb().insert(metricsHistory).values({
-        timestamp: new Date().toISOString(),
-        service,
-        metrics: JSON.stringify(metrics),
-      }).run()
-    } catch { /* never crash poll on write failure */ }
+      const stmt = sqlite.prepare('INSERT INTO metrics_history (timestamp, service, metrics) VALUES (?, ?, ?)')
+      const insertMany = sqlite.transaction((rows: typeof toFlush) => {
+        for (const r of rows) stmt.run(r.timestamp, r.service, r.metrics)
+      })
+      insertMany(toFlush)
+      console.log(JSON.stringify({ level: 'debug', msg: 'metric_flush', rowCount: toFlush.length }))
+    } catch (err) {
+      console.log(JSON.stringify({ level: 'warn', msg: 'metric_flush_failed', rowCount: toFlush.length, error: String(err) }))
+    }
   }
 
   /**
    * Stop all polling timers (for graceful shutdown and tests).
    */
   stopAll(): void {
+    // PERF-01: flush buffered rows before stopping — synchronous, completes before process exits
+    this.flushMetricBuffer()
+
     for (const timer of this.timers.values()) {
       clearInterval(timer)
     }
     this.timers.clear()
+
+    if (this.flushTimer) {
+      clearInterval(this.flushTimer)
+      this.flushTimer = null
+    }
 
     if (this.imageUpdateTimer) {
       clearInterval(this.imageUpdateTimer)

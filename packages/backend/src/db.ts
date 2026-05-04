@@ -29,6 +29,15 @@ export function getDb(): AppDb {
 }
 
 /**
+ * Returns the raw better-sqlite3 Database instance for native .transaction() calls.
+ * Used by PollManager.flushMetricBuffer() to batch metric inserts in a single WAL commit.
+ */
+export function getSqlite(): Database.Database | null {
+  if (!_sqlite) getDb()
+  return _sqlite
+}
+
+/**
  * Idempotent schema bootstrap — uses CREATE TABLE IF NOT EXISTS so it works
  * on both fresh databases and existing ones that predate Drizzle migration tracking.
  */

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import {
   AreaChart,
   Area,
@@ -59,7 +59,7 @@ function formatYTick(val: number, unit?: string): string {
   return `${val}${unit.trim()}`
 }
 
-export function SparklineCard({ service, points, metrics, loading, window, multiLine }: SparklineCardProps) {
+function SparklineCardInner({ service, points, metrics, loading, window, multiLine }: SparklineCardProps) {
   const [activeIdx, setActiveIdx] = useState(0)
   if (metrics.length === 0) return null
 
@@ -220,3 +220,7 @@ export function SparklineCard({ service, points, metrics, loading, window, multi
     </div>
   )
 }
+
+// PERF-03: React.memo — shallow prop comparison bails out on parent re-render when
+// props are unchanged. Local useState (activeIdx) still triggers re-render within the card.
+export const SparklineCard = React.memo(SparklineCardInner)

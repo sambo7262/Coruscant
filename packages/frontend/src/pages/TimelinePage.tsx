@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import type { LogEntry } from '../hooks/useDashboardSSE.js'
 import { useViewport } from '../viewport/index.js'
 import { TimeWindowSelector } from '../components/timeline/TimeWindowSelector.js'
@@ -54,6 +54,11 @@ const UNIFI_METRICS: MetricConfig[] = [
 ]
 
 const DISK_TEMP_COLORS = ['#E8A020', '#00c8ff', '#4ADE80', '#FF3B3B', '#8B5CF6', '#FF8C00']
+
+const PI_HEALTH_METRICS: MetricConfig[] = [
+  { key: 'cpuPercent', label: 'CPU', color: 'var(--cockpit-amber)', fillOpacity: 0.4, domain: [0, 100], chartType: 'area', unit: '%' },
+  { key: 'cpuTempF', label: 'TEMP', color: '#FF3B3B', chartType: 'line', domain: ['auto', 'auto'], unit: '°F' },
+]
 
 const btnBase: React.CSSProperties = {
   fontFamily: "'JetBrains Mono', monospace",
@@ -124,61 +129,54 @@ export function TimelinePage({ lastLogEntry }: TimelinePageProps) {
   const gridColumns = isPortrait ? 1 : 2
 
   // Build NAS disk sparklines from points data (dynamic per volume key)
-  const diskMetrics: MetricConfig[] = []
-  if (nasPoints.length > 0) {
+  const diskMetrics: MetricConfig[] = useMemo(() => {
+    if (nasPoints.length === 0) return []
     const samplePoint = nasPoints[nasPoints.length - 1]
-    Object.keys(samplePoint)
+    return Object.keys(samplePoint)
       .filter(k => k.startsWith('vol_'))
-      .forEach(k => {
-        const volName = k.replace('vol_', '').toUpperCase()
-        diskMetrics.push(NAS_DISK_CONFIG(k, volName))
-      })
-  }
+      .map(k => NAS_DISK_CONFIG(k, k.replace('vol_', '').toUpperCase()))
+  }, [nasPoints])
 
-  const nasMetrics = [...NAS_METRICS, ...diskMetrics]
+  const nasMetrics = useMemo(
+    () => [...NAS_METRICS, ...diskMetrics],
+    [diskMetrics]
+  )
 
   // Only show Docker card if dockerCpu/dockerRam keys appear in NAS points
   const hasDockerMetrics = nasPoints.length > 0 && nasPoints.some(p => p['dockerCpu'] !== undefined)
 
   // Build disk temp metrics — all drives on one chart with different colors, converted to °F
   // Keys from backend: dt_disk1, dt_disk2, etc. (using disk.id for safe Recharts dataKey)
-  const diskTempMetrics: MetricConfig[] = []
-  const nasPointsWithDiskF = nasPoints.map(p => {
+  const nasPointsWithDiskF = useMemo(() => nasPoints.map(p => {
     const converted: Record<string, number | string> = { ...p }
     Object.keys(p).filter(k => k.startsWith('dt_')).forEach(k => {
       const c = typeof p[k] === 'number' ? p[k] as number : typeof p[k] === 'string' ? parseFloat(p[k] as string) : NaN
       converted[`${k}F`] = isNaN(c) ? 0 : c * 9 / 5 + 32
     })
     return converted
-  })
-  if (nasPoints.length > 0) {
+  }), [nasPoints])
+
+  const diskTempMetrics: MetricConfig[] = useMemo(() => {
+    if (nasPoints.length === 0) return []
     const samplePoint = nasPoints[nasPoints.length - 1]
-    Object.keys(samplePoint)
+    return Object.keys(samplePoint)
       .filter(k => k.startsWith('dt_'))
       .sort()
-      .forEach((k, idx) => {
-        const diskId = k.replace('dt_', '').replace(/(\d)/g, ' $1').trim().toUpperCase()
-        diskTempMetrics.push({
-          key: `${k}F`,
-          label: diskId,
-          color: DISK_TEMP_COLORS[idx % DISK_TEMP_COLORS.length],
-          chartType: 'line',
-          domain: ['auto', 'auto'],
-          unit: '°F',
-        })
-      })
-  }
+      .map((k, idx) => ({
+        key: `${k}F`,
+        label: k.replace('dt_', '').replace(/(\d)/g, ' $1').trim().toUpperCase(),
+        color: DISK_TEMP_COLORS[idx % DISK_TEMP_COLORS.length],
+        chartType: 'line' as const,
+        domain: ['auto', 'auto'] as ['auto', 'auto'],
+        unit: '°F',
+      }))
+  }, [nasPoints])
 
   // Convert Pi health temps from C to F
-  const piHealthPointsF = piHealthPoints.map(p => {
+  const piHealthPointsF = useMemo(() => piHealthPoints.map(p => {
     const c = typeof p['cpuTempC'] === 'number' ? p['cpuTempC'] : typeof p['cpuTempC'] === 'string' ? parseFloat(p['cpuTempC']) : NaN
-    return { ...p, cpuTempF: isNaN(c) ? undefined : c * 9 / 5 + 32 }
-  })
-
-  const PI_HEALTH_METRICS: MetricConfig[] = [
-    { key: 'cpuPercent', label: 'CPU', color: 'var(--cockpit-amber)', fillOpacity: 0.4, domain: [0, 100], chartType: 'area', unit: '%' },
-    { key: 'cpuTempF', label: 'TEMP', color: '#FF3B3B', chartType: 'line', domain: ['auto', 'auto'], unit: '°F' },
-  ]
+    return { ...p, cpuTempF: isNaN(c) ? 0 : c * 9 / 5 + 32 }
+  }), [piHealthPoints])
 
   return (
     <div style={{ padding: '0 16px', maxWidth: '1000px', margin: '0 auto' }}>
