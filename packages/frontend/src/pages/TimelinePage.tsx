@@ -141,25 +141,26 @@ export function TimelinePage({ lastLogEntry }: TimelinePageProps) {
   const hasDockerMetrics = nasPoints.length > 0 && nasPoints.some(p => p['dockerCpu'] !== undefined)
 
   // Build disk temp metrics — all drives on one chart with different colors, converted to °F
+  // Keys from backend: dt_disk1, dt_disk2, etc. (using disk.id for safe Recharts dataKey)
   const diskTempMetrics: MetricConfig[] = []
   const nasPointsWithDiskF = nasPoints.map(p => {
     const converted: Record<string, number | string> = { ...p }
-    Object.keys(p).filter(k => k.startsWith('diskTemp_')).forEach(k => {
+    Object.keys(p).filter(k => k.startsWith('dt_')).forEach(k => {
       const c = typeof p[k] === 'number' ? p[k] as number : typeof p[k] === 'string' ? parseFloat(p[k] as string) : NaN
-      converted[`${k}_F`] = isNaN(c) ? 0 : c * 9 / 5 + 32
+      converted[`${k}F`] = isNaN(c) ? 0 : c * 9 / 5 + 32
     })
     return converted
   })
   if (nasPoints.length > 0) {
     const samplePoint = nasPoints[nasPoints.length - 1]
     Object.keys(samplePoint)
-      .filter(k => k.startsWith('diskTemp_'))
+      .filter(k => k.startsWith('dt_'))
       .sort()
       .forEach((k, idx) => {
-        const driveName = k.replace('diskTemp_', '').toUpperCase()
+        const diskId = k.replace('dt_', '').toUpperCase()
         diskTempMetrics.push({
-          key: `${k}_F`,
-          label: driveName,
+          key: `${k}F`,
+          label: diskId,
           color: DISK_TEMP_COLORS[idx % DISK_TEMP_COLORS.length],
           chartType: 'line',
           domain: ['auto', 'auto'],

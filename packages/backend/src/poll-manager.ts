@@ -424,8 +424,7 @@ export class PollManager {
           const diskTemps: Record<string, number> = {}
           if (nasResult.disks) {
             for (const d of nasResult.disks) {
-              const safeKey = d.name.replace(/\s+/g, '_')
-              diskTemps[`diskTemp_${safeKey}`] = d.tempC
+              diskTemps[`dt_${d.id}`] = d.tempC
             }
           }
           this.writeMetricsSnapshot('nas', {
