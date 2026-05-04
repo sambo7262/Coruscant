@@ -422,8 +422,9 @@ export class PollManager {
             lastPollAt: new Date().toISOString(),
           })
           const diskTemps: Record<string, number> = {}
-          if (nasResult.disks) {
-            for (const d of nasResult.disks) {
+          const disksSource = this.nasData.disks ?? nasResult.disks
+          if (disksSource) {
+            for (const d of disksSource) {
               diskTemps[`dt_${d.id}`] = d.tempC
             }
           }
@@ -432,7 +433,6 @@ export class PollManager {
             ram: nasResult.ram,
             networkMbpsUp: nasResult.networkMbpsUp,
             networkMbpsDown: nasResult.networkMbpsDown,
-            volumes: nasResult.volumes?.map(v => ({ name: v.name, usedPercent: v.usedPercent })) ?? [],
             ...(nasResult.docker !== undefined ? { dockerCpu: nasResult.docker.cpuPercent, dockerRam: nasResult.docker.ramPercent } : {}),
             ...diskTemps,
           })
