@@ -6,11 +6,7 @@ interface NasProcessPanelProps {
   cpu: number  // overall NAS CPU % for header display (per D-07)
 }
 
-function getProcBarColor(pct: number): string {
-  if (pct > 85) return 'var(--cockpit-red)'     // #FF3B3B -- per D-11
-  if (pct > 60) return '#FF9500'                 // warm orange -- per D-11
-  return 'var(--cockpit-amber)'                  // #E8A020 -- per D-11
-}
+const PROC_BAR_COLORS = ['#E8A020', '#00c8ff', '#4ADE80', '#FF9500', '#8B5CF6']
 
 export function NasProcessPanel({ cpu, onDismiss }: NasProcessPanelProps & { onDismiss?: () => void }) {
   const [processes, setProcesses] = useState<NasProcess[]>([])
@@ -65,7 +61,7 @@ export function NasProcessPanel({ cpu, onDismiss }: NasProcessPanelProps & { onD
         )}
         {!loading && !error && (() => {
           const maxPct = Math.max(cpu, ...processes.map(p => p.cpuPercent), 1)
-          return processes.map((proc) => (
+          return processes.map((proc, idx) => (
             <div key={proc.pid} className="nas-process-panel__row">
               <span className="nas-process-panel__label">{proc.label}</span>
               <div className="nas-process-panel__bar-wrap">
@@ -74,7 +70,7 @@ export function NasProcessPanel({ cpu, onDismiss }: NasProcessPanelProps & { onD
                     className="nas-process-panel__fill"
                     style={{
                       width: `${(proc.cpuPercent / maxPct) * 100}%`,
-                      background: getProcBarColor(proc.cpuPercent),
+                      background: PROC_BAR_COLORS[idx % PROC_BAR_COLORS.length],
                     }}
                   />
                 </div>

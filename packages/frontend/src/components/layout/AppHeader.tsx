@@ -8,6 +8,7 @@ import { StaleIndicator } from '../ui/StaleIndicator.js'
 import { PiHealthPanel } from './PiHealthPanel.js'
 import { WeatherForecastPanel } from './WeatherForecastPanel.js'
 import { useViewport } from '../../viewport/index.js'
+import { getTempColor } from '../../utils/tempColor.js'
 
 interface AppHeaderProps {
   connected: boolean
@@ -225,7 +226,7 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, activeOut
                     aria-expanded={forecastOpen}
                   >
                     <WeatherIcon wmoCode={weatherData.wmo_code} size={30} />
-                    <span className="app-header__weather-temp">
+                    <span className="app-header__weather-temp" style={{ color: getTempColor(Math.round(weatherData.temp_f)) }}>
                       {Math.round(weatherData.temp_f)}°
                     </span>
                     {isWeatherStale(weatherData.fetched_at) && (

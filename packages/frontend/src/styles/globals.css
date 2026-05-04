@@ -957,13 +957,11 @@ body::after {
   font-family: var(--font-mono);
   font-size: var(--tile-font-value);
   font-weight: 600;
-  color: var(--cockpit-amber);
 }
 
 .weather-forecast-panel__low {
   font-family: var(--font-mono);
-  font-size: 12px;
-  color: rgba(200, 200, 200, 0.5);
+  font-size: var(--tile-font-value);
 }
 
 .weather-forecast-panel__condition {
@@ -998,8 +996,6 @@ body::after {
   -webkit-tap-highlight-color: transparent;
 }
 
-<<<<<<< HEAD
-=======
 /* ---------- NAS Process Panel (Phase 22) ---------- */
 .nas-process-panel__backdrop {
   position: fixed;
@@ -1023,7 +1019,7 @@ body::after {
 }
 
 .nas-process-panel__inner {
-  padding: 10px 16px;
+  padding: 10px 16px 24px;
 }
 
 .nas-process-panel__header {
@@ -1122,7 +1118,6 @@ body::after {
 }
 
 
->>>>>>> 7568408
 /* ---------- Arr instrument ---------- */
 .arr-instrument {
   display: flex;

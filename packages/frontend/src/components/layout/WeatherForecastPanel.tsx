@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import type { ForecastDay } from '@coruscant/shared'
 import { WeatherIcon } from '../weather/WeatherIcon.js'
+import { getTempColor } from '../../utils/tempColor.js'
 
 interface WeatherForecastPanelProps {
   forecast: ForecastDay[]
@@ -38,8 +39,8 @@ function DayColumn({ day, isToday }: { day: ForecastDay; isToday: boolean }) {
     <div className="weather-forecast-panel__day">
       <span className="weather-forecast-panel__day-name">{getDayLabel(day.date, isToday)}</span>
       <WeatherIcon wmoCode={day.wmo_code} size={24} />
-      <span className="weather-forecast-panel__high">{Math.round(day.temp_max_f)}°</span>
-      <span className="weather-forecast-panel__low">{Math.round(day.temp_min_f)}°</span>
+      <span className="weather-forecast-panel__high" style={{ color: getTempColor(Math.round(day.temp_max_f)) }}>{Math.round(day.temp_max_f)}°</span>
+      <span className="weather-forecast-panel__low" style={{ color: getTempColor(Math.round(day.temp_min_f)) }}>{Math.round(day.temp_min_f)}°</span>
       <span className="weather-forecast-panel__condition">{getConditionLabel(day.wmo_code)}</span>
     </div>
   )

@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify'
-import { and, eq, lt, or, desc, count, inArray } from 'drizzle-orm'
+import { and, eq, lt, or, desc, count, inArray, gte } from 'drizzle-orm'
 import { getDb } from '../db.js'
 import { appLogs } from '../schema.js'
 
@@ -9,9 +9,12 @@ export async function logRoutes(fastify: FastifyInstance) {
    * Returns { entries: LogEntry[], total: number }
    */
   fastify.get<{
-    Querystring: { limit?: string; offset?: string; level?: string; service?: string }
+    Querystring: { limit?: string; offset?: string; level?: string; service?: string; since?: string }
   }>('/api/logs', async (request, reply) => {
-    const limit = Math.min(parseInt(request.query.limit ?? '500', 10) || 500, 1000)
+    const since = request.query.since
+    const limit = since
+      ? Math.min(parseInt(request.query.limit ?? '10000', 10) || 10000, 10000)
+      : Math.min(parseInt(request.query.limit ?? '500', 10) || 500, 1000)
     const offset = parseInt(request.query.offset ?? '0', 10) || 0
     const level = request.query.level ?? 'all'
     const service = request.query.service ?? 'all'
@@ -30,6 +33,11 @@ export async function logRoutes(fastify: FastifyInstance) {
     // Service filter
     if (service !== 'all') {
       filters.push(eq(appLogs.service, service))
+    }
+
+    // Time filter -- server-side time window (per D-05)
+    if (since) {
+      filters.push(gte(appLogs.timestamp, since))
     }
 
     const whereClause = filters.length > 0 ? and(...filters) : undefined

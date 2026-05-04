@@ -253,22 +253,14 @@ export function MediaEventList({ window }: MediaEventListProps) {
 
     void (async () => {
       try {
-        const res = await fetch('/api/logs?limit=1000&offset=0&level=all&service=all')
+        const cutoff = new Date(Date.now() - windowToMs(window)).toISOString()
+        const res = await fetch(`/api/logs?since=${encodeURIComponent(cutoff)}&level=all&service=all`)
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data = await res.json() as { entries: LogEntry[]; total: number }
 
         if (cancelled) return
 
-        const cutoff = Date.now() - windowToMs(window)
-
         const parsed = data.entries
-          .filter(entry => {
-            try {
-              return new Date(entry.timestamp).getTime() >= cutoff
-            } catch {
-              return false
-            }
-          })
           .map(entry => parseEventFromLog(entry))
           .filter((e): e is MediaEvent => e !== null)
           // newest first

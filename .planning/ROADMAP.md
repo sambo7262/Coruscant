@@ -5,7 +5,7 @@
 - ✅ **v1.0 MVP** — Phases 1-11 (shipped 2026-04-07) — [archive](milestones/v1.0-ROADMAP.md)
 - ✅ **v1.1 Pi Health Monitoring** — Phases 12-13 (shipped 2026-04-15)
 - ✅ **v1.2 iPhone Responsive Polish** — Phases 14-16 (shipped 2026-04-21)
-- 🚧 **v1.3 Bug Fixes & Data Updates** — Phases 17-22 (in progress)
+- 🚧 **v2.0 Bug Fixes, Data Updates & Polish** — Phases 17-23 (in progress)
 
 ## Phases
 
@@ -20,6 +20,7 @@
 - [x] **Phase 20: Performance Optimization** - SQLite write batching, metrics API response caching, and React chart memoization to reduce I/O pressure and unnecessary re-renders (completed 2026-05-04)
 - [x] **Phase 21: Weather Forecast** - Tapping the weather area reveals a 5-day forecast with daily highs, lows, conditions, and icons (completed 2026-05-04)
 - [x] **Phase 22: NAS Process Monitor** - Tapping NAS CPU metric reveals top processes with plain-English labels via static lookup — no external API dependencies (completed 2026-05-04)
+- [x] **Phase 23: Color Polish & Event Retention Fix** - Temperature-scaled colors on weather, distinct process bar colors, disk metric colors from timeline charts, fix media event fetch limit (completed 2026-05-04)
 
 ## Phase Details
 
@@ -203,15 +204,22 @@ Plans:
 - [x] 22-03-PLAN.md — Frontend: NasProcessPanel component, ServiceCard wiring, mutual exclusion, checkpoint
 **UI hint**: yes
 
-## Backlog
-
-### Phase 999.1: CRT Signal Interference Screen Refresh Animation (BACKLOG)
-
-**Goal:** Periodic full-screen "signal interference" animation — a horizontal static-noise band sweeps top-to-bottom on a configurable interval, doubling as a pixel refresh mechanism for the Raspberry Pi kiosk display
-
-### Phase 999.2: Plex Now Playing — Vertical Bar Stats (BACKLOG)
-
-**Goal:** Add vertical bar meters (instrument-panel style) to the right side of each Now Playing stream row, showing bitrate and transcode load at a glance without expanding the tile
+### Phase 23: Color Polish & Event Retention Fix
+**Goal**: Bring color variety to dropdown panels and NAS metrics, and fix the media event list fetch limit that causes events to disappear before the 7-day retention window
+**Depends on**: Phase 22 (NAS process monitor complete)
+**Requirements**: COLOR-01, COLOR-02, COLOR-03, COLOR-04, EVENT-01
+**Success Criteria** (what must be TRUE):
+  1. Weather forecast panel shows temperature-scaled colors (blue for cold, red for hot) on both high and low temps, with matching font sizes for high and low
+  2. Dashboard header weather temperature is colored on the same blue-to-red scale
+  3. NAS process monitor bars each use a distinct color (not all amber)
+  4. NAS ServiceCard disk metrics (d1-d6) use the same colors assigned to them in the timeline sparkline charts
+  5. Media event list on the timeline page fetches all events within the selected time window (not capped at 1000 entries), so events persist for the full 7-day retention period
+**Plans**: 3 plans
+Plans:
+- [x] 23-01-PLAN.md — Weather temperature-scaled colors + font size equalization
+- [x] 23-02-PLAN.md — NAS process bar distinct colors + disk metric color unification
+- [x] 23-03-PLAN.md — Media event list server-side time filtering (remove 1000-entry cap)
+**UI hint**: yes
 
 ## Known Gaps (deferred from v1.0)
 
@@ -223,7 +231,7 @@ Plans:
 
 ## Progress
 
-**Execution Order:** Phase 17 -> Phase 18 -> Phase 19 -> Phase 20 -> Phase 21 -> Phase 22
+**Execution Order:** Phase 17 -> Phase 18 -> Phase 19 -> Phase 20 -> Phase 21 -> Phase 22 -> Phase 23
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { ServiceStatus, UnifiMetrics, ArrWebhookEvent, NasStatus, NasVolume } from '@coruscant/shared'
@@ -8,6 +9,7 @@ import { useAnimatedNumber } from '../../hooks/useAnimatedNumber.js'
 import { canHover, useViewport } from '../../viewport/index.js'
 import { DockerUpdatePanel } from '../layout/DockerUpdatePanel.js'
 import { NasProcessPanel } from '../layout/NasProcessPanel.js'
+import { DISK_COLORS } from '../../utils/diskColors.js'
 
 // Event flash colors for arr webhook events — used by MediaStackRow flash
 const EVENT_COLORS: Record<string, string> = {
@@ -20,11 +22,11 @@ const EVENT_COLORS: Record<string, string> = {
 // ARR services that receive flash — SABnzbd excluded (uses burst poll instead)
 const ARR_FLASH_IDS = new Set(['radarr', 'sonarr', 'lidarr', 'bazarr', 'prowlarr', 'readarr'])
 
-// NAS CPU/RAM bar threshold color (D-19): green <60%, amber 60-85%, red >85%
+// NAS CPU/RAM bar threshold color: blue <60%, amber 60-85%, red >85%
 function getBarColor(percent: number): string {
   if (percent > 85) return '#FF3B3B'   // red
   if (percent > 60) return '#E8A020'   // amber
-  return '#4ADE80'                      // green
+  return '#00c8ff'                      // blue
 }
 
 // UniFi multi-arrow speed tier indicator (D-20)
@@ -170,6 +172,7 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
                   const tempC = disk.tempC
                   const dotColor = tempC > 55 ? '#FF3B3B' : tempC >= 45 ? '#E8A020' : '#4ADE80'
                   const tempF = Math.round(tempC * 9 / 5 + 32)
+                  const labelColor = DISK_COLORS[idx % DISK_COLORS.length]
                   return (
                     <div key={disk.id} className="nas-tile__disk">
                       <div
@@ -179,7 +182,7 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
                       <span className="nas-tile__disk-temp" style={{ color: dotColor }}>
                         {tempF}°
                       </span>
-                      <span className="nas-tile__disk-label">
+                      <span className="nas-tile__disk-label" style={{ color: labelColor }}>
                         D{idx + 1}
                       </span>
                     </div>
@@ -296,21 +299,24 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
           />
         )}
       </AnimatePresence>
-      <AnimatePresence>
-        {openPanel === 'process' && (
-          <>
-            <motion.div
-              className="nas-process-panel__backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              onClick={() => setOpenPanel(null)}
-            />
-            <NasProcessPanel cpu={nasStatus.cpu} onDismiss={() => setOpenPanel(null)} />
-          </>
-        )}
-      </AnimatePresence>
+      {createPortal(
+        <AnimatePresence>
+          {openPanel === 'process' && (
+            <>
+              <motion.div
+                className="nas-process-panel__backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                onClick={() => setOpenPanel(null)}
+              />
+              <NasProcessPanel cpu={nasStatus.cpu} onDismiss={() => setOpenPanel(null)} />
+            </>
+          )}
+        </AnimatePresence>,
+        document.body,
+      )}
     </div>
   )
 }

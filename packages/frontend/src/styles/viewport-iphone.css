@@ -219,12 +219,12 @@ html[data-viewport="iphone-portrait"] .weather-forecast-panel__inner {
   padding: 8px 16px;
 }
 
-html[data-viewport="iphone-portrait"] .weather-forecast-panel__high {
+html[data-viewport="iphone-portrait"] .weather-forecast-panel__high,
+html[data-viewport="iphone-portrait"] .weather-forecast-panel__low {
   font-size: 16px;
 }
 
 html[data-viewport="iphone-portrait"] .weather-forecast-panel__day-name,
-html[data-viewport="iphone-portrait"] .weather-forecast-panel__low,
 html[data-viewport="iphone-portrait"] .weather-forecast-panel__condition {
   font-size: 10px;
 }
@@ -361,11 +361,10 @@ html[data-viewport="iphone-landscape"] .weather-forecast-panel {
   padding-right: env(safe-area-inset-right);
 }
 
-html[data-viewport="iphone-landscape"] .weather-forecast-panel__high {
+html[data-viewport="iphone-landscape"] .weather-forecast-panel__high,
+html[data-viewport="iphone-landscape"] .weather-forecast-panel__low {
   font-size: 18px;
 }
-<<<<<<< HEAD
-=======
 
 /* --- NAS process panel safe-area top offset (Phase 22) --- */
 html[data-viewport^="iphone"] .nas-process-panel {
@@ -377,4 +376,3 @@ html[data-viewport^="iphone"] .nas-tile__cpu-tap-btn {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
->>>>>>> 7568408

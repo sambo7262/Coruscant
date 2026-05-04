@@ -7,6 +7,7 @@ import { SparklineCard } from '../components/timeline/SparklineCard.js'
 import type { MetricConfig } from '../components/timeline/SparklineCard.js'
 import { LogsPage } from './LogsPage.js'
 import { MediaEventList } from '../components/timeline/MediaEventList.js'
+import { DISK_COLORS } from '../utils/diskColors.js'
 
 interface TimelinePageProps {
   lastLogEntry?: LogEntry | null
@@ -28,10 +29,10 @@ const NAS_METRICS: MetricConfig[] = [
   { key: 'networkMbpsDown', label: 'NET DWN', color: '#00c8ff', chartType: 'line', domain: ['auto', 'auto'], unit: ' Mbps' },
 ]
 
-const NAS_DISK_CONFIG = (key: string, label: string): MetricConfig => ({
+const NAS_DISK_CONFIG = (key: string, label: string, idx: number): MetricConfig => ({
   key,
   label,
-  color: 'rgba(232,160,32,0.8)',
+  color: DISK_COLORS[idx % DISK_COLORS.length],
   chartType: 'line',
   domain: [0, 100],
   unit: '%',
@@ -53,7 +54,6 @@ const UNIFI_METRICS: MetricConfig[] = [
   { key: 'clientCount', label: 'CLIENTS', color: '#4ADE80', chartType: 'line', domain: ['auto', 'auto'] },
 ]
 
-const DISK_TEMP_COLORS = ['#E8A020', '#00c8ff', '#4ADE80', '#FF3B3B', '#8B5CF6', '#FF8C00']
 
 const PI_HEALTH_METRICS: MetricConfig[] = [
   { key: 'cpuPercent', label: 'CPU', color: 'var(--cockpit-amber)', fillOpacity: 0.4, domain: [0, 100], chartType: 'area', unit: '%' },
@@ -134,7 +134,7 @@ export function TimelinePage({ lastLogEntry }: TimelinePageProps) {
     const samplePoint = nasPoints[nasPoints.length - 1]
     return Object.keys(samplePoint)
       .filter(k => k.startsWith('vol_'))
-      .map(k => NAS_DISK_CONFIG(k, k.replace('vol_', '').toUpperCase()))
+      .map((k, idx) => NAS_DISK_CONFIG(k, k.replace('vol_', '').toUpperCase(), idx))
   }, [nasPoints])
 
   const nasMetrics = useMemo(
@@ -165,7 +165,7 @@ export function TimelinePage({ lastLogEntry }: TimelinePageProps) {
       .map((k, idx) => ({
         key: `${k}F`,
         label: k.replace('dt_', '').replace(/(\d)/g, ' $1').trim().toUpperCase(),
-        color: DISK_TEMP_COLORS[idx % DISK_TEMP_COLORS.length],
+        color: DISK_COLORS[idx % DISK_COLORS.length],
         chartType: 'line' as const,
         domain: ['auto', 'auto'] as ['auto', 'auto'],
         unit: '°F',

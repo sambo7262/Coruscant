@@ -35,9 +35,17 @@
 - [ ] **NAS-02**: Process data comes from the DSM API on demand (no continuous polling, no external API calls, no LLM dependency); unknown processes show the raw process name as fallback
 
 
+## Color Polish & Event Retention
+
+- [ ] **COLOR-01**: Weather forecast panel shows temperature-scaled colors (blue for cold, red for hot) on both high and low temps, with matching font sizes
+- [ ] **COLOR-02**: Dashboard header weather temperature is colored on the same blue-to-red temperature scale
+- [ ] **COLOR-03**: NAS process monitor bars each use a distinct color (not uniform amber)
+- [ ] **COLOR-04**: NAS ServiceCard disk metrics (d1-d6) use the same colors assigned in the timeline sparkline charts
+- [ ] **EVENT-01**: Media event list on the timeline page fetches all events within the selected time window (not capped at 1000 entries), so events persist for the full 7-day retention period
+
 ## Future Requirements
 
-*(Recognized but deferred beyond v1.3)*
+*(Recognized but deferred beyond v2.0)*
 
 - UniFi detail view with per-device uptime/model/clients (NET-03)
 - Pushover threshold alerts (NOTIF-02 through NOTIF-06)
@@ -72,8 +80,13 @@
 | WX-02 | Phase 21 | Pending |
 | NAS-01 | Phase 22 | Pending |
 | NAS-02 | Phase 22 | Pending |
+| COLOR-01 | Phase 23 | Pending |
+| COLOR-02 | Phase 23 | Pending |
+| COLOR-03 | Phase 23 | Pending |
+| COLOR-04 | Phase 23 | Pending |
+| EVENT-01 | Phase 23 | Pending |
 
-**Coverage:** 14/14 requirements mapped across 6 phases.
+**Coverage:** 19/19 requirements mapped across 7 phases.
 
 ---
-*Updated: 2026-05-03 — Added PERF-01/02/03; renumbered Weather to 21, NAS Diagnostic to 22*
+*Updated: 2026-05-04 — Added COLOR-01/02/03/04, EVENT-01; Phase 23 color polish + event retention fix; milestone renamed to v2.0*
