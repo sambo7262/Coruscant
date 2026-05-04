@@ -157,7 +157,7 @@ export function TimelinePage({ lastLogEntry }: TimelinePageProps) {
       .filter(k => k.startsWith('dt_'))
       .sort()
       .forEach((k, idx) => {
-        const diskId = k.replace('dt_', '').toUpperCase()
+        const diskId = k.replace('dt_', '').replace(/(\d)/g, ' $1').trim().toUpperCase()
         diskTempMetrics.push({
           key: `${k}F`,
           label: diskId,
