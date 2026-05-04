@@ -18,6 +18,7 @@ import { piHealthRestartRoutes } from './routes/pi-health-restart.js'
 import { logRoutes } from './routes/logs.js'
 import { metricsRoutes } from './routes/metrics.js'
 import { weatherSettingsRoutes } from './routes/weather-settings.js'
+import { nasProcessesRoutes } from './routes/nas-processes.js'
 import { startWeatherPoller } from './weather-poller.js'
 import { healthProbe, serviceConfig, appLogs, kvStore, metricsHistory } from './schema.js'
 import { pollManager } from './poll-manager.js'
@@ -57,6 +58,7 @@ await fastify.register(piHealthRestartRoutes)
 await fastify.register(logRoutes)
 await fastify.register(metricsRoutes)
 await fastify.register(weatherSettingsRoutes)
+await fastify.register(nasProcessesRoutes)
 
 // Serve compiled Vite bundle in production (D-23)
 const frontendDist = join(__dirname, '../../frontend/dist')

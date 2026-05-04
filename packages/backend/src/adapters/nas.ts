@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { ImageUpdateDetail, NasDockerStats, NasStatus } from '@coruscant/shared'
+import type { ImageUpdateDetail, NasDockerStats, NasProcess, NasStatus } from '@coruscant/shared'
 
 const TIMEOUT_MS = 10_000
 // DSM sessions last ~30 minutes; use 25 min to be conservative
@@ -290,6 +290,125 @@ export async function fetchNasDockerStats(
   } catch (err) {
     console.warn('[nas] fetchNasDockerStats: unexpected error:', err)
     return undefined
+  }
+}
+
+const PROCESS_LABELS: Record<string, string> = {
+  ffmpeg:                'Plex transcoding',
+  'Plex Media Server':   'Plex media server',
+  'Plex Media':          'Plex media server',
+  'Plex Script Host':    'Plex plugins',
+  'Plex DLNA Server':    'Plex DLNA',
+  'Plex Tuner Service':  'Plex tuner',
+  Radarr:                'Radarr (movies)',
+  Sonarr:                'Sonarr (TV)',
+  Lidarr:                'Lidarr (music)',
+  Readarr:               'Readarr (books)',
+  Prowlarr:              'Prowlarr (indexers)',
+  grafana:               'Grafana monitoring',
+  'pihole-FTL':          'Pi-hole DNS',
+  tailscaled:            'Tailscale VPN',
+  uvicorn:               'Python web server',
+  watchtower:            'Watchtower (auto-update)',
+  mosquitto:             'MQTT broker',
+  smbd:                  'Network file sharing (SMB)',
+  synoindexd:            'File indexing',
+  synoscgi:              'DSM web interface',
+  dockerd:               'Docker engine',
+  containerd:            'Docker container runtime',
+  'containerd-shim':     'Docker container shim',
+  'docker-proxy':        'Docker network proxy',
+  nginx:                 'Web server / reverse proxy',
+  postgres:              'Database (PostgreSQL)',
+  pgbouncer:             'Database connection pool',
+  node:                  'Node.js application',
+  python3:               'Python script',
+  python:                'Python script',
+  rsync:                 'File sync / backup',
+  sshd:                  'SSH connection',
+  synophotod:            'Synology Photos indexing',
+  synoconfd:             'Synology system config',
+  scemd:                 'Synology system monitor',
+  snmpd:                 'SNMP monitoring agent',
+  'redis-server':        'Redis cache',
+  'beam.smp':            'Erlang runtime',
+  systemd:               'System init',
+}
+
+function labelProcess(rawName: string): string {
+  if (PROCESS_LABELS[rawName]) return PROCESS_LABELS[rawName]
+  for (const [key, label] of Object.entries(PROCESS_LABELS)) {
+    if (rawName.startsWith(key)) return label
+  }
+  return rawName
+}
+
+/**
+ * Fetch top 5 processes sorted by CPU descending via SYNO.Core.System.Process.
+ * Applies human-readable labels from PROCESS_LABELS with prefix-match fallback.
+ * Defensively parses DSM response — field names (cmd/name/process_name, cpu/cpu_percent/cpu_usage)
+ * are unverified against real hardware and checked via multiple plausible paths.
+ * Returns empty array on any error (never throws).
+ */
+export async function fetchNasProcesses(
+  baseUrl: string,
+  username: string,
+  password: string,
+  cpuOverall?: number,
+): Promise<NasProcess[]> {
+  try {
+    const sid = await ensureSession(baseUrl, username, password)
+    const params = new URLSearchParams({
+      api: 'SYNO.Core.System.Process',
+      version: '1',
+      method: 'list',
+      _sid: sid,
+    })
+    const res = await axios.get(
+      `${baseUrl}/webapi/entry.cgi?${params.toString()}`,
+      { timeout: TIMEOUT_MS },
+    )
+
+    if (!res.data?.success) return []
+
+    // DEFENSIVE: DSM field names unverified — check multiple plausible paths
+    const rawList: Record<string, unknown>[] = Array.isArray(res.data?.data?.process)
+      ? res.data.data.process
+      : Array.isArray(res.data?.data?.processes)
+      ? res.data.data.processes
+      : Array.isArray(res.data?.data)
+      ? res.data.data
+      : []
+
+    const parsed = rawList
+      .map((p) => {
+        const rawName = String(p.command ?? p.cmd ?? p.name ?? '')
+        const cpuPercent = Number(p.cpu ?? p.cpu_percent ?? p.cpu_usage ?? 0)
+        return {
+          pid: Number(p.pid ?? 0),
+          name: rawName,
+          label: labelProcess(rawName),
+          cpuPercent,
+        }
+      })
+      .filter((p) => p.name.length > 0)
+      .sort((a, b) => b.cpuPercent - a.cpuPercent)
+      .slice(0, 5)
+
+    if (cpuOverall && cpuOverall > 0) {
+      const rawSum = rawList.reduce((sum, p) => sum + Number(p.cpu ?? p.cpu_percent ?? p.cpu_usage ?? 0), 0)
+      if (rawSum > 0) {
+        const scale = cpuOverall / rawSum
+        for (const proc of parsed) {
+          proc.cpuPercent = Math.round(proc.cpuPercent * scale * 10) / 10
+        }
+      }
+    }
+
+    return parsed
+  } catch (err) {
+    console.warn('[nas] fetchNasProcesses: failed:', err)
+    return []
   }
 }
 

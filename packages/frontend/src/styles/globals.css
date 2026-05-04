@@ -998,6 +998,131 @@ body::after {
   -webkit-tap-highlight-color: transparent;
 }
 
+<<<<<<< HEAD
+=======
+/* ---------- NAS Process Panel (Phase 22) ---------- */
+.nas-process-panel__backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 8;
+  background: transparent;
+}
+
+.nas-process-panel {
+  position: fixed;
+  top: 44px;
+  left: 0;
+  right: 0;
+  background: rgba(13, 13, 13, 0.97);
+  border-bottom: 1px solid rgba(232, 160, 32, 0.25);
+  overflow: hidden;
+  z-index: 9;
+}
+
+.nas-process-panel__inner {
+  padding: 10px 16px;
+}
+
+.nas-process-panel__header {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: rgba(232, 160, 32, 0.5);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.nas-process-panel__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.nas-process-panel__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-offwhite);
+  min-width: 0;
+  flex-shrink: 0;
+  width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.nas-process-panel__bar-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.nas-process-panel__track {
+  height: 16px;
+  background: rgba(232, 160, 32, 0.15);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.nas-process-panel__fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.nas-process-panel__pct {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-offwhite);
+  width: 38px;
+  text-align: right;
+  flex-shrink: 0;
+  letter-spacing: 0.04em;
+}
+
+.nas-process-panel__empty,
+.nas-process-panel__error {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.nas-process-panel__empty {
+  color: var(--cockpit-green);
+}
+
+.nas-process-panel__error {
+  color: var(--cockpit-red);
+}
+
+.nas-process-panel__skeleton {
+  height: 70px;
+  background: rgba(232, 160, 32, 0.30);
+  border-radius: 2px;
+  animation: arrDownloadPulse 1.2s ease-in-out infinite;
+}
+
+/* CPU tap affordance button reset — mirrors .nas-tile__docker-update-btn */
+.nas-tile__cpu-tap-btn {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  font: inherit;
+  line-height: inherit;
+  box-sizing: border-box;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+
+>>>>>>> 7568408
 /* ---------- Arr instrument ---------- */
 .arr-instrument {
   display: flex;

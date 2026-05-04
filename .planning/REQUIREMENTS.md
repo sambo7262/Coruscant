@@ -31,8 +31,8 @@
 
 ## NAS Diagnostics
 
-- [ ] **NAS-01**: When NAS CPU usage is elevated, user can tap/click the CPU metric to trigger an AI-powered diagnostic that returns a plain-English explanation of what processes are causing high CPU usage
-- [ ] **NAS-02**: Each AI diagnostic request costs no more than ~$0.01 in LLM tokens (use the smallest capable model, compact prompts, minimal context)
+- [ ] **NAS-01**: When NAS CPU usage is elevated, user can tap the CPU metric to open a dropdown panel showing top processes by CPU usage with human-readable labels (e.g., ffmpeg → "Plex transcoding") and usage bars
+- [ ] **NAS-02**: Process data comes from the DSM API on demand (no continuous polling, no external API calls, no LLM dependency); unknown processes show the raw process name as fallback
 
 
 ## Future Requirements
@@ -49,10 +49,10 @@
 ## Out of Scope
 
 - **New service integrations** — v1.3 improves existing services, does not add new ones
-- **NAS process management** — diagnostic is read-only, no kill/restart from dashboard
+- **NAS process management** — process monitor is read-only, no kill/restart from dashboard
 - **Weather alerts/notifications** — forecast is display-only
 - **Log aggregation from external sources** — only Coruscant's own logs
-- **AI features beyond NAS diagnostic** — one focused use case at budget constraint
+- **External AI/LLM dependencies** — dropped in favor of static process label lookup (no API cost, no latency, works offline)
 
 ## Traceability
 

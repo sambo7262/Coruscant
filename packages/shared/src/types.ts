@@ -37,6 +37,13 @@ export interface NasDockerStats {
   ramPercent: number
 }
 
+export interface NasProcess {
+  pid: number
+  name: string       // raw process name from DSM (e.g. "ffmpeg")
+  label: string      // human-readable label from PROCESS_LABELS or raw name fallback
+  cpuPercent: number  // 0-100 float
+}
+
 export interface ImageUpdateDetail {
   tag: string           // e.g. "sambo7262/coruscant:latest"
   localSha: string      // sha256:... digest of local image

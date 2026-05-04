@@ -7,6 +7,7 @@ import { StaleIndicator } from '../ui/StaleIndicator.js'
 import { useAnimatedNumber } from '../../hooks/useAnimatedNumber.js'
 import { canHover, useViewport } from '../../viewport/index.js'
 import { DockerUpdatePanel } from '../layout/DockerUpdatePanel.js'
+import { NasProcessPanel } from '../layout/NasProcessPanel.js'
 
 // Event flash colors for arr webhook events — used by MediaStackRow flash
 const EVENT_COLORS: Record<string, string> = {
@@ -139,7 +140,8 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
   const animRam = useAnimatedNumber(nasStatus.ram)
   const animDockerCpu = useAnimatedNumber(nasStatus.docker?.cpuPercent ?? 0)
   const animDockerRam = useAnimatedNumber(nasStatus.docker?.ramPercent ?? 0)
-  const [dockerPanelOpen, setDockerPanelOpen] = useState(false)
+  const [openPanel, setOpenPanel] = useState<'docker' | 'process' | null>(null)
+  const CPU_TAP_THRESHOLD = 30
 
   return (
     <div className="nas-tile">
@@ -204,6 +206,33 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
           })),
         ].map(({ label, value, valueText }) => {
           const color = getBarColor(value)
+          const cpuElevated = label === 'CPU' && nasStatus.cpu > CPU_TAP_THRESHOLD
+          if (cpuElevated) {
+            return (
+              <button
+                key={label}
+                className="nas-tile__cpu-tap-btn"
+                onClick={() => setOpenPanel(prev => prev === 'process' ? null : 'process')}
+                aria-expanded={openPanel === 'process'}
+                aria-label={openPanel === 'process' ? 'Close process monitor' : 'Open process monitor'}
+              >
+                <span className="nas-tile__metric-label">CPU</span>
+                <div className="nas-tile__metric-track">
+                  <div
+                    className="nas-tile__metric-fill"
+                    style={{
+                      width: `${Math.min(Math.max(value, 0), 100)}%`,
+                      background: color,
+                      boxShadow: `0 0 6px ${color}`,
+                    }}
+                  />
+                </div>
+                <span className="nas-tile__metric-value" style={{ color }}>
+                  {valueText}
+                </span>
+              </button>
+            )
+          }
           return (
             <div key={label} className="nas-tile__metric-row">
               <span className="nas-tile__metric-label">{label}</span>
@@ -236,9 +265,9 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
             </span>
             <button
               className="nas-tile__docker-update-btn"
-              onClick={() => setDockerPanelOpen(prev => !prev)}
-              aria-expanded={dockerPanelOpen}
-              aria-label={dockerPanelOpen ? 'Collapse Docker update details' : 'Expand Docker update details'}
+              onClick={() => setOpenPanel(prev => prev === 'docker' ? null : 'docker')}
+              aria-expanded={openPanel === 'docker'}
+              aria-label={openPanel === 'docker' ? 'Collapse Docker update details' : 'Expand Docker update details'}
             >
               <div className="nas-tile__docker-update">
                 {nasStatus.imageUpdateAvailable === true ? (
@@ -259,12 +288,27 @@ function NasTileInstrument({ nasStatus }: { nasStatus: NasStatus }) {
       </div>
 
       <AnimatePresence>
-        {dockerPanelOpen && (
+        {openPanel === 'docker' && (
           <DockerUpdatePanel
             images={nasStatus.imageUpdateDetails ?? []}
             checkedAt={nasStatus.imageUpdateCheckedAt}
             hasUpdates={nasStatus.imageUpdateAvailable ?? false}
           />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {openPanel === 'process' && (
+          <>
+            <motion.div
+              className="nas-process-panel__backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              onClick={() => setOpenPanel(null)}
+            />
+            <NasProcessPanel cpu={nasStatus.cpu} onDismiss={() => setOpenPanel(null)} />
+          </>
         )}
       </AnimatePresence>
     </div>

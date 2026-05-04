@@ -19,7 +19,7 @@
 - [x] **Phase 19: Graphical Activity Timeline** - Dedicated page with time-bounded visual history: infrastructure health sparklines + event markers for media activity and service state changes (completed 2026-05-03)
 - [x] **Phase 20: Performance Optimization** - SQLite write batching, metrics API response caching, and React chart memoization to reduce I/O pressure and unnecessary re-renders (completed 2026-05-04)
 - [x] **Phase 21: Weather Forecast** - Tapping the weather area reveals a 5-day forecast with daily highs, lows, conditions, and icons (completed 2026-05-04)
-- [ ] **Phase 22: NAS CPU Diagnostic** - Elevated CPU triggers an AI-powered plain-English explanation of what is causing the load, within a ~$0.01 per-request budget
+- [x] **Phase 22: NAS Process Monitor** - Tapping NAS CPU metric reveals top processes with plain-English labels via static lookup — no external API dependencies (completed 2026-05-04)
 
 ## Phase Details
 
@@ -188,18 +188,20 @@ Plans:
 - [x] 21-02-PLAN.md — Frontend: WeatherForecastPanel component, AppHeader wiring, CSS, viewport overrides
 **UI hint**: yes
 
-### Phase 22: NAS CPU Diagnostic
-**Goal**: When NAS CPU is elevated, one tap returns a plain-English explanation of what is driving the load — AI-powered, cost-capped
-**Depends on**: Phase 17 (v1.3 baseline clean); existing NAS adapter with CPU metric in SSE snapshot
+### Phase 22: NAS Process Monitor
+**Goal**: Tapping the NAS CPU metric reveals the top processes driving load, labeled in plain English via a static lookup table — no external API dependencies
+**Depends on**: Phase 21 (v1.3 weather complete); existing NAS adapter with CPU metric in SSE snapshot
 **Requirements**: NAS-01, NAS-02
 **Success Criteria** (what must be TRUE):
-  1. When NAS CPU usage is elevated, the CPU metric on the NAS tile or detail view shows a tap/click affordance; activating it triggers an AI diagnostic and displays the plain-English result within the dashboard
-  2. The diagnostic result names the likely process or workload driving high CPU in terms a home user understands (e.g., "Plex transcoding", "Docker container rebuild") rather than raw system output
-  3. Each diagnostic request consumes no more than ~$0.01 in LLM API tokens, enforced by using the smallest capable model and a compact, context-minimal prompt — no runaway cost from rapid repeated taps
-**Plans**: 2 plans
+  1. When NAS CPU usage is elevated, the CPU metric on the NAS tile shows a tap affordance; activating it opens a dropdown panel showing top processes by CPU usage with human-readable labels and usage bars
+  2. Process names are translated to plain-English labels via a static lookup table (e.g., ffmpeg → "Plex transcoding", synoindexd → "File indexing", smbd → "Network file sharing") — unknown processes show the raw name as fallback
+  3. Process data comes from the DSM API (SYNO.Core.System.Process or equivalent) on demand when the panel opens — no continuous polling, no external API calls, no LLM dependency
+**Plans**: 3 plans
 Plans:
-- [x] 20-01-PLAN.md — SQLite write batching + API response cache
-- [x] 20-02-PLAN.md — React.memo SparklineCard + useMemo derived arrays
+- [x] 22-01-PLAN.md — Backend: NasProcess type, fetchNasProcesses adapter, label table, routes, debug endpoint, tests
+- [x] 22-02-PLAN.md — CSS: NAS process panel styles, CPU tap affordance, iPhone viewport overrides
+- [x] 22-03-PLAN.md — Frontend: NasProcessPanel component, ServiceCard wiring, mutual exclusion, checkpoint
+**UI hint**: yes
 
 ## Backlog
 
@@ -235,4 +237,4 @@ Plans:
 | 19. Graphical Activity Timeline | v1.3 | 3/3 | Complete    | 2026-05-04 |
 | 20. Performance Optimization | v1.3 | 2/2 | Complete    | 2026-05-04 |
 | 21. Weather Forecast | v1.3 | 2/2 | Complete    | 2026-05-04 |
-| 22. NAS CPU Diagnostic | v1.3 | 0/TBD | Not started | - |
+| 22. NAS Process Monitor | v1.3 | 3/3 | Complete    | 2026-05-04 |
