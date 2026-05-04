@@ -311,6 +311,27 @@ export async function debugRoutes(fastify: FastifyInstance) {
   })
 
   /**
+   * GET /debug/metrics-sample
+   * Shows the 5 most recent metrics_history rows for NAS to verify disk temp keys.
+   */
+  fastify.get('/debug/metrics-sample', async (_request, reply) => {
+    const { metricsHistory } = await import('../schema.js')
+    const db = getDb()
+    const rows = db.select().from(metricsHistory)
+      .where(eq(metricsHistory.service, 'nas'))
+      .orderBy(metricsHistory.id)
+      .limit(5)
+      .all()
+    const parsed = rows.map(r => ({
+      id: r.id,
+      timestamp: r.timestamp,
+      keys: Object.keys(JSON.parse(r.metrics)),
+      metrics: JSON.parse(r.metrics),
+    }))
+    return reply.send({ count: rows.length, rows: parsed })
+  })
+
+  /**
    * GET /debug/pi-health
    * Hits the Pi health Flask endpoint directly and returns the raw response.
    * No encryption needed — piHealth has no API key (D-12).
