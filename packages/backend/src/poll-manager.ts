@@ -424,9 +424,9 @@ export class PollManager {
           const diskTemps: Record<string, number> = {}
           const disksSource = this.nasData.disks ?? nasResult.disks
           if (disksSource) {
-            for (const d of disksSource) {
-              diskTemps[`dt_${d.id}`] = d.tempC
-            }
+            disksSource.forEach((d, i) => {
+              diskTemps[`dt_${i + 1}`] = d.tempC
+            })
           }
           this.writeMetricsSnapshot('nas', {
             cpu: nasResult.cpu,
