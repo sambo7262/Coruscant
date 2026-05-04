@@ -312,7 +312,7 @@ export async function debugRoutes(fastify: FastifyInstance) {
 
   /**
    * GET /debug/metrics-sample
-   * Shows the 5 most recent metrics_history rows for NAS + live NAS disk data.
+   * Shows the 5 most recent metrics_history rows for NAS to verify disk temp keys.
    */
   fastify.get('/debug/metrics-sample', async (_request, reply) => {
     const { metricsHistory } = await import('../schema.js')
@@ -322,18 +322,13 @@ export async function debugRoutes(fastify: FastifyInstance) {
       .orderBy(metricsHistory.id)
       .limit(5)
       .all()
+      .reverse()
     const parsed = rows.map(r => ({
       id: r.id,
       timestamp: r.timestamp,
       keys: Object.keys(JSON.parse(r.metrics)),
     }))
-
-    // Also show live NAS data to check if disks are populated
-    const { pollManager } = await import('../index.js')
-    const snapshot = pollManager.getSnapshot()
-    const nasDisks = snapshot.nas?.disks ?? 'NO_DISKS_IN_SNAPSHOT'
-
-    return reply.send({ storedRowCount: rows.length, storedKeys: parsed[0]?.keys ?? [], liveNasDisks: nasDisks })
+    return reply.send({ count: rows.length, latestKeys: parsed[0]?.keys ?? [], rows: parsed })
   })
 
   /**
