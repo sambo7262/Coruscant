@@ -18,7 +18,7 @@
 - [x] **Phase 18: Docker Update Detail View** - Tapping "update available" in NAS header reveals which Docker image(s) have pending updates with registry tag vs running tag (completed 2026-05-03)
 - [x] **Phase 19: Graphical Activity Timeline** - Dedicated page with time-bounded visual history: infrastructure health sparklines + event markers for media activity and service state changes (completed 2026-05-03)
 - [x] **Phase 20: Performance Optimization** - SQLite write batching, metrics API response caching, and React chart memoization to reduce I/O pressure and unnecessary re-renders (completed 2026-05-04)
-- [ ] **Phase 21: Weather Forecast** - Tapping the weather area reveals a 5-day forecast with daily highs, lows, conditions, and icons
+- [x] **Phase 21: Weather Forecast** - Tapping the weather area reveals a 5-day forecast with daily highs, lows, conditions, and icons (completed 2026-05-04)
 - [ ] **Phase 22: NAS CPU Diagnostic** - Elevated CPU triggers an AI-powered plain-English explanation of what is causing the load, within a ~$0.01 per-request budget
 
 ## Phase Details
@@ -182,10 +182,10 @@ Plans:
   1. Tapping the weather zone in AppHeader opens a 5-day forecast view showing each day's high temperature, low temperature, condition label, and a matching weather icon
   2. The forecast view is dismissible (tap outside or tap weather again) and does not break the kiosk layout or iPhone portrait/landscape viewports
   3. Forecast data comes from Open-Meteo with no API key and is cached on the same polling cadence as current conditions — no extra user configuration required
-**Plans**: 2 plans
+**Plans:** 2/2 plans complete
 Plans:
-- [x] 20-01-PLAN.md — SQLite write batching + API response cache
-- [x] 20-02-PLAN.md — React.memo SparklineCard + useMemo derived arrays
+- [x] 21-01-PLAN.md — Backend: ForecastDay type, Open-Meteo daily params, weather-poller timezone passthrough, tests
+- [x] 21-02-PLAN.md — Frontend: WeatherForecastPanel component, AppHeader wiring, CSS, viewport overrides
 **UI hint**: yes
 
 ### Phase 22: NAS CPU Diagnostic
@@ -234,5 +234,5 @@ Plans:
 | 18. Docker Update Detail View | v1.3 | 2/2 | Complete    | 2026-05-03 |
 | 19. Graphical Activity Timeline | v1.3 | 3/3 | Complete    | 2026-05-04 |
 | 20. Performance Optimization | v1.3 | 2/2 | Complete    | 2026-05-04 |
-| 21. Weather Forecast | v1.3 | 0/TBD | Not started | - |
+| 21. Weather Forecast | v1.3 | 2/2 | Complete    | 2026-05-04 |
 | 22. NAS CPU Diagnostic | v1.3 | 0/TBD | Not started | - |

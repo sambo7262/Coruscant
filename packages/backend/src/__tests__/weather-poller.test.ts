@@ -80,6 +80,7 @@ describe('weather poller', () => {
       temp_f: 68.5,
       wmo_code: 1,
       fetched_at: '2026-04-06T00:00:00.000Z',
+      forecast: [],
     })
 
     vi.useFakeTimers()
@@ -95,7 +96,7 @@ describe('weather poller', () => {
 
     stop()
 
-    expect(fetchWeatherData).toHaveBeenCalledWith('37.7749', '-122.4194')
+    expect(fetchWeatherData).toHaveBeenCalledWith('37.7749', '-122.4194', undefined)
     expect(mockValues).toHaveBeenCalledWith(expect.objectContaining({
       key: 'weather.current',
     }))

@@ -1,9 +1,11 @@
 import axios from 'axios'
+import type { ForecastDay } from '@coruscant/shared'
 
 export interface WeatherFetchResult {
   temp_f: number
   wmo_code: number
   fetched_at: string
+  forecast: ForecastDay[]  // always present — empty array when daily block absent
 }
 
 export interface GeocodeResult {
@@ -18,13 +20,16 @@ export interface GeocodeResult {
  * Returns temperature in Fahrenheit and WMO weather code.
  * Throws on network errors or malformed response.
  */
-export async function fetchWeatherData(lat: string, lon: string): Promise<WeatherFetchResult> {
+export async function fetchWeatherData(lat: string, lon: string, timezone?: string): Promise<WeatherFetchResult> {
   const res = await axios.get('https://api.open-meteo.com/v1/forecast', {
     params: {
       latitude: lat,
       longitude: lon,
       current: 'temperature_2m,weather_code',
+      daily: 'temperature_2m_max,temperature_2m_min,weather_code',
       temperature_unit: 'fahrenheit',
+      forecast_days: 5,
+      timezone: timezone ?? 'auto',
     },
     timeout: 10_000,
   })
@@ -32,10 +37,25 @@ export async function fetchWeatherData(lat: string, lon: string): Promise<Weathe
   if (!current || typeof current.temperature_2m !== 'number') {
     throw new Error('Invalid weather response from Open-Meteo')
   }
+  const daily = res.data?.daily
+  const forecast: ForecastDay[] = Array.isArray(daily?.time)
+    ? (daily.time as string[]).slice(0, Math.min(
+        daily.time.length,
+        daily.temperature_2m_max?.length ?? 0,
+        daily.temperature_2m_min?.length ?? 0,
+        daily.weather_code?.length ?? 0,
+      )).map((date: string, i: number) => ({
+        date,
+        temp_max_f: daily.temperature_2m_max[i] as number,
+        temp_min_f: daily.temperature_2m_min[i] as number,
+        wmo_code: daily.weather_code[i] as number,
+      }))
+    : []
   return {
     temp_f: current.temperature_2m,
     wmo_code: current.weather_code,
     fetched_at: new Date().toISOString(),
+    forecast,
   }
 }
 

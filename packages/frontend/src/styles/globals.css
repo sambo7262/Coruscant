@@ -896,6 +896,108 @@ body::after {
   }
 }
 
+/* ---------- Weather Forecast Panel (Phase 21) ---------- */
+.weather-forecast-panel {
+  position: fixed;
+  top: 44px;
+  left: 0;
+  right: 0;
+  z-index: 9;
+  background: rgba(13, 13, 13, 0.97);
+  border-bottom: 1px solid rgba(232, 160, 32, 0.25);
+  overflow: hidden;
+}
+
+.weather-forecast-panel__inner {
+  padding: 10px 16px;
+}
+
+.weather-forecast-panel__header {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: rgba(232, 160, 32, 0.5);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.weather-forecast-panel__stale-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: rgba(232, 160, 32, 0.5);
+  letter-spacing: 0.08em;
+}
+
+.weather-forecast-panel__days {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.weather-forecast-panel__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.weather-forecast-panel__day-name {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: rgba(232, 160, 32, 0.6);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.weather-forecast-panel__high {
+  font-family: var(--font-mono);
+  font-size: var(--tile-font-value);
+  font-weight: 600;
+  color: var(--cockpit-amber);
+}
+
+.weather-forecast-panel__low {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: rgba(200, 200, 200, 0.5);
+}
+
+.weather-forecast-panel__condition {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-offwhite);
+  text-align: center;
+}
+
+.weather-forecast-panel__empty {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--cockpit-green);
+  letter-spacing: 0.05em;
+}
+
+.weather-forecast-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.app-header__weather-btn {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 44px;
+  padding-right: 4px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* ---------- Arr instrument ---------- */
 .arr-instrument {
   display: flex;

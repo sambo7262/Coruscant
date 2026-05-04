@@ -22,8 +22,8 @@ export function startWeatherPoller(): () => void {
     if (!latRow || !lonRow) return // not configured yet — no-op
 
     try {
-      const result = await fetchWeatherData(latRow.value, lonRow.value)
       const tzRow = db.select().from(kvStore).where(eq(kvStore.key, 'weather.timezone')).get()
+      const result = await fetchWeatherData(latRow.value, lonRow.value, tzRow?.value)
       const payload = JSON.stringify({ ...result, timezone: tzRow?.value })
       db.insert(kvStore)
         .values({ key: 'weather.current', value: payload, updatedAt: new Date().toISOString() })

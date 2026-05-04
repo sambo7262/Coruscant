@@ -33,6 +33,16 @@ html[data-viewport^="iphone"] .pi-health {
   top: calc(44px + env(safe-area-inset-top));
 }
 
+/* --- Forecast panel safe-area top offset --- */
+html[data-viewport^="iphone"] .weather-forecast-panel {
+  top: calc(44px + env(safe-area-inset-top));
+}
+
+html[data-viewport^="iphone"] .app-header__weather-btn {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* --- Body scroll release + 100dvh (RESP-09) --- */
 html[data-viewport^="iphone"] body {
   height: auto;
@@ -204,6 +214,21 @@ html[data-viewport="iphone-portrait"] .nas-tile__docker-stat { font-size: 16px; 
 /* --- Ribbon labels --- */
 html[data-viewport="iphone-portrait"] .ribbon-label { font-size: 12px; }
 
+/* --- Forecast panel portrait compression --- */
+html[data-viewport="iphone-portrait"] .weather-forecast-panel__inner {
+  padding: 8px 16px;
+}
+
+html[data-viewport="iphone-portrait"] .weather-forecast-panel__high {
+  font-size: 16px;
+}
+
+html[data-viewport="iphone-portrait"] .weather-forecast-panel__day-name,
+html[data-viewport="iphone-portrait"] .weather-forecast-panel__low,
+html[data-viewport="iphone-portrait"] .weather-forecast-panel__condition {
+  font-size: 10px;
+}
+
 /* ===================== LANDSCAPE ONLY (Phase 16) ===================== */
 /* Rules specific to landscape orientation.
    Use html[data-viewport="iphone-landscape"] as the prefix. */
@@ -328,4 +353,14 @@ html[data-viewport="iphone-landscape"] .now-playing-banner,
 html[data-viewport="iphone-landscape"] .now-playing-banner--idle {
   padding-top: 2px;
   padding-bottom: 2px;
+}
+
+/* --- Forecast panel landscape safe-area insets --- */
+html[data-viewport="iphone-landscape"] .weather-forecast-panel {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+html[data-viewport="iphone-landscape"] .weather-forecast-panel__high {
+  font-size: 18px;
 }

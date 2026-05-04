@@ -82,11 +82,19 @@ export interface PlexServerStats {
   bandwidthMbps: number
 }
 
+export interface ForecastDay {
+  date: string       // ISO date string e.g. "2026-05-03"
+  temp_max_f: number
+  temp_min_f: number
+  wmo_code: number
+}
+
 export interface WeatherData {
   temp_f: number
   wmo_code: number
   fetched_at: string  // ISO 8601
   timezone?: string   // IANA timezone from geocoding (e.g. "America/New_York")
+  forecast?: ForecastDay[]  // optional — undefined in kvStore blobs written before Phase 21
 }
 
 export interface PiHealthStatus {

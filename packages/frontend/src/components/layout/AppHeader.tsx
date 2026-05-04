@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Settings, List } from 'lucide-react'
-import { AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import type { ArrWebhookEvent, WeatherData, PiHealthStatus } from '@coruscant/shared'
 import { WeatherIcon } from '../weather/WeatherIcon.js'
 import { StaleIndicator } from '../ui/StaleIndicator.js'
 import { PiHealthPanel } from './PiHealthPanel.js'
+import { WeatherForecastPanel } from './WeatherForecastPanel.js'
 import { useViewport } from '../../viewport/index.js'
 
 interface AppHeaderProps {
@@ -82,8 +83,19 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, activeOut
   const isPortrait = viewport === 'iphone-portrait'
   const [ticker, setTicker] = useState<{ text: string; color: string } | null>(null)
   const [panelOpen, setPanelOpen] = useState(false)
+  const [forecastOpen, setForecastOpen] = useState(false)
   const tickerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const clock = useLocalClock(weatherData?.timezone)
+
+  const handlePiHealthToggle = () => {
+    setPanelOpen(prev => !prev)
+    setForecastOpen(false)
+  }
+
+  const handleForecastToggle = () => {
+    setForecastOpen(prev => !prev)
+    setPanelOpen(false)
+  }
 
   const titleSeverity = piHealth?.severity ?? 'normal'
   const titleStyle = SEVERITY_TITLE_STYLES[titleSeverity] ?? SEVERITY_TITLE_STYLES.normal
@@ -149,7 +161,7 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, activeOut
             </Link>
           ) : (
             <button
-              onClick={() => setPanelOpen(prev => !prev)}
+              onClick={handlePiHealthToggle}
               className="app-header__title-button"
               aria-label={panelOpen ? 'Close Pi health panel' : 'Open Pi health panel'}
               aria-expanded={panelOpen}
@@ -206,7 +218,12 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, activeOut
               <div className="app-header__right">
                 {/* Weather widget — renders nothing when weatherData is null/undefined */}
                 {weatherData && (
-                  <div className="app-header__weather">
+                  <button
+                    className="app-header__weather-btn"
+                    onClick={handleForecastToggle}
+                    aria-label={forecastOpen ? 'Close forecast' : 'Open 5-day forecast'}
+                    aria-expanded={forecastOpen}
+                  >
                     <WeatherIcon wmoCode={weatherData.wmo_code} size={30} />
                     <span className="app-header__weather-temp">
                       {Math.round(weatherData.temp_f)}°
@@ -214,7 +231,7 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, activeOut
                     {isWeatherStale(weatherData.fetched_at) && (
                       <StaleIndicator lastPollAt={weatherData.fetched_at} />
                     )}
-                  </div>
+                  </button>
                 )}
                 {isPortrait ? (
                   <Link
@@ -253,6 +270,25 @@ export function AppHeader({ connected, showBack = false, lastArrEvent, activeOut
     <AnimatePresence>
       {!showBack && panelOpen && (
         <PiHealthPanel piHealth={piHealth ?? undefined} />
+      )}
+    </AnimatePresence>
+    <AnimatePresence>
+      {!showBack && forecastOpen && (
+        <>
+          <motion.div
+            className="weather-forecast-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            onClick={() => setForecastOpen(false)}
+          />
+          <WeatherForecastPanel
+            forecast={weatherData?.forecast ?? []}
+            fetchedAt={weatherData?.fetched_at}
+            isStale={weatherData ? isWeatherStale(weatherData.fetched_at) : false}
+          />
+        </>
       )}
     </AnimatePresence>
     </>
