@@ -317,18 +317,15 @@ export async function debugRoutes(fastify: FastifyInstance) {
   fastify.get('/debug/metrics-sample', async (_request, reply) => {
     const { metricsHistory } = await import('../schema.js')
     const db = getDb()
-    const rows = db.select().from(metricsHistory)
-      .where(eq(metricsHistory.service, 'nas'))
-      .orderBy(metricsHistory.id)
-      .limit(5)
-      .all()
-      .reverse()
+    const totalCount = db.select().from(metricsHistory).where(eq(metricsHistory.service, 'nas')).all().length
+    const allRows = db.select().from(metricsHistory).where(eq(metricsHistory.service, 'nas')).all()
+    const rows = allRows.slice(-5)
     const parsed = rows.map(r => ({
       id: r.id,
       timestamp: r.timestamp,
       keys: Object.keys(JSON.parse(r.metrics)),
     }))
-    return reply.send({ count: rows.length, latestKeys: parsed[0]?.keys ?? [], rows: parsed })
+    return reply.send({ totalNasRows: totalCount, latestKeys: parsed[parsed.length - 1]?.keys ?? [], rows: parsed })
   })
 
   /**
