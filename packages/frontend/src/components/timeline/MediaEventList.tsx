@@ -167,6 +167,72 @@ function formatTime(iso: string): string {
   }
 }
 
+// ------- EventRows — tap to reveal timestamp -------
+
+function EventRows({ events, isIphone }: { events: MediaEvent[]; isIphone: boolean }) {
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null)
+
+  return (
+    <div>
+      {events.map((event, idx) => (
+        <button
+          key={`${event.timestamp}-${event.type}-${idx}`}
+          type="button"
+          onClick={() => setExpandedIdx(expandedIdx === idx ? null : idx)}
+          style={{
+            all: 'unset',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '5px 12px',
+            background: idx % 2 === 0 ? 'transparent' : 'rgba(232,160,32,0.03)',
+            overflow: 'hidden',
+            width: '100%',
+            cursor: 'pointer',
+            boxSizing: 'border-box',
+          }}
+        >
+          <span
+            style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              background: EVENT_DOT_COLORS[event.type],
+              flexShrink: 0,
+            }}
+            aria-hidden="true"
+          />
+          <span style={{
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: isIphone ? '11px' : '13px',
+            color: 'var(--cockpit-amber)',
+            flex: 1,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            textAlign: 'left',
+          }}>
+            {event.summary}
+          </span>
+          {expandedIdx === idx && (
+            <span style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: '9px',
+              color: 'var(--text-offwhite)',
+              opacity: 0.5,
+              flexShrink: 0,
+              letterSpacing: '0.02em',
+              whiteSpace: 'nowrap',
+            }}>
+              {formatTime(event.timestamp)}
+            </span>
+          )}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 // ------- MediaEventList -------
 
 export function MediaEventList({ window }: MediaEventListProps) {
@@ -363,59 +429,7 @@ export function MediaEventList({ window }: MediaEventListProps) {
             </p>
           </div>
         ) : (
-          <div>
-            {filteredEvents.map((event, idx) => (
-              <div
-                key={`${event.timestamp}-${event.type}-${idx}`}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '5px 12px',
-                  background: idx % 2 === 0 ? 'transparent' : 'rgba(232,160,32,0.03)',
-                  overflow: 'hidden',
-                }}
-              >
-                {/* Type indicator dot */}
-                <span
-                  style={{
-                    width: '6px',
-                    height: '6px',
-                    borderRadius: '50%',
-                    background: EVENT_DOT_COLORS[event.type],
-                    flexShrink: 0,
-                  }}
-                  aria-hidden="true"
-                />
-
-                {/* Summary text — just the title */}
-                <span style={{
-                  fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: isIphone ? '11px' : '13px',
-                  color: 'var(--cockpit-amber)',
-                  flex: 1,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}>
-                  {event.summary}
-                </span>
-
-                {/* Timestamp */}
-                <span style={{
-                  fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: isIphone ? '9px' : '10px',
-                  color: 'var(--text-offwhite)',
-                  opacity: 0.5,
-                  flexShrink: 0,
-                  letterSpacing: '0.02em',
-                  whiteSpace: 'nowrap',
-                }}>
-                  {formatTime(event.timestamp)}
-                </span>
-              </div>
-            ))}
-          </div>
+          <EventRows events={filteredEvents} isIphone={isIphone} />
         )}
       </div>
     </div>

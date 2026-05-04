@@ -125,7 +125,7 @@ export function SparklineCard({ service, points, metrics, loading, window, multi
                 tick={{ fontSize: 10, fill: 'rgba(200,200,200,0.5)' }}
                 axisLine={{ stroke: 'rgba(232,160,32,0.15)' }}
                 tickLine={false}
-                width={44}
+                width={54}
               />
               <Legend
                 verticalAlign="top"
@@ -168,7 +168,7 @@ export function SparklineCard({ service, points, metrics, loading, window, multi
                 tick={{ fontSize: 10, fill: 'rgba(200,200,200,0.5)' }}
                 axisLine={{ stroke: 'rgba(232,160,32,0.15)' }}
                 tickLine={false}
-                width={44}
+                width={54}
               />
               <Area
                 type="monotone"
@@ -202,7 +202,7 @@ export function SparklineCard({ service, points, metrics, loading, window, multi
                 tick={{ fontSize: 10, fill: 'rgba(200,200,200,0.5)' }}
                 axisLine={{ stroke: 'rgba(232,160,32,0.15)' }}
                 tickLine={false}
-                width={44}
+                width={54}
               />
               <Line
                 type="monotone"
